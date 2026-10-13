@@ -1,0 +1,29 @@
+MAKMEX · tablero (tablero.makmex.com)
+======================================
+
+Qué es: una página que entra con correo y contraseña y muestra, en tiempo real, lo que los lectores de SICAR
+de las 4 sucursales suben a la base central (Supabase): ventas de hoy por sucursal (con artículos, forma de pago
+y cliente), qué mandar a cada sucursal según la regla de reparto, traspasos en curso y entradas del día en CEDIS.
+
+Archivos: index.html (toda la página), config.js (dirección del proyecto y llave PÚBLICA), manifest.webmanifest
+e iconos (para guardarla en el celular como app). No hay servidor: es una página estática que lee Supabase.
+
+Antes de publicar
+1. Supabase → SQL Editor: pegar y correr lector/base_central.sql (versión con sicar_cliente).
+2. Supabase → Authentication → Users → Add user: correo y contraseña de quien va a entrar.
+3. Supabase → Authentication → Sign In / Providers → Email: apagar «Allow new users to sign up».
+4. Supabase → Settings → API Keys → copiar la llave Publishable (sb_publishable_…) y pegarla en config.js.
+
+Publicar en GitHub Pages (gratis, sin gastar créditos de Netlify)
+1. github.com → organización makmexchihuahua-hub → New repository: «makmex-tablero», público.
+2. Add file → Upload files: subir index.html, config.js, manifest.webmanifest, icono.svg, icono-180.png,
+   icono-192.png, icono-512.png. Commit.
+3. Settings → Pages → Build and deployment: Source «Deploy from a branch», Branch «main» / «/ (root)». Save.
+4. Settings → Pages → Custom domain: tablero.makmex.com → Save. Marcar «Enforce HTTPS» cuando aparezca.
+5. GoDaddy → makmex.com → DNS → Add record: tipo CNAME, nombre «tablero», valor «makmexchihuahua-hub.github.io».
+6. Esperar unos minutos y abrir https://tablero.makmex.com
+
+Para actualizar la página: subir el index.html nuevo al repositorio (Add file → Upload files, reemplaza).
+
+Seguridad: la página lleva «noindex» (Google no la lista). Sin iniciar sesión no se puede leer nada, aunque alguien
+tenga la dirección o la llave pública: la base central solo deja leer con sesión (seguridad por filas).

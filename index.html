@@ -1,0 +1,572 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#141210">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tablero MAKMEX">
+<title>Tablero MAKMEX</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<style>
+:root{
+  --bg:#141210; --surface:#1E1B18; --surface-2:#282420; --line:#363028; --line-2:#4A433A;
+  --ink:#F4F1EC; --ink-2:#C8C1B7; --ink-3:#8F877C;
+  --accent:#FF7A22; --accent-soft:#3B2416; --accent-ink:#1A0D05;
+  --ok:#4CC27B; --ok-soft:#173A26; --warn:#F0A23A; --warn-soft:#3B2A12; --bad:#FF6B6B; --bad-soft:#3E1C1C;
+  --display:"Barlow Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --radius:10px; --gutter:16px; --nav:60px;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#F3F1EC; --surface:#FFFFFF; --surface-2:#F0EDE7; --line:#E4DFD6; --line-2:#CFC8BD;
+    --ink:#1D1A16; --ink-2:#55504A; --ink-3:#8A847B;
+    --accent:#F26200; --accent-soft:#FFF1E7; --accent-ink:#FFFFFF;
+    --ok:#1E8F4E; --ok-soft:#E3F5EA; --warn:#A85A00; --warn-soft:#FBEAD3; --bad:#C9302C; --bad-soft:#FBE4E3;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F3F1EC; --surface:#FFFFFF; --surface-2:#F0EDE7; --line:#E4DFD6; --line-2:#CFC8BD;
+  --ink:#1D1A16; --ink-2:#55504A; --ink-3:#8A847B;
+  --accent:#F26200; --accent-soft:#FFF1E7; --accent-ink:#FFFFFF;
+  --ok:#1E8F4E; --ok-soft:#E3F5EA; --warn:#A85A00; --warn-soft:#FBEAD3; --bad:#C9302C; --bad-soft:#FBE4E3;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;-webkit-font-smoothing:antialiased}
+body{min-height:100dvh;padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom))}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit}
+.num{font-variant-numeric:tabular-nums}
+.hidden{display:none !important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
+
+/* ---------- entrada ---------- */
+#login{min-height:100dvh;display:grid;place-items:center;padding:var(--gutter)}
+#login form{width:min(360px,100%);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px 24px}
+.marca{font-family:var(--display);font-weight:700;font-size:34px;letter-spacing:.5px;line-height:1}
+.marca b{color:var(--accent);font-weight:700}
+#login p{color:var(--ink-2);margin:6px 0 22px}
+label{display:block;font-size:13px;color:var(--ink-2);margin:12px 0 4px}
+input{width:100%;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;color:var(--ink);padding:11px 12px;font:inherit;font-size:16px}
+input:focus{border-color:var(--accent);outline:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:600;width:100%;margin-top:18px}
+.btn[disabled]{opacity:.6}
+.error{background:var(--bad-soft);color:var(--bad);border-radius:8px;padding:10px 12px;margin-top:14px;font-size:14px}
+
+/* ---------- cabecera ---------- */
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px var(--gutter) 8px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:1240px;margin:0 auto}
+.top .marca{font-size:24px}
+.top .meta{display:flex;align-items:center;gap:12px;color:var(--ink-3);font-size:13px}
+.top .meta button{color:var(--ink-2);padding:4px 6px;border-radius:6px}
+.top .meta button:hover{background:var(--surface-2)}
+.tiendas{display:flex;gap:8px;max-width:1240px;margin:8px auto 0;overflow-x:auto;scrollbar-width:none}
+.tiendas::-webkit-scrollbar{display:none}
+.tienda{display:flex;align-items:center;gap:7px;padding:5px 10px 5px 8px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:13px;white-space:nowrap;color:var(--ink-2)}
+.tienda b{color:var(--ink);font-weight:600}
+.punto{width:9px;height:9px;border-radius:50%;background:var(--ink-3);flex:none}
+.punto.ok{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.punto.tarde{background:var(--warn)}
+.punto.caido{background:var(--bad)}
+
+/* ---------- contenido ---------- */
+main{max-width:1240px;margin:0 auto;padding:14px var(--gutter) 0}
+.aviso{background:var(--warn-soft);color:var(--warn);border-radius:var(--radius);padding:7px 12px;margin-bottom:8px;font-size:13px;line-height:1.35}
+.aviso.bad{background:var(--bad-soft);color:var(--bad)}
+.panel{display:none}
+.panel.activo{display:block}
+.panel h2{font-family:var(--display);font-weight:600;font-size:22px;margin:4px 0 10px;letter-spacing:.2px;display:flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
+.panel h2 small{font-family:var(--body);font-weight:400;font-size:13px;color:var(--ink-3)}
+@media (min-width:1000px){
+  :root{--nav:0px}
+  main{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding-top:18px}
+  .panel{display:block}
+  .panel.ancho{grid-column:1 / -1}
+  nav{display:none}
+}
+
+/* marcador de tiendas (ventas) */
+.marcador{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media (min-width:600px){.marcador{grid-template-columns:repeat(4,1fr)}}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 12px 10px;position:relative;overflow:hidden;text-align:left}
+.tile::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--line-2)}
+.tile.sel::before{background:var(--accent)}
+.tile .n{font-size:13px;color:var(--ink-2);display:flex;justify-content:space-between}
+.tile .t{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.05;margin-top:4px;letter-spacing:-.3px}
+.tile .t.cero{color:var(--ink-3)}
+.tile .s{font-size:12.5px;color:var(--ink-3);margin-top:4px}
+.tile .s b{color:var(--ink-2);font-weight:500}
+
+/* listas */
+.lista{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.fila{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border-top:1px solid var(--line);width:100%;text-align:left}
+.fila:first-child{border-top:0}
+.fila:hover{background:var(--surface-2)}
+.fila .h{font-family:var(--display);font-size:17px;font-weight:600;color:var(--ink-2)}
+.fila .q{min-width:0}
+.fila .q .a{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fila .q .b{font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fila .m{font-family:var(--display);font-size:20px;font-weight:600;text-align:right}
+.fila .m small{display:block;font-family:var(--body);font-size:11.5px;color:var(--ink-3);font-weight:400}
+.etq{display:inline-block;font-size:11px;padding:1px 6px;border-radius:5px;background:var(--surface-2);color:var(--ink-2);margin-left:6px;vertical-align:middle;font-weight:500}
+.etq.cancel{background:var(--bad-soft);color:var(--bad)}
+.etq.suc{background:var(--accent-soft);color:var(--accent)}
+.vacio{padding:26px 14px;color:var(--ink-3);text-align:center;font-size:14px}
+.sub{font-size:13px;color:var(--ink-3);margin:12px 2px 6px}
+
+/* enviar (reparto) */
+.destinos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.destinos button{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 8px;text-align:left}
+.destinos button.sel{border-color:var(--accent);background:var(--accent-soft)}
+.destinos .n{font-size:13px;color:var(--ink-2)}
+.destinos .t{font-family:var(--display);font-size:28px;font-weight:700;line-height:1.05}
+.destinos .s{font-size:12px;color:var(--ink-3)}
+.renglon{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:8px 12px;border-top:1px solid var(--line);font-size:14px}
+.renglon > div:first-child{min-width:0}
+.renglon:first-child{border-top:0}
+.renglon .k{font-weight:600;font-family:var(--display);font-size:16px}
+.renglon .k em{font-style:normal;color:var(--accent);margin-left:4px}
+.renglon .d{color:var(--ink-3);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.renglon .p{color:var(--ink-3);text-align:right;white-space:nowrap;font-size:12px}
+.renglon .p b{display:block;font-family:var(--display);font-size:16px;color:var(--ink)}
+.barra{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:13px;color:var(--ink-2)}
+.chip.sel{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip.ghost{border-style:dashed}
+
+/* traspasos */
+.tras{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:10px 12px;border-top:1px solid var(--line);width:100%;text-align:left}
+.tras:first-child{border-top:0}
+.tras:hover{background:var(--surface-2)}
+.tras .ruta{font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tras .ruta svg{width:16px;height:16px;color:var(--ink-3)}
+.tras .f{font-size:12.5px;color:var(--ink-3)}
+.tras .dias{font-family:var(--display);font-size:22px;font-weight:600;text-align:right;line-height:1}
+.tras .dias small{display:block;font-family:var(--body);font-size:11.5px;font-weight:400;color:var(--ink-3)}
+.tras.tarde .dias{color:var(--warn)}
+.tras.viejo .dias{color:var(--bad)}
+
+/* cajón de detalle */
+#velo{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;opacity:0;transition:opacity .18s}
+#velo.abierto{opacity:1}
+#cajon{position:fixed;z-index:21;background:var(--surface);border-top:1px solid var(--line);left:0;right:0;bottom:0;max-height:88dvh;border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .22s ease;display:flex;flex-direction:column}
+#cajon.abierto{transform:none}
+@media (min-width:1000px){
+  #cajon{left:auto;top:0;bottom:0;width:440px;max-height:none;border-radius:0;border-left:1px solid var(--line);border-top:0;transform:translateX(100%)}
+}
+#cajon .cab{display:flex;align-items:flex-start;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--line);gap:10px}
+#cajon .cab h3{margin:0;font-family:var(--display);font-size:24px;font-weight:600;line-height:1.1}
+#cajon .cab .sub{margin:4px 0 0}
+#cajon .cuerpo{overflow:auto;padding:4px 16px 24px}
+#cajon .cerrar{width:36px;height:36px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;flex:none}
+.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.kv .k{color:var(--ink-2)}
+.kv .v{text-align:right;font-weight:500}
+.kv .v.total{font-family:var(--display);font-size:22px;font-weight:700}
+.art{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.art .c{font-family:var(--display);font-size:16px;font-weight:600}
+.art .d{font-size:12.5px;color:var(--ink-3);overflow-wrap:anywhere}
+.art .i{text-align:right;font-weight:500}
+.art .i small{display:block;color:var(--ink-3);font-weight:400;font-size:12px}
+.art.borrado{opacity:.5;text-decoration:line-through}
+h4{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.3px;color:var(--ink-2);margin:16px 0 4px}
+
+/* navegación móvil */
+nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:10}
+nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;color:var(--ink-3);position:relative}
+nav button.sel{color:var(--accent)}
+nav button svg{width:22px;height:22px}
+nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(--accent);color:var(--accent-ink);font-size:10px;font-weight:700;border-radius:999px;padding:0 5px;min-width:16px;text-align:center}
+@media (min-width:1000px){
+  nav#nav{display:none}
+  .lista{max-height:72vh;overflow:auto;overscroll-behavior:contain}
+}
+</style>
+</head>
+<body>
+
+<section id="login" class="hidden">
+  <form id="formLogin" autocomplete="on">
+    <div class="marca">MAK<b>MEX</b></div>
+    <p>Tablero de sucursales</p>
+    <label for="correo">Correo</label>
+    <input id="correo" type="email" autocomplete="username" required>
+    <label for="clave">Contraseña</label>
+    <input id="clave" type="password" autocomplete="current-password" required>
+    <div id="loginError" class="error hidden"></div>
+    <button class="btn" id="btnEntrar">Entrar</button>
+  </form>
+</section>
+
+<div id="app" class="hidden">
+<header>
+  <div class="top">
+    <div class="marca">MAK<b>MEX</b> <span style="font-weight:500;color:var(--ink-3)">tablero</span></div>
+    <div class="meta">
+      <span id="reloj" class="num"></span>
+      <button id="btnTema" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+      <button id="btnSalir">Salir</button>
+    </div>
+  </div>
+  <div class="tiendas" id="tiendas"></div>
+</header>
+
+<main>
+  <div id="avisos" class="panel ancho activo" style="display:block"></div>
+
+  <section class="panel activo" id="p-ventas">
+    <h2>Ventas de hoy <small id="fechaHoy"></small></h2>
+    <div class="marcador" id="marcador"></div>
+    <div class="barra" id="filtroVentas"></div>
+    <div class="lista" id="ventas"></div>
+    <div class="sub" id="ventasPie"></div>
+  </section>
+
+  <section class="panel" id="p-enviar">
+    <h2>Qué mandar <small>regla: CEDIS → CDMX → Denmor → Monterrey</small></h2>
+    <div class="destinos" id="destinos"></div>
+    <div class="barra" id="filtroEnviar"></div>
+    <div class="lista" id="reparto"></div>
+    <div class="sub" id="repartoPie"></div>
+  </section>
+
+  <section class="panel" id="p-traspasos">
+    <h2>Traspasos en curso <small id="trasResumen"></small></h2>
+    <div class="lista" id="traspasos"></div>
+  </section>
+
+  <section class="panel" id="p-entradas">
+    <h2>Entradas de hoy en CEDIS <small id="entResumen"></small></h2>
+    <div class="lista" id="entradas"></div>
+  </section>
+</main>
+
+<nav id="nav">
+  <button data-p="ventas" class="sel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg>Ventas</button>
+  <button data-p="enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Enviar<span class="cnt hidden" id="cntEnviar"></span></button>
+  <button data-p="traspasos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h13l-3-3m3 3-3 3M20 16H7l3-3m-3 3 3 3"/></svg>Traspasos<span class="cnt hidden" id="cntTras"></span></button>
+  <button data-p="entradas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>Entradas</button>
+</nav>
+</div>
+
+<div id="velo" class="hidden"></div>
+<aside id="cajon" aria-hidden="true">
+  <div class="cab"><div><h3 id="cajonTitulo"></h3><div class="sub" id="cajonSub"></div></div><button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button></div>
+  <div class="cuerpo" id="cajonCuerpo"></div>
+</aside>
+
+<script>
+/* ============================================================================================
+   Tablero MAKMEX · lee la base central (Supabase) que llenan los lectores de SICAR de cada tienda.
+   Solo lectura. Requiere sesión (correo y contraseña creados en Supabase → Authentication → Users).
+   ============================================================================================ */
+const CFG = window.TABLERO_CONFIG || {};
+const URL_BASE = (CFG.url || "").replace(/\/$/, "");
+const LLAVE = CFG.llave || "";
+const SUCS = {1: "CEDIS", 2: "Denmor", 3: "CDMX", 4: "Monterrey"};
+const ORDEN_REPARTO = [1, 3, 2, 4];                      // prioridad de la regla: CEDIS, CDMX, Denmor, Monterrey
+const GRADOS = ["AA", "A", "B", "C", "D", "E", "F"];
+const ESPECIAL = /-(DR|DEF|INC|BR|ER)$/i;                // piezas dañadas, incompletas o por revisar: no entran al reparto
+const CADA_S = 30, CADA_S_REPARTO = 120, TARDE_MIN = 6, CAIDO_MIN = 15;
+const $ = s => document.querySelector(s);
+const pesos = n => "$" + Math.round(n || 0).toLocaleString("es-MX");
+const pesosC = n => "$" + (Number(n || 0)).toLocaleString("es-MX", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const hoyStr = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+const hora = f => (f || "").slice(11, 16);
+const nombreCliente = n => (!n || /^p[úu]blico\s+en\s+general$/i.test(n.trim())) ? "Público en general" : n;
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+let sb = null, sesion = null, temporizador = null, ultimoReparto = 0, sinCliente = false;
+const D = {estado: [], ventasHoy: [], ventasMes: [], clientes: {}, traspasos: [], existencias: [], trasDet: [], compras: [], comprasDet: [], reparto: null};
+const UI = {panel: "ventas", filtroSuc: 0, destino: 3, filtroTipo: "todo", tema: localStorage.getItem("tema") || ""};
+
+/* ---------------- acceso a la base central (REST de PostgREST, con el token de la sesión) ---------------- */
+async function q(tabla, params, opciones = {}) {
+  const todo = []; let desde = 0; const paso = 1000;
+  while (true) {
+    const cab = {apikey: LLAVE, Authorization: "Bearer " + (sesion ? sesion.access_token : LLAVE), Range: desde + "-" + (desde + paso - 1), "Range-Unit": "items"};
+    const r = await fetch(URL_BASE + "/rest/v1/" + tabla + "?" + params, {headers: cab});
+    if (r.status === 416) break;
+    if (r.status === 401 || r.status === 403) throw new Error("sesion");
+    if (!r.ok) throw new Error(tabla + ": HTTP " + r.status + " " + (await r.text()).slice(0, 120));
+    const filas = await r.json(); todo.push(...filas);
+    if (filas.length < paso || opciones.unaPagina) break;
+    desde += paso;
+  }
+  return todo;
+}
+const enLista = ids => "(" + ids.map(x => encodeURIComponent(x)).join(",") + ")";
+
+/* ---------------- sesión ---------------- */
+async function iniciar() {
+  if (!URL_BASE || !LLAVE) { $("#login").classList.remove("hidden"); mostrarError("Falta config.js con la dirección y la llave pública del proyecto."); return; }
+  sb = window.supabase.createClient(URL_BASE, LLAVE, {auth: {persistSession: true, autoRefreshToken: true}});
+  const {data} = await sb.auth.getSession();
+  sesion = data.session;
+  sb.auth.onAuthStateChange((_e, s) => { sesion = s; if (!s) mostrarLogin(); });
+  if (sesion) arrancar(); else mostrarLogin();
+}
+function mostrarLogin() { clearInterval(temporizador); $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); }
+function mostrarError(m) { const e = $("#loginError"); e.textContent = m; e.classList.remove("hidden"); }
+$("#formLogin").addEventListener("submit", async ev => {
+  ev.preventDefault(); $("#btnEntrar").disabled = true; $("#loginError").classList.add("hidden");
+  const {data, error} = await sb.auth.signInWithPassword({email: $("#correo").value.trim(), password: $("#clave").value});
+  $("#btnEntrar").disabled = false;
+  if (error) { mostrarError(/invalid/i.test(error.message) ? "Correo o contraseña incorrectos." : "No se pudo entrar: " + error.message); return; }
+  sesion = data.session; arrancar();
+});
+$("#btnSalir").addEventListener("click", async () => { await sb.auth.signOut(); mostrarLogin(); });
+
+/* ---------------- arranque y ciclo ---------------- */
+function arrancar() {
+  $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+  aplicarTema(); $("#fechaHoy").textContent = new Date().toLocaleDateString("es-MX", {weekday: "long", day: "numeric", month: "long"});
+  reloj(); setInterval(reloj, 1000);
+  refrescar(true);
+  clearInterval(temporizador); temporizador = setInterval(() => refrescar(false), CADA_S * 1000);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) refrescar(false); });
+}
+function reloj() { $("#reloj").textContent = new Date().toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}); }
+async function refrescar(primera) {
+  try {
+    const hoy = hoyStr(), mes = hoy.slice(0, 7) + "-01";
+    const [estado, ventasHoy, ventasMes, traspasos, compras] = await Promise.all([
+      q("sicar_sucursal_estado", "select=*&order=suc"),
+      q("sicar_venta", "select=suc,ven_id,fecha,total,descuento,status,comprobante,renglones,piezas" + (sinCliente ? "" : ",cli_id") + "&fecha=gte." + hoy + "T00:00:00&order=fecha.desc")
+        .catch(e => { if (!sinCliente && /cli_id/.test(e.message)) { sinCliente = true; return q("sicar_venta", "select=suc,ven_id,fecha,total,descuento,status,comprobante,renglones,piezas&fecha=gte." + hoy + "T00:00:00&order=fecha.desc"); } throw e; }),
+      q("sicar_venta_dia", "select=suc,dia,ventas,total,piezas&dia=gte." + mes + "&order=dia"),
+      q("sicar_traspaso_global", "select=suc,tra_id,folio,suc_ori,suc_des,alias_ori,alias_des,fecha,status,piezas,renglones&status=eq.1&order=fecha"),
+      q("sicar_compra", "select=suc,com_id,fecha,folio,status,gasto,pro_id,renglones,piezas&suc=eq.1&fecha=gte." + hoy + "T00:00:00&order=fecha.desc"),
+    ]);
+    Object.assign(D, {estado, ventasHoy, ventasMes, traspasos, compras});
+    // nombres de clientes de las ventas de hoy (solo los que faltan)
+    const faltan = sinCliente ? [] : ventasHoy.filter(v => v.cli_id != null && !D.clientes[v.suc + ":" + v.cli_id]);
+    if (faltan.length) {
+      const porSuc = {}; faltan.forEach(v => (porSuc[v.suc] = porSuc[v.suc] || new Set()).add(v.cli_id));
+      for (const [suc, ids] of Object.entries(porSuc)) {
+        (await q("sicar_cliente", "select=suc,cli_id,nombre&suc=eq." + suc + "&cli_id=in." + enLista([...ids]))).forEach(c => D.clientes[c.suc + ":" + c.cli_id] = c.nombre);
+      }
+    }
+    if (compras.length) D.comprasDet = await q("sicar_compra_detalle", "select=com_id,clave,descripcion,cantidad,borrado&suc=eq.1&com_id=in." + enLista(compras.map(c => c.com_id)) + "&order=orden"); else D.comprasDet = [];
+    if (primera || Date.now() - ultimoReparto > CADA_S_REPARTO * 1000) {
+      D.existencias = await q("sicar_existencia", "select=suc,clave,descripcion,existencia,precio1,categoria,departamento&existencia=gt.0&order=clave");
+      D.trasDet = traspasos.length ? await q("sicar_traspaso_detalle", "select=suc,tra_id,clave,cantidad,borrado&tra_id=in." + enLista([...new Set(traspasos.map(t => t.tra_id))])) : [];
+      D.reparto = calcularReparto(); ultimoReparto = Date.now();
+    }
+    pintarTodo();
+  } catch (e) {
+    if (e.message === "sesion") { await sb.auth.signOut(); mostrarLogin(); return; }
+    $("#avisos").innerHTML = '<div class="aviso bad">No se pudo leer la base central: ' + esc(e.message) + '</div>';
+  }
+}
+
+/* ---------------- tema ---------------- */
+function aplicarTema() { document.documentElement.dataset.theme = UI.tema; }
+$("#btnTema").addEventListener("click", () => {
+  const claro = matchMedia("(prefers-color-scheme: light)").matches;
+  const actual = UI.tema || (claro ? "light" : "dark");
+  UI.tema = actual === "dark" ? "light" : "dark"; localStorage.setItem("tema", UI.tema); aplicarTema();
+});
+
+/* ---------------- navegación ---------------- */
+$("#nav").addEventListener("click", ev => { const b = ev.target.closest("button"); if (b) mostrarPanel(b.dataset.p); });
+function mostrarPanel(p) {
+  UI.panel = p;
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("sel", b.dataset.p === p));
+  document.querySelectorAll("main .panel").forEach(s => s.classList.toggle("activo", s.id === "p-" + p || s.id === "avisos"));
+  window.scrollTo({top: 0});
+}
+
+/* ---------------- pintado ---------------- */
+function pintarTodo() { pintarEstado(); pintarVentas(); pintarReparto(); pintarTraspasos(); pintarEntradas(); }
+
+function pintarEstado() {
+  const ahora = Date.now(); const avisos = []; const html = [];
+  for (const suc of [1, 3, 2, 4]) {
+    const e = D.estado.find(x => x.suc === suc);
+    let clase = "caido", txt = "sin datos";
+    if (e) {
+      const min = (ahora - new Date(e.actualizado).getTime()) / 60000;
+      clase = min <= TARDE_MIN ? "ok" : min <= CAIDO_MIN ? "tarde" : "caido";
+      txt = min < 1 ? "ahora" : min < 60 ? "hace " + Math.round(min) + " min" : min < 1440 ? "hace " + Math.round(min / 60) + " h" : "hace " + Math.round(min / 1440) + " d";
+      if (!e.ok) { clase = "caido"; txt = "error al leer"; }
+      if (clase !== "ok") avisos.push(SUCS[suc] + ": " + txt.replace("hace ", "") + " sin reportar" + (e.ok ? "" : " (error al leer SICAR: " + esc((e.error || "").slice(0, 90)) + ")"));
+    } else avisos.push(SUCS[suc] + ": todavía no ha subido nada");
+    html.push('<div class="tienda" title="' + esc(e ? e.servidor + " · lector " + e.lector_version : "") + '"><span class="punto ' + clase + '"></span><b>' + SUCS[suc] + '</b><span>' + txt + '</span></div>');
+  }
+  $("#tiendas").innerHTML = html.join("");
+  if (sinCliente) avisos.push("La base central todavía no tiene la columna de cliente: pega el base_central.sql nuevo en Supabase.");
+  $("#avisos").innerHTML = avisos.map(a => '<div class="aviso">' + a + (/reportar|subido/.test(a) ? '. Revisa que su computadora esté prendida, con sesión abierta e internet.' : '') + '</div>').join("");
+}
+
+function pintarVentas() {
+  const hoy = hoyStr();
+  const vig = D.ventasHoy.filter(v => v.status === 1);
+  const mes = {}; D.ventasMes.forEach(d => { mes[d.suc] = mes[d.suc] || {n: 0, t: 0}; mes[d.suc].n += d.ventas; mes[d.suc].t += Number(d.total); });
+  const tiles = [];
+  for (const suc of [1, 3, 2, 4]) {
+    const vs = vig.filter(v => v.suc === suc); const t = vs.reduce((a, v) => a + Number(v.total), 0); const m = mes[suc] || {n: 0, t: 0};
+    tiles.push('<button class="tile num' + (UI.filtroSuc === suc ? " sel" : "") + '" data-suc="' + suc + '"><div class="n"><span>' + SUCS[suc] + '</span><span>' + vs.length + (vs.length === 1 ? " venta" : " ventas") + '</span></div>' +
+      '<div class="t' + (t ? "" : " cero") + '">' + pesos(t) + '</div><div class="s">mes: <b>' + pesos(m.t) + '</b> en ' + m.n + '</div></button>');
+  }
+  $("#marcador").innerHTML = tiles.join("");
+  $("#marcador").querySelectorAll(".tile").forEach(b => b.addEventListener("click", () => { UI.filtroSuc = UI.filtroSuc === +b.dataset.suc ? 0 : +b.dataset.suc; pintarVentas(); }));
+  const lista = D.ventasHoy.filter(v => !UI.filtroSuc || v.suc === UI.filtroSuc);
+  $("#ventas").innerHTML = lista.length ? lista.map(v => {
+    const cli = v.cli_id != null ? D.clientes[v.suc + ":" + v.cli_id] : null;
+    return '<button class="fila" data-suc="' + v.suc + '" data-id="' + v.ven_id + '"><div class="h num">' + hora(v.fecha) + '</div><div class="q"><div class="a">' + esc(nombreCliente(cli)) +
+      (v.status !== 1 ? '<span class="etq cancel">cancelada</span>' : "") + (!UI.filtroSuc ? '<span class="etq suc">' + SUCS[v.suc] + '</span>' : "") + '</div><div class="b">' +
+      v.renglones + (v.renglones === 1 ? " artículo" : " artículos") + " · " + Number(v.piezas) + " pzas" + (Number(v.descuento) ? " · desc. " + pesos(v.descuento) : "") + (v.comprobante ? " · " + v.comprobante : "") +
+      '</div></div><div class="m num">' + pesos(v.total) + '</div></button>';
+  }).join("") : '<div class="vacio">Todavía no hay ventas hoy' + (UI.filtroSuc ? " en " + SUCS[UI.filtroSuc] : "") + '.</div>';
+  $("#ventas").querySelectorAll(".fila").forEach(b => b.addEventListener("click", () => abrirVenta(+b.dataset.suc, +b.dataset.id)));
+  const tot = vig.filter(v => !UI.filtroSuc || v.suc === UI.filtroSuc).reduce((a, v) => a + Number(v.total), 0);
+  $("#ventasPie").textContent = lista.length ? "Total vigente: " + pesos(tot) + " · " + hoy + " · se actualiza cada " + CADA_S + " s" : "";
+}
+
+async function abrirVenta(suc, id) {
+  const v = D.ventasHoy.find(x => x.suc === suc && x.ven_id === id); if (!v) return;
+  abrirCajon(pesos(v.total), SUCS[suc] + " · " + hora(v.fecha) + " · venta " + id + (v.status !== 1 ? " · CANCELADA" : ""), '<div class="vacio">Cargando…</div>');
+  try {
+    const [det, pag] = await Promise.all([
+      q("sicar_venta_detalle", "select=clave,descripcion,cantidad,precio,importe,descuento,orden,borrado&suc=eq." + suc + "&ven_id=eq." + id + "&order=orden"),
+      q("sicar_venta_pago", "select=tipo,total,borrado&suc=eq." + suc + "&ven_id=eq." + id)]);
+    const cli = v.cli_id != null ? nombreCliente(D.clientes[suc + ":" + v.cli_id] || "cliente " + v.cli_id) : "Público en general";
+    let h = '<div class="kv"><span class="k">Cliente</span><span class="v">' + esc(cli) + '</span></div>';
+    h += '<h4>Artículos</h4>' + det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '"><div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + pesosC(d.importe) + '<small>' + Number(d.cantidad) + " × " + pesosC(d.precio) + (Number(d.descuento) ? " · desc. " + pesosC(d.descuento) : "") + '</small></div></div>').join("");
+    if (Number(v.descuento)) h += '<div class="kv"><span class="k">Antes de descuento</span><span class="v num">' + pesosC(Number(v.total) + Number(v.descuento)) + '</span></div>';
+    if (Number(v.descuento)) h += '<div class="kv"><span class="k">Descuento</span><span class="v num">− ' + pesosC(v.descuento) + '</span></div>';
+    h += '<div class="kv"><span class="k">Total</span><span class="v total num">' + pesosC(v.total) + '</span></div>';
+    h += '<h4>Forma de pago</h4>' + (pag.length ? pag.filter(p => !p.borrado).map(p => '<div class="kv"><span class="k">' + esc(p.tipo || "pago") + '</span><span class="v num">' + pesosC(p.total) + '</span></div>').join("") : '<div class="vacio">Sin pagos registrados.</div>');
+    $("#cajonCuerpo").innerHTML = h;
+  } catch (e) { $("#cajonCuerpo").innerHTML = '<div class="aviso bad">No se pudo cargar el detalle: ' + esc(e.message) + '</div>'; }
+}
+
+/* ---------------- regla de reparto ---------------- */
+function partes(clave) {
+  const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || "");
+  return m ? [m[1], m[2].toUpperCase()] : [clave, ""];
+}
+const rango = g => { const i = GRADOS.indexOf(g); return i < 0 ? 3.5 : i; };
+function calcularReparto() {
+  // existencias por modelo y tienda + lo que va en camino (traspasos en curso, por destino)
+  const MOD = {};
+  const m = clave => { const [mod] = partes(clave); return MOD[mod] = MOD[mod] || {mod, ced: {}, tienda: {2: 0, 3: 0, 4: 0}, camino: {1: 0, 2: 0, 3: 0, 4: 0}, desc: "", precio: null, cat: "", dep: ""}; };
+  for (const e of D.existencias) {
+    if (ESPECIAL.test(e.clave) || Number(e.existencia) <= 0) continue;
+    const r = m(e.clave); if (!r.desc) { r.desc = e.descripcion; r.cat = e.categoria; r.dep = e.departamento; }
+    if (e.suc === 1) { r.ced[e.clave] = (r.ced[e.clave] || 0) + Number(e.existencia); r.precio = r.precio ?? e.precio1; }
+    else r.tienda[e.suc] = (r.tienda[e.suc] || 0) + Number(e.existencia);
+  }
+  const destinoDe = {}; D.traspasos.forEach(t => destinoDe[t.suc + ":" + t.tra_id] = t.suc_des);
+  for (const d of D.trasDet) {
+    const des = destinoDe[d.suc + ":" + d.tra_id]; if (!des || d.borrado || ESPECIAL.test(d.clave)) continue;
+    m(d.clave).camino[des] = (m(d.clave).camino[des] || 0) + Number(d.cantidad);
+  }
+  const envios = {2: [], 3: [], 4: []}, regresar = [];
+  for (const r of Object.values(MOD)) {
+    const tc = Object.values(r.ced).reduce((a, b) => a + b, 0);
+    const total = tc + r.tienda[2] + r.tienda[3] + r.tienda[4] + r.camino[1] + r.camino[2] + r.camino[3] + r.camino[4];
+    if (total <= 0) continue;
+    if (tc === 0 && r.tienda[2] > 0) regresar.push({clave: Object.keys(r.ced)[0] || r.mod, mod: r.mod, desc: r.desc, piezas: r.tienda[2], precio: r.precio, cat: r.cat});
+    if (tc === 0) continue;
+    // CEDIS conserva su pieza de mejor calificación; lo demás es sobrante
+    const claves = Object.keys(r.ced);
+    const conserva = claves.sort((a, b) => rango(partes(a)[1]) - rango(partes(b)[1]) || r.ced[b] - r.ced[a])[0];
+    const libre = {...r.ced}; libre[conserva] -= 1; if (libre[conserva] <= 0) delete libre[conserva];
+    const toca = {3: total >= 2, 2: total >= 3, 4: total >= 4};
+    for (const des of [3, 2, 4]) {
+      const tiene = r.tienda[des] + r.camino[des] > 0;
+      if (!toca[des] || tiene || !Object.keys(libre).length) continue;
+      const c = Object.keys(libre).sort((a, b) => libre[b] - libre[a] || rango(partes(a)[1]) - rango(partes(b)[1]))[0];   // la calificación con más sobrante; empate: la mejor
+      envios[des].push({clave: c, mod: r.mod, grado: partes(c)[1], desc: r.desc, precio: r.precio, cat: r.cat, dep: r.dep, cedis: tc, total, conserva});
+      libre[c] -= 1; if (libre[c] <= 0) delete libre[c];
+    }
+  }
+  for (const k in envios) envios[k].sort((a, b) => (a.dep || "").localeCompare(b.dep || "") || a.clave.localeCompare(b.clave));
+  regresar.sort((a, b) => a.clave.localeCompare(b.clave));
+  return {envios, regresar, modelos: Object.keys(MOD).length, hora: new Date()};
+}
+const tipoDe = r => /bater|cargador/i.test((r.cat || "") + " " + (r.dep || "") + " " + (r.desc || "")) ? "bateria" : /accesor|consumible|disco|broca|punta|hoja|lija|cuchilla|ropa|guante|lente|malet|estuche|bolsa/i.test((r.cat || "") + " " + (r.dep || "")) ? "accesorio" : "herramienta";
+
+function pintarReparto() {
+  const R = D.reparto; if (!R) return;
+  const n = {3: R.envios[3].length, 2: R.envios[2].length, 4: R.envios[4].length, 0: R.regresar.length};
+  const val = k => (k === 0 ? R.regresar : R.envios[k]).reduce((a, e) => a + Number(e.precio || 0) * (e.piezas || 1), 0);
+  $("#cntEnviar").textContent = n[3] + n[2] + n[4]; $("#cntEnviar").classList.toggle("hidden", !(n[3] + n[2] + n[4]));
+  $("#destinos").innerHTML = [3, 2, 4].map(k => '<button data-d="' + k + '"' + (UI.destino === k ? ' class="sel"' : "") + '><div class="n">a ' + SUCS[k] + '</div><div class="t num">' + n[k] + '</div><div class="s">' + (n[k] === 1 ? "pieza" : "piezas") + " · " + pesos(val(k)) + '</div></button>').join("") +
+    '<button data-d="0"' + (UI.destino === 0 ? ' class="sel"' : "") + ' style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center"><span class="n">Denmor regresa a CEDIS (CEDIS ya no tiene el modelo)</span><span class="t num" style="font-size:22px">' + n[0] + '</span></button>';
+  $("#destinos").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { UI.destino = +b.dataset.d; pintarReparto(); }));
+  const base = UI.destino === 0 ? R.regresar : R.envios[UI.destino];
+  const tipos = {todo: "Todo", herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
+  $("#filtroEnviar").innerHTML = Object.entries(tipos).map(([k, v]) => '<button class="chip' + (UI.filtroTipo === k ? " sel" : "") + '" data-t="' + k + '">' + v + (k === "todo" ? "" : " · " + base.filter(e => tipoDe(e) === k).length) + '</button>').join("");
+  $("#filtroEnviar").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { UI.filtroTipo = b.dataset.t; pintarReparto(); }));
+  const lista = base.filter(e => UI.filtroTipo === "todo" || tipoDe(e) === UI.filtroTipo);
+  $("#reparto").innerHTML = lista.length ? lista.map(e => '<div class="renglon"><div><div class="k">' + esc(e.clave) + (e.grado ? "" : "") + '</div><div class="d">' + esc(e.desc || "") + '</div></div><div class="p num">' +
+    (UI.destino === 0 ? '<b>' + e.piezas + (e.piezas === 1 ? " pza" : " pzas") + '</b>en Denmor' : '<b>' + (e.precio ? pesos(e.precio) : "—") + '</b>CEDIS tiene ' + e.cedis + " de " + e.total) + '</div></div>').join("")
+    : '<div class="vacio">Nada que mandar aquí por ahora.</div>';
+  $("#repartoPie").textContent = "Calculado a las " + R.hora.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + " con las existencias de las 4 tiendas y lo que va en camino · " + R.modelos + " modelos · se recalcula cada " + (CADA_S_REPARTO / 60) + " min";
+}
+
+/* ---------------- traspasos en curso ---------------- */
+function pintarTraspasos() {
+  const hoy = new Date(hoyStr() + "T00:00:00");
+  const T = D.traspasos.map(t => ({...t, dias: Math.round((hoy - new Date(t.fecha + "T00:00:00")) / 86400000)})).sort((a, b) => b.dias - a.dias);
+  const pz = T.reduce((a, t) => a + Number(t.piezas || 0), 0);
+  $("#trasResumen").textContent = T.length ? T.length + " en camino · " + pz + " piezas" : "";
+  $("#cntTras").textContent = T.length; $("#cntTras").classList.toggle("hidden", !T.length);
+  $("#traspasos").innerHTML = T.length ? T.map(t => '<button class="tras' + (t.dias > 14 ? " viejo" : t.dias > 3 ? " tarde" : "") + '" data-suc="' + t.suc + '" data-id="' + t.tra_id + '"><div><div class="ruta">' + esc(SUCS[t.suc_ori] || t.alias_ori) +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>' + esc(SUCS[t.suc_des] || t.alias_des) + '</div><div class="f">folio ' + t.folio + " · " + Number(t.piezas || 0) + " pzas · salió el " + t.fecha + '</div></div><div class="dias num">' + t.dias + '<small>' + (t.dias === 1 ? "día" : "días") + '</small></div></button>').join("")
+    : '<div class="vacio">No hay traspasos en camino.</div>';
+  $("#traspasos").querySelectorAll(".tras").forEach(b => b.addEventListener("click", () => abrirTraspaso(+b.dataset.suc, +b.dataset.id)));
+}
+async function abrirTraspaso(suc, id) {
+  const t = D.traspasos.find(x => x.suc === suc && x.tra_id === id); if (!t) return;
+  abrirCajon("Folio " + t.folio, (SUCS[t.suc_ori] || t.alias_ori) + " → " + (SUCS[t.suc_des] || t.alias_des) + " · salió el " + t.fecha, '<div class="vacio">Cargando…</div>');
+  try {
+    const det = await q("sicar_traspaso_detalle", "select=clave,descripcion,cantidad,borrado&suc=eq." + suc + "&tra_id=eq." + id + "&order=orden");
+    $("#cajonCuerpo").innerHTML = '<div class="kv"><span class="k">Estado</span><span class="v">enviado, pendiente de recibir en ' + esc(SUCS[t.suc_des] || t.alias_des) + '</span></div><h4>Artículos</h4>' +
+      det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '"><div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + Number(d.cantidad) + ' pz</div></div>').join("") +
+      '<div class="kv"><span class="k">Piezas</span><span class="v total num">' + Number(t.piezas || 0) + '</span></div>';
+  } catch (e) { $("#cajonCuerpo").innerHTML = '<div class="aviso bad">' + esc(e.message) + '</div>'; }
+}
+
+/* ---------------- entradas (compras) de hoy en CEDIS ---------------- */
+function pintarEntradas() {
+  const C = D.compras.filter(c => c.status === 1 && !c.gasto);
+  const pz = C.reduce((a, c) => a + Number(c.piezas || 0), 0);
+  $("#entResumen").textContent = C.length ? C.length + (C.length === 1 ? " entrada · " : " entradas · ") + pz + " piezas" : "";
+  $("#entradas").innerHTML = C.length ? C.map(c => '<button class="fila" data-id="' + c.com_id + '"><div class="h num">' + hora(c.fecha) + '</div><div class="q"><div class="a">Entrada ' + (c.folio && c.folio !== "-" ? esc(c.folio) : c.com_id) + '</div><div class="b">' + c.renglones + (c.renglones === 1 ? " artículo" : " artículos") + '</div></div><div class="m num">' + Number(c.piezas || 0) + '<small>pzas</small></div></button>').join("")
+    : '<div class="vacio">Hoy no ha entrado mercancía a CEDIS.</div>';
+  $("#entradas").querySelectorAll(".fila").forEach(b => b.addEventListener("click", () => {
+    const c = D.compras.find(x => x.com_id === +b.dataset.id); const det = D.comprasDet.filter(d => d.com_id === c.com_id);
+    abrirCajon("Entrada " + (c.folio && c.folio !== "-" ? c.folio : c.com_id), "CEDIS · " + hora(c.fecha) + " · " + Number(c.piezas || 0) + " piezas",
+      '<h4>Artículos</h4>' + det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '"><div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + Number(d.cantidad) + ' pz</div></div>').join(""));
+  }));
+}
+
+/* ---------------- cajón ---------------- */
+function abrirCajon(titulo, sub, cuerpo) {
+  $("#cajonTitulo").textContent = titulo; $("#cajonSub").textContent = sub; $("#cajonCuerpo").innerHTML = cuerpo;
+  $("#velo").classList.remove("hidden"); requestAnimationFrame(() => { $("#velo").classList.add("abierto"); $("#cajon").classList.add("abierto"); });
+  $("#cajon").setAttribute("aria-hidden", "false");
+}
+function cerrarCajon() { $("#velo").classList.remove("abierto"); $("#cajon").classList.remove("abierto"); $("#cajon").setAttribute("aria-hidden", "true"); setTimeout(() => $("#velo").classList.add("hidden"), 200); }
+$("#velo").addEventListener("click", cerrarCajon); $("#btnCerrar").addEventListener("click", cerrarCajon);
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarCajon(); });
+
+iniciar();
+</script>
+</body>
+</html>
