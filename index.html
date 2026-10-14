@@ -127,6 +127,10 @@ main{max-width:1240px;margin:0 auto;padding:14px var(--gutter) 0}
 .sub{font-size:13px;color:var(--ink-3);margin:12px 2px 6px}
 
 /* enviar (reparto) */
+.pdfbtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:16px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:600 13px var(--body);cursor:pointer}
+.pdfbtn svg{width:15px;height:15px}
+.pdfbtn:hover{background:var(--accent);color:#fff}
+
 .destinos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .destinos button{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 8px;text-align:left}
 .destinos button.sel{border-color:var(--accent);background:var(--accent-soft)}
@@ -237,7 +241,7 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
   </section>
 
   <section class="panel" id="p-enviar">
-    <h2>Qué mandar <small>regla: CEDIS → CDMX → Denmor → Monterrey</small></h2>
+    <h2>Qué mandar <small>regla: CEDIS → CDMX → Denmor → Monterrey</small><button class="pdfbtn" id="btnPdf" type="button" title="Imprimir o guardar en PDF la lista del destino elegido, para que el almacén prepare el envío"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button></h2>
     <div class="destinos" id="destinos"></div>
     <div class="barra" id="filtroEnviar"></div>
     <div class="lista" id="reparto"></div>
@@ -544,6 +548,64 @@ function pintarReparto() {
     : '<div class="vacio">Nada que mandar aquí por ahora.</div>';
   $("#repartoPie").textContent = "Calculado a las " + R.hora.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + " con las existencias de las 4 tiendas y lo que va en camino · " + R.modelos + " modelos · se recalcula cada " + (CADA_S_REPARTO / 60) + " min";
 }
+
+
+/* ---------------- hoja de surtido (botón PDF): imprimir o guardar la lista del destino elegido ---------------- */
+function pdfReparto() {
+  const R = D.reparto; if (!R) { alert("Todavía no hay reparto calculado; espera unos segundos."); return; }
+  const base = UI.destino === 0 ? R.regresar : R.envios[UI.destino];
+  const lista = base.filter(e => UI.filtroTipo === "todo" || tipoDe(e) === UI.filtroTipo);
+  if (!lista.length) { alert("No hay nada en esta lista."); return; }
+  const destino = UI.destino === 0 ? "Denmor regresa a CEDIS" : "Envío a " + SUCS[UI.destino];
+  const piezas = lista.reduce((a, e) => a + (e.piezas || 1), 0);
+  const tipos = {herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
+  const filtroTxt = UI.filtroTipo === "todo" ? "" : " · solo " + tipos[UI.filtroTipo].toLowerCase();
+  const foto = clave => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || "");
+    const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
+    return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
+  let cuerpo = "", nro = 0;
+  for (const t of (UI.filtroTipo === "todo" ? Object.keys(tipos) : [UI.filtroTipo])) {
+    const del = lista.filter(e => tipoDe(e) === t);
+    if (!del.length) continue;
+    if (UI.filtroTipo === "todo") cuerpo += '<tr class="grupo"><td colspan="5">' + tipos[t] + " · " + del.length + (del.length === 1 ? " renglón" : " renglones") + "</td></tr>";
+    for (const e of del) { nro++;
+      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(e.clave) + '</td><td><div class="k num">' + esc(e.clave) + '</div><div class="d">' + esc(e.desc || "") + "</div></td>" +
+        '<td class="pz num">' + (e.piezas || 1) + "</td><td><span class=\"chk\"></span></td></tr>";
+    }
+  }
+  const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
+  const html = '<!doctype html><html lang="es"><head><meta charset="utf-8"><title>' + esc(destino.replace("Envío a", "Envio")) + " · " + ff.replace(/[\/:]/g, ".") + ' · MAKMEX</title><style>' +
+    "body{font:14px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}" +
+    "h1{font-size:22px;margin:0}h1 small{font-weight:400;font-size:13px;color:#777;display:block;margin-top:2px}" +
+    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:4px}" +
+    ".logo{font-weight:800;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px;white-space:nowrap}" +
+    "table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #ddd;padding:5px 7px;vertical-align:middle}" +
+    "tr.grupo td{background:#f2efe9;font-weight:700;font-size:13px;padding:7px;border-bottom:1.5px solid #bbb}" +
+    ".n{color:#999;width:26px;text-align:right}.f{width:48px}.f img{width:44px;height:44px;object-fit:contain;display:block}" +
+    ".k{font-weight:700}.d{font-size:12.5px;color:#555}.pz{text-align:center;font-weight:700;width:46px}" +
+    ".chk{display:block;width:20px;height:20px;border:2px solid #444;border-radius:4px;margin:0 auto}td:last-child{width:40px}" +
+    ".num{font-variant-numeric:tabular-nums}" +
+    ".pie{display:flex;gap:40px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;font-size:13px;color:#555}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}" +
+    "@media print{.boton{display:none}body{margin:0}}" +
+    "tr{break-inside:avoid}" +
+    '</style></head><body>' +
+    '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>' + esc(destino) + "<small>Hoja de surtido para el almacén · lista calculada a las " +
+    R.hora.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + " · impresa el " + ff + filtroTxt + "</small></h1><span class=\"logo\">MAKMEX</span></div>" +
+    '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + nro + (nro === 1 ? " renglón" : " renglones") + " · " + piezas + (piezas === 1 ? " pieza" : " piezas") + ".</b> Marca la casilla al apartar cada pieza. La clave trae la calificación exacta que se manda.</p>" +
+    "<table>" + cuerpo + "</table>" +
+    '<div class="pie"><div>Preparó (nombre y firma)</div><div>Revisó / empacó</div><div>Fecha y hora de salida</div></div>' +
+    "</body></html>";
+  // la hoja se abre como documento propio (blob); al terminar de cargar las fotos se abre el diálogo de imprimir
+  const abre = html.replace("</body>", '<script>addEventListener("load",()=>{const im=[...document.images];let f=im.filter(i=>!i.complete).length;const go=()=>{try{focus();print();}catch(e){}};if(!f)setTimeout(go,350);else{let ya=false;const fin=()=>{if(ya)return;ya=true;setTimeout(go,350);};const una=()=>{if(--f<=0)fin();};im.forEach(i=>{if(i.complete)una();else{i.addEventListener("load",una);i.addEventListener("error",una);}});setTimeout(fin,4000);}});<\/script></body>');
+  const url = URL.createObjectURL(new Blob([abre], {type: "text/html"}));
+  const w = window.open(url, "_blank");
+  if (!w) { URL.revokeObjectURL(url); alert("El navegador bloqueó la ventana de la lista. Permite las ventanas emergentes de tablero.makmex.com y vuelve a intentar."); return; }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+document.getElementById("btnPdf").addEventListener("click", pdfReparto);
 
 /* ---------------- traspasos en curso ---------------- */
 function pintarTraspasos() {
