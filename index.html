@@ -127,6 +127,11 @@ main{max-width:1240px;margin:0 auto;padding:14px var(--gutter) 0}
 .sub{font-size:13px;color:var(--ink-3);margin:12px 2px 6px}
 
 /* enviar (reparto) */
+#reglaOrden .rchip{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}
+#reglaOrden b{font-weight:600;color:var(--ink-2)}
+#reglaOrden .rchip button{border:0;background:transparent;color:var(--accent);font-size:11px;cursor:pointer;padding:2px 3px;line-height:1}
+#reglaOrden .rchip button:disabled{opacity:.18;cursor:default}
+#reglaOrden .rdef{border:0;background:transparent;color:var(--ink-3);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;padding:0 2px}
 .pdfbtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 13px;border-radius:16px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font:600 13px var(--body);cursor:pointer}
 .pdfbtn svg{width:15px;height:15px}
 .pdfbtn:hover{background:var(--accent);color:#fff}
@@ -241,7 +246,7 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
   </section>
 
   <section class="panel" id="p-enviar">
-    <h2>Qué mandar <small>regla: CEDIS → CDMX → Denmor → Monterrey</small><button class="pdfbtn" id="btnPdf" type="button" title="Imprimir o guardar en PDF la lista del destino elegido, para que el almacén prepare el envío"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button></h2>
+    <h2>Qué mandar <small id="reglaOrden"></small><button class="pdfbtn" id="btnPdf" type="button" title="Imprimir o guardar en PDF la lista del destino elegido, para que el almacén prepare el envío"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button></h2>
     <div class="destinos" id="destinos"></div>
     <div class="barra" id="filtroEnviar"></div>
     <div class="lista" id="reparto"></div>
@@ -282,7 +287,6 @@ const CFG = window.TABLERO_CONFIG || {};
 const URL_BASE = (CFG.url || "").replace(/\/$/, "");
 const LLAVE = CFG.llave || "";
 const SUCS = {1: "CEDIS", 2: "Denmor", 3: "CDMX", 4: "Monterrey"};
-const ORDEN_REPARTO = [1, 3, 2, 4];                      // prioridad de la regla: CEDIS, CDMX, Denmor, Monterrey
 const GRADOS = ["AA", "A", "B", "C", "D", "E", "F"];
 const ESPECIAL = /-(DR|DEF|INC|BR|ER)$/i;                // piezas dañadas, incompletas o por revisar: no entran al reparto
 const CADA_S = 30, CADA_S_REPARTO = 120, TARDE_MIN = 6, CAIDO_MIN = 15;
@@ -484,6 +488,31 @@ async function abrirVenta(suc, id) {
 }
 
 /* ---------------- regla de reparto ---------------- */
+/* ---------------- orden de la regla de reparto (ajustable; se guarda en este navegador) ---------------- */
+const ORDEN_BASE = [3, 2, 4];                 // CEDIS → CDMX → Denmor → Monterrey
+let ORDEN_REPARTO = ORDEN_BASE.slice();
+try { const o = JSON.parse(localStorage.getItem("ordenReparto") || "[]");
+  if (Array.isArray(o) && o.length === 3 && [...o].sort().join() === "2,3,4") ORDEN_REPARTO = o; } catch (e) {}
+function pintarRegla() {
+  const el = document.getElementById("reglaOrden"); if (!el) return;
+  el.innerHTML = "regla: <b>CEDIS</b>" + ORDEN_REPARTO.map((s, i) =>
+    ' → <span class="rchip"><button data-mv="' + i + '" data-dir="-1"' + (i === 0 ? " disabled" : "") + ' title="Recibe antes" aria-label="Mover ' + SUCS[s] + ' antes">◀</button><b>' + SUCS[s] + "</b>" +
+    '<button data-mv="' + i + '" data-dir="1"' + (i === 2 ? " disabled" : "") + ' title="Recibe después" aria-label="Mover ' + SUCS[s] + ' después">▶</button></span>').join("") +
+    (ORDEN_REPARTO.join() === ORDEN_BASE.join() ? "" : ' <button class="rdef" id="reglaDef" title="Regresar al orden original">(orden original)</button>');
+  el.querySelectorAll("[data-mv]").forEach(b => b.addEventListener("click", () => {
+    const i = +b.dataset.mv, j = i + (+b.dataset.dir); if (j < 0 || j > 2) return;
+    [ORDEN_REPARTO[i], ORDEN_REPARTO[j]] = [ORDEN_REPARTO[j], ORDEN_REPARTO[i]];
+    guardaRegla();
+  }));
+  const d = document.getElementById("reglaDef"); if (d) d.addEventListener("click", () => { ORDEN_REPARTO = ORDEN_BASE.slice(); guardaRegla(); });
+}
+function guardaRegla() {
+  try { localStorage.setItem("ordenReparto", JSON.stringify(ORDEN_REPARTO)); } catch (e) {}
+  pintarRegla();
+  if (D.existencias.length) { D.reparto = calcularReparto(); pintarReparto(); }
+}
+pintarRegla();
+
 function partes(clave) {
   const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || "");
   return m ? [m[1], m[2].toUpperCase()] : [clave, ""];
@@ -515,8 +544,8 @@ function calcularReparto() {
     const claves = Object.keys(r.ced);
     const conserva = claves.sort((a, b) => rango(partes(a)[1]) - rango(partes(b)[1]) || r.ced[b] - r.ced[a])[0];
     const libre = {...r.ced}; libre[conserva] -= 1; if (libre[conserva] <= 0) delete libre[conserva];
-    const toca = {3: total >= 2, 2: total >= 3, 4: total >= 4};
-    for (const des of [3, 2, 4]) {
+    const toca = {}; ORDEN_REPARTO.forEach((des, ix) => toca[des] = total >= 2 + ix);
+    for (const des of ORDEN_REPARTO) {
       const tiene = r.tienda[des] + r.camino[des] > 0;
       if (!toca[des] || tiene || !Object.keys(libre).length) continue;
       const c = Object.keys(libre).sort((a, b) => libre[b] - libre[a] || rango(partes(a)[1]) - rango(partes(b)[1]))[0];   // la calificación con más sobrante; empate: la mejor
@@ -535,7 +564,7 @@ function pintarReparto() {
   const n = {3: R.envios[3].length, 2: R.envios[2].length, 4: R.envios[4].length, 0: R.regresar.length};
   const val = k => (k === 0 ? R.regresar : R.envios[k]).reduce((a, e) => a + Number(e.precio || 0) * (e.piezas || 1), 0);
   $("#cntEnviar").textContent = n[3] + n[2] + n[4]; $("#cntEnviar").classList.toggle("hidden", !(n[3] + n[2] + n[4]));
-  $("#destinos").innerHTML = [3, 2, 4].map(k => '<button data-d="' + k + '"' + (UI.destino === k ? ' class="sel"' : "") + '><div class="n">a ' + SUCS[k] + '</div><div class="t num">' + n[k] + '</div><div class="s">' + (n[k] === 1 ? "pieza" : "piezas") + " · " + pesos(val(k)) + '</div></button>').join("") +
+  $("#destinos").innerHTML = ORDEN_REPARTO.map(k => '<button data-d="' + k + '"' + (UI.destino === k ? ' class="sel"' : "") + '><div class="n">a ' + SUCS[k] + '</div><div class="t num">' + n[k] + '</div><div class="s">' + (n[k] === 1 ? "pieza" : "piezas") + " · " + pesos(val(k)) + '</div></button>').join("") +
     '<button data-d="0"' + (UI.destino === 0 ? ' class="sel"' : "") + ' style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center"><span class="n">Denmor regresa a CEDIS (CEDIS ya no tiene el modelo)</span><span class="t num" style="font-size:22px">' + n[0] + '</span></button>';
   $("#destinos").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { UI.destino = +b.dataset.d; pintarReparto(); }));
   const base = UI.destino === 0 ? R.regresar : R.envios[UI.destino];
