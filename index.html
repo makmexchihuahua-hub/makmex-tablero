@@ -274,7 +274,7 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
 
 <div id="velo" class="hidden"></div>
 <aside id="cajon" aria-hidden="true">
-  <div class="cab"><div><h3 id="cajonTitulo"></h3><div class="sub" id="cajonSub"></div></div><button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button></div>
+  <div class="cab"><div><h3 id="cajonTitulo"></h3><div class="sub" id="cajonSub"></div></div><button class="pdfbtn hidden" id="btnPdfCajon" type="button" title="Imprimir o guardar en PDF el contenido del traspaso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button><button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button></div>
   <div class="cuerpo" id="cajonCuerpo"></div>
 </aside>
 
@@ -656,8 +656,56 @@ async function abrirTraspaso(suc, id) {
     $("#cajonCuerpo").innerHTML = '<div class="kv"><span class="k">Estado</span><span class="v">enviado, pendiente de recibir en ' + esc(SUCS[t.suc_des] || t.alias_des) + '</span></div><h4>Artículos</h4>' +
       det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '">' + fotoHtml(d.clave) + '<div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + Number(d.cantidad) + ' pz</div></div>').join("") +
       '<div class="kv"><span class="k">Piezas</span><span class="v total num">' + Number(t.piezas || 0) + '</span></div>';
+    pdfCajon = () => pdfTraspaso(t, det); $("#btnPdfCajon").classList.remove("hidden");
   } catch (e) { $("#cajonCuerpo").innerHTML = '<div class="aviso bad">' + esc(e.message) + '</div>'; }
 }
+
+
+/* ---------------- hoja del traspaso (botón PDF del cajón) ---------------- */
+let pdfCajon = null;
+function abreHoja(html) {
+  const url = URL.createObjectURL(new Blob([html.replace("</body>", '<script>addEventListener("load",()=>{const im=[...document.images];let f=im.filter(i=>!i.complete).length;const go=()=>{try{focus();print();}catch(e){}};if(!f)setTimeout(go,350);else{let ya=false;const fin=()=>{if(ya)return;ya=true;setTimeout(go,350);};const una=()=>{if(--f<=0)fin();};im.forEach(i=>{if(i.complete)una();else{i.addEventListener("load",una);i.addEventListener("error",una);}});setTimeout(fin,4000);}});<\/script></body>')], {type: "text/html"}));
+  const w = window.open(url, "_blank");
+  if (!w) { URL.revokeObjectURL(url); alert("El navegador bloqueó la ventana de la hoja. Permite las ventanas emergentes de tablero.makmex.com y vuelve a intentar."); return; }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+function pdfTraspaso(t, det) {
+  const filas = det.filter(d => !d.borrado);
+  if (!filas.length) { alert("Este traspaso no tiene artículos vigentes."); return; }
+  const ruta = (SUCS[t.suc_ori] || t.alias_ori) + " → " + (SUCS[t.suc_des] || t.alias_des);
+  const piezas = filas.reduce((a, d) => a + Number(d.cantidad || 0), 0);
+  const foto = clave => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || "");
+    const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
+    return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
+  const cuerpo = filas.map((d, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(d.clave) +
+    '</td><td><div class="k num">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion || "") + '</div></td>' +
+    '<td class="pz num">' + Number(d.cantidad) + '</td><td><span class="chk"></span></td></tr>').join("");
+  const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
+  abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Traspaso ' + t.folio + " " + esc(ruta).replace(/ → /g, "-") + ' · MAKMEX</title><style>' +
+    "body{font:14px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}" +
+    "h1{font-size:22px;margin:0}h1 small{font-weight:400;font-size:13px;color:#777;display:block;margin-top:2px}" +
+    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:4px}" +
+    ".logo{font-weight:800;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px;white-space:nowrap}" +
+    "table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #ddd;padding:5px 7px;vertical-align:middle}" +
+    ".n{color:#999;width:26px;text-align:right}.f{width:48px}.f img{width:44px;height:44px;object-fit:contain;display:block}" +
+    ".k{font-weight:700}.d{font-size:12.5px;color:#555}.pz{text-align:center;font-weight:700;width:46px}" +
+    ".chk{display:block;width:20px;height:20px;border:2px solid #444;border-radius:4px;margin:0 auto}td:last-child{width:40px}" +
+    ".num{font-variant-numeric:tabular-nums}" +
+    ".pie{display:flex;gap:40px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;font-size:13px;color:#555}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}" +
+    "@media print{.boton{display:none}body{margin:0}}" +
+    "tr{break-inside:avoid}" +
+    '</style></head><body>' +
+    '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>Traspaso · folio ' + t.folio + "<small>" + esc(ruta) + " · salió el " + esc(t.fecha) +
+    " · enviado, pendiente de recibir en " + esc(SUCS[t.suc_des] || t.alias_des) + " · hoja impresa el " + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
+    '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + filas.length + (filas.length === 1 ? " renglón" : " renglones") + " · " + piezas + (piezas === 1 ? " pieza" : " piezas") + ".</b> Marca la casilla al recibir cada artículo; la clave trae la calificación exacta.</p>" +
+    "<table>" + cuerpo + "</table>" +
+    '<div class="kv" style="text-align:right;font-weight:700;padding:8px 7px">Total: ' + piezas + (piezas === 1 ? " pieza" : " piezas") + "</div>" +
+    '<div class="pie"><div>Envió (' + esc(SUCS[t.suc_ori] || t.alias_ori) + ')</div><div>Recibió (nombre y firma)</div><div>Fecha y hora de recepción</div></div>' +
+    "</body></html>");
+}
+document.getElementById("btnPdfCajon").addEventListener("click", () => { if (pdfCajon) pdfCajon(); });
 
 /* ---------------- entradas (compras) de hoy en CEDIS ---------------- */
 function pintarEntradas() {
@@ -675,6 +723,7 @@ function pintarEntradas() {
 
 /* ---------------- cajón ---------------- */
 function abrirCajon(titulo, sub, cuerpo) {
+  pdfCajon = null; $("#btnPdfCajon").classList.add("hidden");
   $("#cajonTitulo").textContent = titulo; $("#cajonSub").textContent = sub; $("#cajonCuerpo").innerHTML = cuerpo;
   $("#velo").classList.remove("hidden"); requestAnimationFrame(() => { $("#velo").classList.add("abierto"); $("#cajon").classList.add("abierto"); });
   $("#cajon").setAttribute("aria-hidden", "false");
