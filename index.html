@@ -195,7 +195,7 @@ main{max-width:1240px;margin:0 auto;padding:14px var(--gutter) 0}
 h4{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.3px;color:var(--ink-2);margin:16px 0 4px}
 
 /* navegación móvil */
-nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:10}
+nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:10}
 nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;color:var(--ink-3);position:relative}
 nav button.sel{color:var(--accent)}
 nav button svg{width:22px;height:22px}
@@ -204,6 +204,79 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
   nav#nav{display:none}
   .lista{max-height:72vh;overflow:auto;overscroll-behavior:contain}
 }
+
+/* ---------- v5: quién, PIN, dinero, demanda ---------- */
+.top .meta{min-width:0;flex-wrap:wrap;justify-content:flex-end}
+.quien{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 8px;color:var(--ink-2);font-size:12.5px;max-width:38vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:460px){.top .marca{font-size:22px}.top .marca span{display:none}.top .meta{flex-wrap:nowrap}.quien{max-width:44vw}#reloj{display:none}}
+.fu{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.quien b{color:var(--ink);font-weight:600}
+.quien .pt{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.quien.sin .pt{background:var(--warn)}
+#pinVelo{position:fixed;inset:0;z-index:30;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);display:grid;place-items:center;padding:var(--gutter)}
+#pinCaja{width:min(340px,100%);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px 20px 18px;text-align:center}
+#pinCaja h3{margin:0;font-family:var(--display);font-size:24px;font-weight:600}
+#pinCaja p{color:var(--ink-3);font-size:13px;margin:4px 0 14px}
+.puntos{display:flex;justify-content:center;gap:14px;margin:6px 0 16px;height:18px}
+.puntos i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-2);display:block}
+.puntos i.on{background:var(--accent);border-color:var(--accent)}
+.teclas{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.teclas button{height:56px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);font-family:var(--display);font-size:26px;font-weight:600;color:var(--ink)}
+.teclas button:active{background:var(--accent-soft);border-color:var(--accent)}
+.teclas button.soft{font-family:var(--body);font-size:13px;font-weight:500;color:var(--ink-2)}
+#pinError{min-height:20px;color:var(--bad);font-size:13px;margin-top:10px}
+#pinVer{margin-top:12px;color:var(--ink-3);font-size:13px;text-decoration:underline}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav) + 14px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:10px;font-size:13.5px;z-index:40;max-width:min(92vw,520px);box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:opacity .2s}
+.toast.on{opacity:1}
+.toast.mal{background:var(--bad);color:#fff}
+@media (min-width:1000px){.toast{bottom:18px}}
+
+.resumen{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+@media (min-width:600px){.resumen{grid-template-columns:repeat(4,1fr)}}
+.tile .t.chico{font-size:26px}
+.tile .neg{color:var(--bad);font-weight:600}
+.panel h3{font-family:var(--display);font-weight:600;font-size:18px;margin:18px 0 8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.panel h3 small{font-family:var(--body);font-weight:400;font-size:12.5px;color:var(--ink-3)}
+.busca{display:flex;gap:8px;align-items:center;margin:8px 0}
+.busca input{flex:1;padding:9px 12px;font-size:15px}
+.dfila{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;padding:9px 12px;border-top:1px solid var(--line);align-items:center}
+.dfila:first-child{border-top:0}
+.dfila .k{font-family:var(--display);font-size:16px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dfila .d{color:var(--ink-3);font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dfila .st{font-size:12px;color:var(--ink-2);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.dfila .st span{background:var(--surface-2);border-radius:5px;padding:1px 6px}
+.dfila .st span.cero{color:var(--ink-3)}
+.dfila .p{text-align:right;white-space:nowrap}
+.dfila .p b{display:block;font-family:var(--display);font-size:18px}
+.dfila .p small{display:block;font-size:11.5px;color:var(--ink-3)}
+.dfila .acc{grid-column:1 / -1;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.mini-btn{border:1px solid var(--line-2);border-radius:999px;padding:4px 11px;font-size:12.5px;color:var(--ink-2);background:var(--surface)}
+.mini-btn.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.mini-btn.ok{border-color:var(--ok);color:var(--ok)}
+.mini-btn:disabled{opacity:.45}
+.etq.liq{background:var(--accent-soft);color:var(--accent)}
+.etq.pedido{background:var(--ok-soft);color:var(--ok)}
+.etq.camino{background:var(--warn-soft);color:var(--warn)}
+.ver-mas{width:100%;padding:12px;color:var(--accent);font-weight:600;border-top:1px solid var(--line)}
+.bit{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;padding:8px 12px;border-top:1px solid var(--line);font-size:13px;align-items:center}
+.bit:first-child{border-top:0}
+.bit .h{font-family:var(--display);font-size:15px;color:var(--ink-3);white-space:nowrap}
+.bit .q{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bit .q b{font-weight:600}
+.bit .t{font-size:11.5px;background:var(--surface-2);border-radius:5px;padding:1px 6px;color:var(--ink-2);white-space:nowrap}
+.bit .t.mal{background:var(--bad-soft);color:var(--bad)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+.form label{margin:0}
+.form .full{grid-column:1 / -1}
+.form select{width:100%;background:var(--surface-2);border:1px solid var(--line-2);border-radius:8px;color:var(--ink);padding:10px 12px;font:inherit;font-size:15px}
+.form .btn{margin-top:4px;width:auto}
+details.sec{margin-top:16px}
+details.sec summary{cursor:pointer;font-family:var(--display);font-weight:600;font-size:18px;list-style:none;display:flex;align-items:center;gap:8px}
+details.sec summary::before{content:"▸";color:var(--ink-3);font-size:14px}
+details.sec[open] summary::before{content:"▾"}
+details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5px;color:var(--ink-3)}
+.dem{margin:0 0 12px}
+.dem .lista{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
 </style>
 </head>
 <body>
@@ -228,6 +301,7 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
     <div class="meta">
       <span id="reloj" class="num"></span>
       <button id="btnTema" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+      <button id="quien" class="quien hidden" title="Quién está usando el tablero"></button>
       <button id="btnSalir">Salir</button>
     </div>
   </div>
@@ -248,6 +322,7 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
   <section class="panel" id="p-enviar">
     <h2>Qué mandar <small id="reglaOrden"></small><button class="pdfbtn" id="btnPdf" type="button" title="Imprimir o guardar en PDF la lista del destino elegido, para que el almacén prepare el envío"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button></h2>
     <div class="destinos" id="destinos"></div>
+    <div id="demanda"></div>
     <div class="barra" id="filtroEnviar"></div>
     <div class="lista" id="reparto"></div>
     <div class="sub" id="repartoPie"></div>
@@ -256,6 +331,39 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
   <section class="panel" id="p-traspasos">
     <h2>Traspasos en curso <small id="trasResumen"></small></h2>
     <div class="lista" id="traspasos"></div>
+  </section>
+
+  <section class="panel ancho" id="p-dinero">
+    <h2>Dinero <small id="dineroSub"></small><button class="pdfbtn" id="btnPdfLiq" type="button" title="Imprimir o guardar en PDF la lista de liquidación a precio distribuidor"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>Liquidación</button></h2>
+    <div class="resumen" id="valorTiendas"></div>
+    <div class="sub" id="dineroResumen"></div>
+    <h3>Sin venta <small id="dineroCuenta"></small></h3>
+    <div class="barra" id="fSuc"></div>
+    <div class="barra" id="fDias"></div>
+    <div class="barra" id="fTipo"></div>
+    <div class="busca"><input id="dBusca" type="search" placeholder="Buscar modelo o descripción" autocomplete="off"></div>
+    <div class="lista" id="dormido"></div>
+    <div class="sub" id="dormidoPie"></div>
+    <details class="sec" id="secLiq"><summary>En liquidación <small id="liqCuenta"></small></summary><div class="lista" id="liquidacion" style="margin-top:8px"></div></details>
+    <details class="sec" id="secCompras"><summary>Compras de 90 días sin venta <small id="comprasCuenta"></small></summary><div class="lista" id="comprasSinVenta" style="margin-top:8px"></div></details>
+    <details class="sec" id="secBit"><summary>Bitácora <small id="bitCuenta"></small></summary><div class="barra" id="fBit" style="margin-top:8px"></div><div class="lista" id="bitacora"></div></details>
+    <details class="sec hidden" id="secPersonas"><summary>Personas y PIN <small>solo el dueño</small></summary>
+      <div class="lista" id="personas" style="margin-top:8px"></div>
+      <form class="form" id="formEmp" style="margin-top:10px" autocomplete="off">
+        <label>Tienda<select id="eSuc"><option value="1">CEDIS</option><option value="2">Denmor</option><option value="3">CDMX</option><option value="4">Monterrey</option></select></label>
+        <label>Puesto<select id="eRol"><option value="empleado">Empleado</option><option value="encargado">Encargado</option></select></label>
+        <label class="full">Nombre<input id="eNombre" required maxlength="40"></label>
+        <label>PIN (4 dígitos)<input id="ePin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label>
+        <div><button class="btn" type="submit">Dar de alta</button></div>
+      </form>
+      <h3 style="margin-top:14px">Cuentas de tienda <small>el correo con el que entra cada tienda al tablero</small></h3>
+      <div class="lista" id="cuentas"></div>
+      <form class="form" id="formCuenta" style="margin-top:10px" autocomplete="off">
+        <label class="full">Correo (ya creado en Supabase → Authentication → Users)<input id="cCorreo" type="email" required></label>
+        <label>Tienda<select id="cSuc"><option value="1">CEDIS</option><option value="2">Denmor</option><option value="3">CDMX</option><option value="4">Monterrey</option></select></label>
+        <div><button class="btn" type="submit">Asignar</button></div>
+      </form>
+    </details>
   </section>
 
   <section class="panel" id="p-entradas">
@@ -269,9 +377,26 @@ nav button .cnt{position:absolute;top:8px;right:calc(50% - 24px);background:var(
   <button data-p="enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>Enviar<span class="cnt hidden" id="cntEnviar"></span></button>
   <button data-p="traspasos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h13l-3-3m3 3-3 3M20 16H7l3-3m-3 3 3 3"/></svg>Traspasos<span class="cnt hidden" id="cntTras"></span></button>
   <button data-p="entradas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>Entradas</button>
+  <button data-p="dinero"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M8 7.5h6a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h7"/></svg>Dinero<span class="cnt hidden" id="cntDinero"></span></button>
 </nav>
 </div>
 
+<div id="pinVelo" class="hidden">
+  <div id="pinCaja" role="dialog" aria-modal="true" aria-labelledby="pinTitulo">
+    <h3 id="pinTitulo">¿Quién eres?</h3>
+    <p id="pinSub">Pon tu PIN de 4 dígitos</p>
+    <div class="puntos" id="pinPuntos"><i></i><i></i><i></i><i></i></div>
+    <div class="teclas" id="teclas">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" class="soft" data-k="borrar">borrar</button><button type="button" data-k="0">0</button><button type="button" class="soft" data-k="salir">salir</button>
+    </div>
+    <div id="pinError" aria-live="polite"></div>
+    <button type="button" id="pinVer">Solo ver, sin PIN</button>
+  </div>
+</div>
+<div id="toast" class="toast" aria-live="polite"></div>
 <div id="velo" class="hidden"></div>
 <aside id="cajon" aria-hidden="true">
   <div class="cab"><div><h3 id="cajonTitulo"></h3><div class="sub" id="cajonSub"></div></div><button class="pdfbtn hidden" id="btnPdfCajon" type="button" title="Imprimir o guardar en PDF el contenido del traspaso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button><button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button></div>
@@ -289,7 +414,7 @@ const LLAVE = CFG.llave || "";
 const SUCS = {1: "CEDIS", 2: "Denmor", 3: "CDMX", 4: "Monterrey"};
 const GRADOS = ["AA", "A", "B", "C", "D", "E", "F"];
 const ESPECIAL = /-(DR|DEF|INC|BR|ER)$/i;                // piezas dañadas, incompletas o por revisar: no entran al reparto
-const CADA_S = 30, CADA_S_REPARTO = 120, TARDE_MIN = 6, CAIDO_MIN = 15;
+const CADA_S = 30, CADA_S_REPARTO = 120, CADA_S_DINERO = 600, TARDE_MIN = 6, CAIDO_MIN = 15, CANDADO_MIN = 15;
 const $ = s => document.querySelector(s);
 const pesos = n => "$" + Math.round(n || 0).toLocaleString("es-MX");
 const pesosC = n => "$" + (Number(n || 0)).toLocaleString("es-MX", {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -299,14 +424,16 @@ const nombreCliente = n => (!n || /^p[úu]blico\s+en\s+general$/i.test(n.trim())
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 let sb = null, sesion = null, temporizador = null, ultimoReparto = 0, sinCliente = false;
 const FOTOS = {clave: {}, modelo: {}, cargado: 0};
+const PRECIOS = {};              // precios de makmex.com por clave: {p1, p2 (distribuidor), p3 (volumen)}
 async function cargarFotos() {
   if (Date.now() - FOTOS.cargado < 3600e3) return;
   try {
     const r = await fetch("https://makmex.com/core.json", {cache: "no-cache"});
     if (!r.ok) return;
     const c = await r.json();
-    const i = {sku: c.cols.indexOf("sku"), model: c.cols.indexOf("model"), img: c.cols.indexOf("img")};
+    const i = {sku: c.cols.indexOf("sku"), model: c.cols.indexOf("model"), img: c.cols.indexOf("img"), p1: c.cols.indexOf("p1"), p2: c.cols.indexOf("p2"), p3: c.cols.indexOf("p3")};
     for (const f of c.rows) {
+      if (i.p2 >= 0 && f[i.p1] > 0) PRECIOS[f[i.sku]] = {p1: f[i.p1], p2: f[i.p2], p3: f[i.p3]};
       if (!f[i.img]) continue;
       FOTOS.clave[f[i.sku]] = f[i.img];
       if (!FOTOS.modelo[f[i.model]]) FOTOS.modelo[f[i.model]] = f[i.img];
@@ -321,8 +448,11 @@ function fotoHtml(clave) {
   return id ? '<img class="mini" loading="lazy" alt="" src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.classList.add(\'vacia\')">'
             : '<span class="mini vacia"></span>';
 }
-const D = {estado: [], ventasHoy: [], ventasMes: [], clientes: {}, traspasos: [], existencias: [], trasDet: [], compras: [], comprasDet: [], reparto: null};
-const UI = {panel: "ventas", filtroSuc: 0, destino: 3, filtroTipo: "todo", tema: localStorage.getItem("tema") || ""};
+const D = {estado: [], ventasHoy: [], ventasMes: [], clientes: {}, traspasos: [], existencias: [], trasDet: [], compras: [], comprasDet: [], reparto: null,
+           demanda: [], liq: new Map(), valor: [], invModelo: [], comprasSinVenta: [], bitacora: [], empleados: [], cuentas: [], pedidos: new Map(), dineroCargado: 0, avisoV5: ""};
+const UI = {panel: "ventas", filtroSuc: 0, destino: 3, filtroTipo: "todo", tema: localStorage.getItem("tema") || "",
+            dSuc: 0, dDias: 180, dDonde: "global", dTipo: "todo", dBusca: "", dMax: 100};
+let CUENTA = null, EMP = null, ultimoToque = Date.now();   // CUENTA: fila de «cuentas» (dueño o tienda); EMP: persona con PIN vigente
 
 /* ---------------- acceso a la base central (REST de PostgREST, con el token de la sesión) ---------------- */
 async function q(tabla, params, opciones = {}) {
@@ -362,8 +492,9 @@ $("#formLogin").addEventListener("submit", async ev => {
 $("#btnSalir").addEventListener("click", async () => { await sb.auth.signOut(); mostrarLogin(); });
 
 /* ---------------- arranque y ciclo ---------------- */
-function arrancar() {
+async function arrancar() {
   $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+  await cargarCuenta();
   aplicarTema(); $("#fechaHoy").textContent = new Date().toLocaleDateString("es-MX", {weekday: "long", day: "numeric", month: "long"});
   reloj(); setInterval(reloj, 1000);
   cargarFotos();
@@ -397,7 +528,9 @@ async function refrescar(primera) {
       D.existencias = await q("sicar_existencia", "select=suc,clave,descripcion,existencia,precio1,categoria,departamento&existencia=gt.0&order=clave");
       D.trasDet = traspasos.length ? await q("sicar_traspaso_detalle", "select=suc,tra_id,clave,cantidad,borrado&tra_id=in." + enLista([...new Set(traspasos.map(t => t.tra_id))])) : [];
       D.reparto = calcularReparto(); ultimoReparto = Date.now();
+      try { await cargarDemanda(); } catch (e) { D.avisoV5 = D.avisoV5 || ("Reparto por demanda sin datos: " + e.message); }
     }
+    if (primera || Date.now() - D.dineroCargado > CADA_S_DINERO * 1000) { try { await cargarDinero(); } catch (e) { D.avisoV5 = D.avisoV5 || ("Pestaña Dinero sin datos (¿falta correr tablero_v5_bitacora.sql?): " + e.message); } }
     pintarTodo();
   } catch (e) {
     if (e.message === "sesion") { await sb.auth.signOut(); mostrarLogin(); return; }
@@ -423,7 +556,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { pintarEstado(); pintarVentas(); pintarReparto(); pintarTraspasos(); pintarEntradas(); }
+function pintarTodo() { pintarEstado(); pintarVentas(); pintarReparto(); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -441,6 +574,7 @@ function pintarEstado() {
   }
   $("#tiendas").innerHTML = html.join("");
   if (sinCliente) avisos.push("La base central todavía no tiene la columna de cliente: pega el base_central.sql nuevo en Supabase.");
+  if (D.avisoV5) avisos.push(esc(D.avisoV5));
   $("#avisos").innerHTML = avisos.map(a => '<div class="aviso">' + a + (/reportar|subido/.test(a) ? '. Revisa que su computadora esté prendida, con sesión abierta e internet.' : '') + '</div>').join("");
 }
 
@@ -562,11 +696,13 @@ const tipoDe = r => /bater|cargador/i.test((r.cat || "") + " " + (r.dep || "") +
 function pintarReparto() {
   const R = D.reparto; if (!R) return;
   const n = {3: R.envios[3].length, 2: R.envios[2].length, 4: R.envios[4].length, 0: R.regresar.length};
+  const nd = k => D.demanda.filter(x => x.suc === k && !(x.en_camino > 0)).length;
   const val = k => (k === 0 ? R.regresar : R.envios[k]).reduce((a, e) => a + Number(e.precio || 0) * (e.piezas || 1), 0);
   $("#cntEnviar").textContent = n[3] + n[2] + n[4]; $("#cntEnviar").classList.toggle("hidden", !(n[3] + n[2] + n[4]));
-  $("#destinos").innerHTML = ORDEN_REPARTO.map(k => '<button data-d="' + k + '"' + (UI.destino === k ? ' class="sel"' : "") + '><div class="n">a ' + SUCS[k] + '</div><div class="t num">' + n[k] + '</div><div class="s">' + (n[k] === 1 ? "pieza" : "piezas") + " · " + pesos(val(k)) + '</div></button>').join("") +
+  $("#destinos").innerHTML = ORDEN_REPARTO.map(k => '<button data-d="' + k + '"' + (UI.destino === k ? ' class="sel"' : "") + '><div class="n">a ' + SUCS[k] + '</div><div class="t num">' + n[k] + '</div><div class="s">' + (n[k] === 1 ? "pieza" : "piezas") + " · " + pesos(val(k)) + (nd(k) ? ' · <b>+' + nd(k) + ' por demanda</b>' : '') + '</div></button>').join("") +
     '<button data-d="0"' + (UI.destino === 0 ? ' class="sel"' : "") + ' style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center"><span class="n">Denmor regresa a CEDIS (CEDIS ya no tiene el modelo)</span><span class="t num" style="font-size:22px">' + n[0] + '</span></button>';
   $("#destinos").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { UI.destino = +b.dataset.d; pintarReparto(); }));
+  pintarDemanda();
   const base = UI.destino === 0 ? R.regresar : R.envios[UI.destino];
   const tipos = {todo: "Todo", herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
   $("#filtroEnviar").innerHTML = Object.entries(tipos).map(([k, v]) => '<button class="chip' + (UI.filtroTipo === k ? " sel" : "") + '" data-t="' + k + '">' + v + (k === "todo" ? "" : " · " + base.filter(e => tipoDe(e) === k).length) + '</button>').join("");
@@ -584,15 +720,23 @@ function pdfReparto() {
   const R = D.reparto; if (!R) { alert("Todavía no hay reparto calculado; espera unos segundos."); return; }
   const base = UI.destino === 0 ? R.regresar : R.envios[UI.destino];
   const lista = base.filter(e => UI.filtroTipo === "todo" || tipoDe(e) === UI.filtroTipo);
-  if (!lista.length) { alert("No hay nada en esta lista."); return; }
+  const demN = UI.destino === 0 ? 0 : D.demanda.filter(x => x.suc === UI.destino && x.fuente === 1 && !(x.en_camino > 0)).length;
+  if (!lista.length && !demN) { alert("No hay nada en esta lista."); return; }
   const destino = UI.destino === 0 ? "Denmor regresa a CEDIS" : "Envío a " + SUCS[UI.destino];
-  const piezas = lista.reduce((a, e) => a + (e.piezas || 1), 0);
+  const piezas = lista.reduce((a, e) => a + (e.piezas || 1), 0) + demN;
   const tipos = {herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
   const filtroTxt = UI.filtroTipo === "todo" ? "" : " · solo " + tipos[UI.filtroTipo].toLowerCase();
   const foto = clave => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || "");
     const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
   let cuerpo = "", nro = 0;
+  const dem = UI.destino === 0 ? [] : D.demanda.filter(x => x.suc === UI.destino && x.fuente === 1 && !(x.en_camino > 0));
+  if (dem.length) {
+    cuerpo += '<tr class="grupo"><td colspan="5">Lo que ' + SUCS[UI.destino] + ' vende y no tiene (de CEDIS, que conserva 1) · ' + dem.length + (dem.length === 1 ? ' renglón' : ' renglones') + '</td></tr>';
+    for (const e of dem) { nro++;
+      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(e.modelo) + '</td><td><div class="k num">' + esc(e.modelo) + '</div><div class="d">' + esc(e.descripcion || '') + ' · vendió ' + Number(e.pzas_180) + ' en 180 días</div></td><td class="pz num">1</td><td><span class="chk"></span></td></tr>';
+    }
+  }
   for (const t of (UI.filtroTipo === "todo" ? Object.keys(tipos) : [UI.filtroTipo])) {
     const del = lista.filter(e => tipoDe(e) === t);
     if (!del.length) continue;
@@ -622,7 +766,7 @@ function pdfReparto() {
     '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
     '<div class="enc"><h1>' + esc(destino) + "<small>Hoja de surtido para el almacén · lista calculada a las " +
     R.hora.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + " · impresa el " + ff + filtroTxt + "</small></h1><span class=\"logo\">MAKMEX</span></div>" +
-    '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + nro + (nro === 1 ? " renglón" : " renglones") + " · " + piezas + (piezas === 1 ? " pieza" : " piezas") + ".</b> Marca la casilla al apartar cada pieza. La clave trae la calificación exacta que se manda.</p>" +
+    '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + nro + (nro === 1 ? " renglón" : " renglones") + " · " + piezas + (piezas === 1 ? " pieza" : " piezas") + ".</b> Marca la casilla al apartar cada pieza. La clave trae la calificación exacta que se manda" + (demN ? "; en el bloque de demanda elige la mejor calificación disponible" : "") + ".</p>" +
     "<table>" + cuerpo + "</table>" +
     '<div class="pie"><div>Preparó (nombre y firma)</div><div>Revisó / empacó</div><div>Fecha y hora de salida</div></div>' +
     "</body></html>";
@@ -731,6 +875,302 @@ function abrirCajon(titulo, sub, cuerpo) {
 function cerrarCajon() { $("#velo").classList.remove("abierto"); $("#cajon").classList.remove("abierto"); $("#cajon").setAttribute("aria-hidden", "true"); setTimeout(() => $("#velo").classList.add("hidden"), 200); }
 $("#velo").addEventListener("click", cerrarCajon); $("#btnCerrar").addEventListener("click", cerrarCajon);
 document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarCajon(); });
+
+/* ============================================================================================
+   v5 · quién actúa (cuenta + PIN), bitácora, Dinero dormido y reparto por demanda
+   ============================================================================================ */
+async function rpc(fn, args) {
+  const r = await fetch(URL_BASE + "/rest/v1/rpc/" + fn, {method: "POST", headers: {apikey: LLAVE, Authorization: "Bearer " + (sesion ? sesion.access_token : LLAVE), "Content-Type": "application/json", Prefer: "return=representation"}, body: JSON.stringify(args || {})});
+  if (r.status === 401 || r.status === 403) throw new Error("sesion");
+  const txt = await r.text(); let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) { j = null; }
+  if (!r.ok) throw new Error((j && (j.message || j.hint)) || (fn + ": HTTP " + r.status));
+  return j;
+}
+function toast(m, mal) { const t = $("#toast"); t.textContent = m; t.classList.toggle("mal", !!mal); t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), mal ? 4200 : 2600); }
+const esDueno = () => CUENTA && CUENTA.rol === "dueno";
+const puedeMandar = () => esDueno() || (EMP && EMP.rol === "encargado");
+
+async function cargarCuenta() {
+  CUENTA = null; EMP = null;
+  try { CUENTA = (await q("cuentas", "select=uid,correo,rol,suc"))[0] || null; D.avisoV5 = ""; }
+  catch (e) { CUENTA = null; D.avisoV5 = /cuentas/.test(e.message) ? "Falta correr tablero_v5_bitacora.sql en Supabase (no existe la tabla de cuentas): el tablero funciona solo para ver." : e.message; }
+  if (CUENTA && CUENTA.rol === "tienda") {
+    try { const g = JSON.parse(sessionStorage.getItem("emp") || "null"); if (g && g.token && g.suc === CUENTA.suc && Date.now() - (g.desde || 0) < 10 * 3600e3) EMP = g; } catch (e) {}
+    if (!EMP) abrirPin();
+  } else if (CUENTA && CUENTA.rol === "dueno") EMP = {token: null, nombre: "dueño", rol: "dueno", suc: null};
+  pintarQuien();
+  $("#secPersonas").classList.toggle("hidden", !esDueno());
+}
+function pintarQuien() {
+  const b = $("#quien"); b.classList.remove("hidden");
+  if (!CUENTA) { b.className = "quien sin"; b.innerHTML = '<span class="pt"></span>cuenta sin asignar'; b.title = "Esta cuenta no está dada de alta como dueño ni como tienda: solo puede ver. Pídele al dueño que la asigne en Dinero → Personas y PIN."; return; }
+  if (CUENTA.rol === "dueno") { b.className = "quien"; b.innerHTML = '<span class="pt"></span><b>dueño</b>'; b.title = "Entraste como dueño"; return; }
+  if (EMP) { b.className = "quien"; b.innerHTML = '<span class="pt"></span><b>' + esc(EMP.nombre) + '</b> · ' + esc(SUCS[CUENTA.suc]) + (EMP.rol === "encargado" ? " · encargado" : ""); b.title = "Toca para cambiar de persona"; }
+  else { b.className = "quien sin"; b.innerHTML = '<span class="pt"></span>' + esc(SUCS[CUENTA.suc]) + ' · <b>pon tu PIN</b>'; b.title = "Solo viendo; para actuar pon tu PIN"; }
+}
+$("#quien").addEventListener("click", () => { if (CUENTA && CUENTA.rol === "tienda") { if (EMP) salirPin(); abrirPin(); } });
+
+/* ---- PIN ---- */
+let pinBuf = "", pinOcupado = false, pinDespues = null;
+function abrirPin(despues) { pinBuf = ""; pinDespues = despues || null; pintarPuntos(); $("#pinError").textContent = ""; $("#pinSub").textContent = "Pon tu PIN de 4 dígitos · " + (CUENTA ? SUCS[CUENTA.suc] : ""); $("#pinVelo").classList.remove("hidden"); }
+function cerrarPin() { $("#pinVelo").classList.add("hidden"); pinBuf = ""; pintarPuntos(); }
+function pintarPuntos() { $("#pinPuntos").querySelectorAll("i").forEach((i, k) => i.classList.toggle("on", k < pinBuf.length)); }
+$("#teclas").addEventListener("click", async ev => {
+  const b = ev.target.closest("button"); if (!b || pinOcupado) return;
+  const k = b.dataset.k;
+  if (k === "borrar") { pinBuf = pinBuf.slice(0, -1); pintarPuntos(); return; }
+  if (k === "salir") { cerrarPin(); return; }
+  if (pinBuf.length >= 4) return;
+  pinBuf += k; pintarPuntos();
+  if (pinBuf.length === 4) {
+    pinOcupado = true; $("#pinError").textContent = "";
+    try {
+      const r = await rpc("pin_entrar", {p_pin: pinBuf});
+      if (!r || !r.ok) { $("#pinError").textContent = (r && r.error) || "No se pudo entrar"; pinBuf = ""; pintarPuntos(); if (r && r.bloqueado) setTimeout(cerrarPin, 2500); }
+      else { EMP = {token: r.token, emp_id: r.emp_id, nombre: r.nombre, rol: r.rol, suc: r.suc, desde: Date.now()}; sessionStorage.setItem("emp", JSON.stringify(EMP)); ultimoToque = Date.now(); cerrarPin(); pintarQuien(); pintarDinero(); pintarReparto(); toast("Hola, " + r.nombre); if (pinDespues) { const f = pinDespues; pinDespues = null; f(); } }
+    } catch (e) { $("#pinError").textContent = e.message === "sesion" ? "La sesión del tablero caducó; vuelve a entrar" : e.message; pinBuf = ""; pintarPuntos(); }
+    pinOcupado = false;
+  }
+});
+document.addEventListener("keydown", e => { if ($("#pinVelo").classList.contains("hidden")) return; if (/^[0-9]$/.test(e.key)) $("#teclas").querySelector('[data-k="' + e.key + '"]').click(); else if (e.key === "Backspace") $("#teclas").querySelector('[data-k="borrar"]').click(); });
+$("#pinVer").addEventListener("click", cerrarPin);
+async function salirPin() { if (!EMP || !EMP.token) return; const t = EMP.token; EMP = null; sessionStorage.removeItem("emp"); pintarQuien(); try { await rpc("pin_salir", {p_token: t}); } catch (e) {} }
+// candado: 15 minutos sin tocar la pantalla cierran la sesión de la persona (no la de la cuenta)
+["click", "keydown", "touchstart", "scroll"].forEach(ev => document.addEventListener(ev, () => { ultimoToque = Date.now(); }, {passive: true}));
+setInterval(() => { if (EMP && EMP.token && Date.now() - ultimoToque > CANDADO_MIN * 60000) { salirPin(); toast("Sesión cerrada por inactividad; vuelve a poner tu PIN"); } }, 30000);
+
+/* ---- acciones a la bitácora ---- */
+async function accion(tipo, ref, datos, suc) {
+  if (!CUENTA) { toast("Esta cuenta no está asignada; no puede registrar acciones", true); return null; }
+  if (CUENTA.rol === "tienda" && !EMP) { abrirPin(() => accion(tipo, ref, datos, suc)); return null; }
+  try {
+    const r = await rpc("accion", {p_token: EMP ? EMP.token : null, p_tipo: tipo, p_ref: ref || null, p_datos: datos || {}, p_suc: suc == null ? null : suc});
+    if (!r || !r.ok) { toast((r && r.error) || "No se registró", true); return null; }
+    D.bitacora.unshift({id: r.id, ts: new Date().toISOString(), suc: suc == null ? (EMP && EMP.suc) : suc, usuario: r.usuario, rol: r.rol, tipo, ref, datos: datos || {}});
+    pintarBitacora();
+    return r;
+  } catch (e) {
+    if (/caducó|Falta el PIN/.test(e.message) && CUENTA.rol === "tienda") { EMP = null; sessionStorage.removeItem("emp"); pintarQuien(); abrirPin(() => accion(tipo, ref, datos, suc)); return null; }
+    toast(e.message === "sesion" ? "La sesión caducó; vuelve a entrar" : e.message, true); return null;
+  }
+}
+
+/* ---- datos de Dinero ---- */
+async function cargarDinero() {
+  const [valor, inv, csv, liq, bit] = await Promise.all([
+    q("v_inventario_valor", "select=*&order=suc"),
+    q("v_inventario_modelo", "select=suc,modelo,piezas,valor,precio1,precio_dist,descripcion,categoria,departamento,claves,especial,pzas_90_aqui,pzas_180_aqui,imp_180_aqui,pzas_365_aqui,ultima_aqui,pzas_90_global,pzas_180_global,imp_180_global,pzas_365_global,ultima_global,dias_sin_venta_aqui,dias_sin_venta_global&order=valor.desc"),
+    q("v_compras_sin_venta", "select=*&order=valor_hoy.desc.nullslast"),
+    q("v_liquidacion", "select=*"),
+    q("bitacora_vista", "select=id,ts,suc,usuario,rol,tipo,ref,datos&order=id.desc&limit=120", {unaPagina: true}),
+  ]);
+  D.valor = valor; D.invModelo = inv; D.comprasSinVenta = csv; D.bitacora = bit;
+  D.liq = new Map(liq.filter(x => x.tipo === "liquidar").map(x => [x.modelo, x]));
+  D.dineroCargado = Date.now();
+  if (esDueno()) {
+    try { D.empleados = await q("empleados_vista", "select=*&order=suc,nombre"); D.cuentas = await q("cuentas", "select=uid,correo,rol,suc&order=rol,suc"); } catch (e) {}
+  }
+}
+async function cargarDemanda() {
+  try {
+    D.demanda = await q("v_reparto_demanda", "select=suc,modelo,descripcion,precio1,pzas_180,imp_180,ultima,stock_1,stock_2,stock_3,stock_4,en_camino,fuente,stock_total&order=imp_180.desc");
+    const ped = await q("bitacora_vista", "select=id,ts,suc,usuario,tipo,ref&tipo=in.(reparto_pedir,reparto_atendido)&order=id.desc&limit=400", {unaPagina: true});
+    D.pedidos = new Map(); for (const p of ped) { const k = p.suc + ":" + p.ref; if (!D.pedidos.has(k)) D.pedidos.set(k, p); }
+  } catch (e) { D.demanda = []; if (!/v_reparto_demanda|bitacora_vista/.test(e.message)) throw e; }
+}
+
+/* ---- Enviar: vende y no tiene ---- */
+function pintarDemanda() {
+  const el = $("#demanda"); if (!el) return;
+  if (UI.destino === 0) { el.innerHTML = ""; return; }
+  const des = UI.destino;
+  const L = D.demanda.filter(x => x.suc === des);
+  if (!L.length) { el.innerHTML = ""; return; }
+  const fuenteTxt = x => x.en_camino > 0 ? '<span class="etq camino">ya va en camino (' + Number(x.en_camino) + ')</span>'
+    : x.fuente === 1 ? 'de <b>CEDIS</b> (tiene ' + Number(x.stock_1) + ')'
+    : x.fuente ? 'de <b>' + SUCS[x.fuente] + '</b> (tiene ' + Number(x["stock_" + x.fuente]) + ' y no lo vende)'
+    : Number(x.stock_1) === 1 ? 'solo CEDIS tiene <b>1</b> (se quedaría en 0)'
+    : 'solo en ' + [2, 3, 4].filter(s => s !== des && Number(x["stock_" + s]) > 0).map(s => SUCS[s] + " " + Number(x["stock_" + s])).join(", ") + ' (sí lo venden ahí)';
+  const puedePedir = CUENTA && ((CUENTA.rol === "tienda" && CUENTA.suc === des) || esDueno());
+  const puedeAtender = CUENTA && ((CUENTA.rol === "tienda" && CUENTA.suc === 1) || esDueno());
+  el.innerHTML = '<div class="dem"><h3 style="margin:4px 0 6px">Lo que ' + SUCS[des] + ' vende y no tiene <small>' + L.length + ' modelos · vendidos ahí en 180 días · ordenados por lo que dejan</small></h3><div class="lista">' +
+    L.map(x => { const p = D.pedidos.get(des + ":" + x.modelo);
+      return '<div class="dfila" data-m="' + esc(x.modelo) + '">' + fotoHtml(x.modelo) + '<div><div class="k">' + esc(x.modelo) + (p ? '<span class="etq ' + (p.tipo === "reparto_pedir" ? "pedido" : "") + '">' + (p.tipo === "reparto_pedir" ? "pedido" : "atendido") + " · " + esc(p.usuario || "") + " " + esc((p.ts || "").slice(5, 10)) + '</span>' : "") + '</div><div class="d">' + esc(x.descripcion || "") + '</div><div class="fu">' + fuenteTxt(x) + '</div></div>' +
+        '<div class="p num"><b>' + Number(x.pzas_180) + (Number(x.pzas_180) === 1 ? " pza" : " pzas") + '</b><small>' + pesos(x.imp_180) + ' en 180 d</small></div>' +
+        ((puedePedir || puedeAtender) && !(x.en_camino > 0) ? '<div class="acc">' + (puedePedir && !(p && p.tipo === "reparto_pedir") ? '<button class="mini-btn" data-a="pedir">Pedir</button>' : "") + (puedeAtender && p && p.tipo === "reparto_pedir" ? '<button class="mini-btn ok" data-a="atendido">Atendido</button>' : "") + '</div>' : "") + '</div>'; }).join("") + '</div></div>';
+  el.querySelectorAll("[data-a]").forEach(b => b.addEventListener("click", async () => {
+    const m = b.closest(".dfila").dataset.m, x = L.find(y => y.modelo === m);
+    b.disabled = true;
+    const r = await accion(b.dataset.a === "pedir" ? "reparto_pedir" : "reparto_atendido", m, {destino: des, fuente: x.fuente, pzas_180: x.pzas_180, stock_1: x.stock_1}, des);
+    if (r) { D.pedidos.set(des + ":" + m, {tipo: b.dataset.a === "pedir" ? "reparto_pedir" : "reparto_atendido", usuario: r.usuario, ts: new Date().toISOString()}); toast(b.dataset.a === "pedir" ? "Pedido registrado" : "Marcado como atendido"); pintarReparto(); }
+    else b.disabled = false;
+  }));
+}
+
+/* ---- Dinero ---- */
+const precioDist = (r) => {
+  // precio distribuidor por modelo: el menor p2 de makmex.com entre sus claves; si no, el precio 2/3 de SICAR (accesorios y baterías)
+  let best = null;
+  for (const c of (r.claves || "").split(" ")) { const k = c.split(":")[0]; const p = PRECIOS[k]; if (p && p.p2 > 0 && p.p2 < p.p1) best = best == null ? p.p2 : Math.min(best, p.p2); }
+  return best != null ? best : (r.precio_dist ? Number(r.precio_dist) : null);
+};
+function agruparDinero() {
+  const M = {};
+  for (const r of D.invModelo) {
+    const m = M[r.modelo] = M[r.modelo] || {modelo: r.modelo, desc: r.descripcion, cat: r.categoria, dep: r.departamento, precio1: 0, pd: null, piezas: 0, valor: 0, por: {}, diasG: r.dias_sin_venta_global, pz180: r.pzas_180_global, especial: false, claves: []};
+    m.por[r.suc] = {piezas: Number(r.piezas), valor: Number(r.valor), dias: r.dias_sin_venta_aqui, pz180: r.pzas_180_aqui, claves: r.claves};
+    m.piezas += Number(r.piezas); m.valor += Number(r.valor); m.precio1 = Math.max(m.precio1, Number(r.precio1 || 0)); m.especial = m.especial || !!r.especial;
+    const pd = precioDist(r); if (pd != null) m.pd = m.pd == null ? pd : Math.min(m.pd, pd);
+    m.claves.push(...(r.claves || "").split(" ").filter(Boolean).map(c => ({clave: c.split(":")[0], pz: Number(c.split(":")[1]), suc: r.suc})));
+  }
+  return M;
+}
+function filtroDinero(M) {
+  const N = UI.dDias, s = UI.dSuc, bus = UI.dBusca.trim().toLowerCase();
+  const out = [];
+  for (const m of Object.values(M)) {
+    let piezas = m.piezas, valor = m.valor, dias = m.diasG;
+    if (s) { const p = m.por[s]; if (!p) continue; piezas = p.piezas; valor = p.valor; if (UI.dDonde === "aqui") dias = p.dias; }
+    else if (UI.dDonde === "aqui") continue;
+    const sinVenta = dias == null || dias > N;
+    if (!sinVenta) continue;
+    if (UI.dTipo !== "todo" && tipoDe(m) !== UI.dTipo) continue;
+    if (bus && !(m.modelo.toLowerCase().includes(bus) || (m.desc || "").toLowerCase().includes(bus))) continue;
+    out.push({...m, piezas, valor, dias, score: piezas * valor});
+  }
+  return out.sort((a, b) => b.score - a.score);
+}
+function pintarDinero() {
+  if (!$("#p-dinero")) return;
+  // valor por tienda (debe cuadrar con el reporte de inventario de SICAR a precio de venta)
+  const V = {}; D.valor.forEach(v => V[v.suc] = v);
+  const tot = D.valor.reduce((a, v) => a + Number(v.valor || 0), 0), totPz = D.valor.reduce((a, v) => a + Number(v.piezas || 0), 0);
+  $("#valorTiendas").innerHTML = [1, 3, 2, 4].map(s => { const v = V[s] || {}; return '<div class="tile num"><div class="n"><span>' + SUCS[s] + '</span><span>' + Number(v.piezas || 0) + ' pzas</span></div><div class="t chico' + (v.valor ? "" : " cero") + '">' + pesos(v.valor) + '</div><div class="s">' + (v.claves || 0) + ' claves' + (v.claves_negativas ? ' · <span class="neg">' + v.claves_negativas + ' en negativo (' + pesos(v.valor_negativo) + ')</span>' : "") + '</div></div>'; }).join("");
+  const M = agruparDinero();
+  const muerto = Object.values(M).filter(m => m.diasG == null || m.diasG > 180).reduce((a, m) => a + m.valor, 0);
+  const comp = D.comprasSinVenta.reduce((a, c) => a + Number(c.valor_hoy || 0), 0);
+  $("#dineroSub").textContent = "inventario a precio de lista · " + pesos(tot) + " · " + totPz + " piezas";
+  $("#dineroResumen").innerHTML = "<b>" + pesos(muerto) + "</b> (" + (tot ? Math.round(muerto / tot * 100) : 0) + " %) no ha vendido ni una pieza en 180 días en ninguna tienda · compras de 90 días sin venta: <b>" + pesos(comp) + "</b> (" + D.comprasSinVenta.length + " modelos)";
+  // filtros
+  $("#fSuc").innerHTML = [[0, "Todas"], [1, "CEDIS"], [3, "CDMX"], [2, "Denmor"], [4, "Monterrey"]].map(([k, v]) => '<button class="chip' + (UI.dSuc === k ? " sel" : "") + '" data-k="' + k + '">' + v + '</button>').join("") +
+    (UI.dSuc ? '<button class="chip ghost' + (UI.dDonde === "aqui" ? " sel" : "") + '" data-donde="aqui">sin venta en esa tienda</button><button class="chip ghost' + (UI.dDonde === "global" ? " sel" : "") + '" data-donde="global">en ninguna tienda</button>' : "");
+  $("#fSuc").querySelectorAll("[data-k]").forEach(b => b.addEventListener("click", () => { UI.dSuc = +b.dataset.k; if (!UI.dSuc) UI.dDonde = "global"; UI.dMax = 100; pintarDinero(); }));
+  $("#fSuc").querySelectorAll("[data-donde]").forEach(b => b.addEventListener("click", () => { UI.dDonde = b.dataset.donde; UI.dMax = 100; pintarDinero(); }));
+  $("#fDias").innerHTML = [90, 180, 365].map(d => '<button class="chip' + (UI.dDias === d ? " sel" : "") + '" data-d="' + d + '">sin venta ' + d + ' días</button>').join("");
+  $("#fDias").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { UI.dDias = +b.dataset.d; UI.dMax = 100; pintarDinero(); }));
+  const tipos = {todo: "Todo", herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
+  $("#fTipo").innerHTML = Object.entries(tipos).map(([k, v]) => '<button class="chip' + (UI.dTipo === k ? " sel" : "") + '" data-t="' + k + '">' + v + '</button>').join("");
+  $("#fTipo").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { UI.dTipo = b.dataset.t; UI.dMax = 100; pintarDinero(); }));
+  if ($("#dBusca").value !== UI.dBusca) $("#dBusca").value = UI.dBusca;
+  // lista
+  const L = filtroDinero(M);
+  const valL = L.reduce((a, m) => a + m.valor, 0), pzL = L.reduce((a, m) => a + m.piezas, 0);
+  $("#dineroCuenta").textContent = L.length + " modelos · " + pzL + " piezas · " + pesos(valL);
+  const dias = d => d == null ? "nunca" : d + " d";
+  $("#dormido").innerHTML = L.length ? L.slice(0, UI.dMax).map(m => {
+    const liq = D.liq.get(m.modelo);
+    const st = UI.dSuc ? "" : '<div class="st">' + [1, 3, 2, 4].map(s => '<span' + (m.por[s] ? "" : ' class="cero"') + '>' + SUCS[s].slice(0, 3) + " " + (m.por[s] ? m.por[s].piezas : 0) + "</span>").join("") + "</div>";
+    return '<div class="dfila" data-m="' + esc(m.modelo) + '">' + fotoHtml(m.modelo) + '<div><div class="k">' + esc(m.modelo) + (liq ? '<span class="etq liq">en liquidación</span>' : "") + (m.especial ? '<span class="etq">incluye DR/DEF</span>' : "") + '</div><div class="d">' + esc(m.desc || "") + '</div>' + st + '</div>' +
+      '<div class="p num"><b>' + pesos(m.valor) + '</b><small>' + m.piezas + (m.piezas === 1 ? " pza" : " pzas") + " · lista " + pesos(m.precio1) + '</small><small>sin venta ' + dias(m.dias) + (UI.dSuc && UI.dDonde === "aqui" ? " aquí" : "") + '</small>' + (m.pd ? '<small>distribuidor desde ' + pesos(m.pd) + '</small>' : "") + '</div>' +
+      '<div class="acc">' + (puedeMandar() ? '<button class="mini-btn' + (liq ? " on" : "") + '" data-a="liq">' + (liq ? "Quitar de liquidación" : "Liquidar") + '</button>' : "") + '<button class="mini-btn" data-a="nota">Nota</button>' + (liq ? '<small style="color:var(--ink-3)">' + esc(liq.usuario || "") + " · " + esc((liq.ts || "").slice(0, 10)) + "</small>" : "") + '</div></div>';
+  }).join("") + (L.length > UI.dMax ? '<button class="ver-mas" id="verMas">Ver ' + Math.min(100, L.length - UI.dMax) + ' más (' + (L.length - UI.dMax) + ' restantes)</button>' : "") : '<div class="vacio">Nada sin venta con estos filtros.</div>';
+  const vm = $("#verMas"); if (vm) vm.addEventListener("click", () => { UI.dMax += 100; pintarDinero(); });
+  $("#dormido").querySelectorAll("[data-a]").forEach(b => b.addEventListener("click", async () => {
+    const modelo = b.closest(".dfila").dataset.m, m = M[modelo];
+    if (b.dataset.a === "nota") { const t = prompt("Nota sobre " + modelo + ":"); if (t && t.trim()) { const r = await accion("nota", modelo, {texto: t.trim().slice(0, 300)}, UI.dSuc || null); if (r) toast("Nota guardada"); } return; }
+    b.disabled = true;
+    const quitar = D.liq.has(modelo);
+    const r = await accion(quitar ? "liquidar_quitar" : "liquidar", modelo, {precio1: m.precio1, precio_dist: m.pd, piezas: m.piezas, valor: Math.round(m.valor), tiendas: Object.fromEntries(Object.entries(m.por).map(([s, p]) => [s, p.piezas]))}, UI.dSuc || null);
+    if (r) { if (quitar) D.liq.delete(modelo); else D.liq.set(modelo, {modelo, tipo: "liquidar", usuario: r.usuario, ts: new Date().toISOString(), datos: {precio_dist: m.pd}}); toast(quitar ? "Fuera de liquidación" : "En liquidación a " + (m.pd ? pesos(m.pd) : "precio por definir")); }
+    pintarDinero();
+  }));
+  $("#dormidoPie").textContent = L.length ? "Ordenado por piezas × valor (lo que tiene muchas piezas y mucho valor va primero) · valor a precio de lista · datos de " + (D.dineroCargado ? new Date(D.dineroCargado).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) : "") : "";
+  $("#cntDinero").textContent = D.liq.size; $("#cntDinero").classList.toggle("hidden", !D.liq.size);
+  pintarLiquidacion(M); pintarComprasSinVenta(); pintarBitacora(); pintarPersonas();
+}
+$("#dBusca").addEventListener("input", () => { UI.dBusca = $("#dBusca").value; UI.dMax = 100; clearTimeout(pintarDinero.t); pintarDinero.t = setTimeout(pintarDinero, 150); });
+
+function pintarLiquidacion(M) {
+  const L = [...D.liq.values()].map(l => ({...l, m: M[l.modelo]})).sort((a, b) => ((b.m && b.m.valor) || 0) - ((a.m && a.m.valor) || 0));
+  $("#liqCuenta").textContent = L.length ? L.length + " modelos · " + pesos(L.reduce((a, l) => a + ((l.m && l.m.valor) || 0), 0)) + " a lista" : "nada todavía";
+  $("#liquidacion").innerHTML = L.length ? L.map(l => '<div class="dfila">' + fotoHtml(l.modelo) + '<div><div class="k">' + esc(l.modelo) + '</div><div class="d">' + esc((l.m && l.m.desc) || "") + " · " + esc(l.usuario || "") + " · " + esc((l.ts || "").slice(0, 10)) + '</div>' + (l.m ? '<div class="st">' + [1, 3, 2, 4].filter(s => l.m.por[s]).map(s => '<span>' + SUCS[s].slice(0, 3) + " " + l.m.por[s].piezas + "</span>").join("") + "</div>" : "") + '</div><div class="p num"><b>' + (l.m && l.m.pd ? pesos(l.m.pd) : "—") + '</b><small>lista ' + (l.m ? pesos(l.m.precio1) : "") + '</small></div></div>').join("") : '<div class="vacio">Marca «Liquidar» en los modelos que quieras sacar a precio distribuidor.</div>';
+}
+function pintarComprasSinVenta() {
+  const C = D.comprasSinVenta;
+  $("#comprasCuenta").textContent = C.length ? C.length + " modelos · " + C.reduce((a, c) => a + Number(c.piezas_compradas || 0), 0) + " pzas compradas · " + pesos(C.reduce((a, c) => a + Number(c.valor_hoy || 0), 0)) + " en existencia hoy" : "ninguna";
+  $("#comprasSinVenta").innerHTML = C.length ? C.slice(0, 150).map(c => '<div class="dfila">' + fotoHtml(c.modelo) + '<div><div class="k">' + esc(c.modelo) + '</div><div class="d">' + esc(c.descripcion || "") + '</div><div class="st"><span>compró ' + Number(c.piezas_compradas) + ' el ' + esc((c.ultima || "").slice(0, 10)) + '</span><span>hoy ' + Number(c.piezas_hoy || 0) + ' pzas</span></div></div><div class="p num"><b>' + pesos(c.valor_hoy) + '</b></div></div>').join("") : '<div class="vacio">Todo lo comprado en 90 días ha vendido al menos una pieza.</div>';
+}
+const TIPO_TXT = {pin_entrar: "entró", pin_salir: "salió", pin_fallo: "PIN incorrecto", pin_bloqueo: "tienda bloqueada", nota: "nota", revisado: "revisado", liquidar: "a liquidación", liquidar_quitar: "fuera de liquidación", reparto_pedir: "pidió", reparto_atendido: "atendido", faltante: "faltante", conteo: "conteo", recepcion: "recepción", entrega_efectivo: "entrega de efectivo", accion_rechazada: "sin permiso", empleado_alta: "alta de persona", empleado_baja: "baja de persona", empleado_pin: "cambio de PIN", cuenta_asignar: "cuenta asignada"};
+let fBit = 0;
+function pintarBitacora() {
+  const B = D.bitacora.filter(b => !fBit || b.suc === fBit);
+  $("#bitCuenta").textContent = D.bitacora.length ? "últimos " + D.bitacora.length + " movimientos" : "sin movimientos";
+  $("#fBit").innerHTML = [[0, "Todas"], [1, "CEDIS"], [3, "CDMX"], [2, "Denmor"], [4, "Monterrey"]].map(([k, v]) => '<button class="chip' + (fBit === k ? " sel" : "") + '" data-k="' + k + '">' + v + '</button>').join("");
+  $("#fBit").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { fBit = +b.dataset.k; pintarBitacora(); }));
+  const f = ts => { const d = new Date(ts); return d.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + d.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}); };
+  $("#bitacora").innerHTML = B.length ? B.map(b => '<div class="bit"><div class="h num">' + f(b.ts) + '</div><div class="q"><b>' + esc(b.usuario || "—") + '</b>' + (b.suc ? " · " + SUCS[b.suc] : "") + (b.ref ? " · " + esc(b.ref) : "") + (b.datos && b.datos.texto ? ' · “' + esc(b.datos.texto) + '”' : "") + (b.datos && b.datos.tipo ? " · quiso " + esc(TIPO_TXT[b.datos.tipo] || b.datos.tipo) : "") + '</div><span class="t' + (/rechazada|fallo|bloqueo/.test(b.tipo) ? " mal" : "") + '">' + esc(TIPO_TXT[b.tipo] || b.tipo) + '</span></div>').join("") : '<div class="vacio">Nada registrado todavía.</div>';
+}
+function pintarPersonas() {
+  if (!esDueno()) return;
+  const E = D.empleados;
+  $("#personas").innerHTML = E.length ? E.map(e => '<div class="dfila" data-id="' + e.id + '"><div></div><div><div class="k">' + esc(e.nombre) + (e.activo ? "" : '<span class="etq">baja</span>') + '</div><div class="d">' + SUCS[e.suc] + " · " + e.rol + '</div></div>' + (e.activo ? '<div class="acc"><button class="mini-btn" data-a="pin">Cambiar PIN</button><button class="mini-btn" data-a="baja">Dar de baja</button></div>' : "") + '</div>').join("") : '<div class="vacio">Todavía no hay personas dadas de alta. Cada tienda entra con su correo y cada persona pone su PIN.</div>';
+  $("#personas").querySelectorAll("[data-a]").forEach(b => b.addEventListener("click", async () => {
+    const id = +b.closest(".dfila").dataset.id, e = E.find(x => x.id === id);
+    try {
+      if (b.dataset.a === "baja") { if (!confirm("¿Dar de baja a " + e.nombre + "?")) return; await rpc("empleado_baja", {p_id: id}); toast(e.nombre + " dado de baja"); }
+      else { const p = prompt("Nuevo PIN de 4 dígitos para " + e.nombre + ":"); if (!p) return; await rpc("empleado_pin", {p_id: id, p_pin: p.trim()}); toast("PIN cambiado"); }
+      D.empleados = await q("empleados_vista", "select=*&order=suc,nombre"); pintarPersonas();
+    } catch (err) { toast(err.message, true); }
+  }));
+  $("#cuentas").innerHTML = D.cuentas.length ? D.cuentas.map(c => '<div class="dfila"><div></div><div><div class="k">' + esc(c.correo || c.uid) + '</div><div class="d">' + (c.rol === "dueno" ? "dueño" : "tienda · " + SUCS[c.suc]) + '</div></div><div></div></div>').join("") : '<div class="vacio">Sin cuentas.</div>';
+}
+$("#formEmp").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  try {
+    await rpc("empleado_alta", {p_suc: +$("#eSuc").value, p_nombre: $("#eNombre").value.trim(), p_rol: $("#eRol").value, p_pin: $("#ePin").value.trim()});
+    toast($("#eNombre").value.trim() + " dado de alta"); $("#eNombre").value = ""; $("#ePin").value = "";
+    D.empleados = await q("empleados_vista", "select=*&order=suc,nombre"); pintarPersonas();
+  } catch (e) { toast(e.message, true); }
+});
+$("#formCuenta").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  try {
+    await rpc("cuenta_asignar", {p_correo: $("#cCorreo").value.trim(), p_suc: +$("#cSuc").value, p_rol: "tienda"});
+    toast("Cuenta asignada a " + SUCS[+$("#cSuc").value]); $("#cCorreo").value = "";
+    D.cuentas = await q("cuentas", "select=uid,correo,rol,suc&order=rol,suc"); pintarPersonas();
+  } catch (e) { toast(e.message, true); }
+});
+
+/* ---- hoja de liquidación (PDF) ---- */
+function pdfLiquidacion() {
+  const M = agruparDinero();
+  const L = [...D.liq.values()].map(l => M[l.modelo]).filter(Boolean).sort((a, b) => b.valor - a.valor);
+  if (!L.length) { alert("No hay modelos en liquidación. Marca «Liquidar» en la lista."); return; }
+  const foto = clave => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || ""); const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
+    return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ""; };
+  let cuerpo = "", nro = 0, tot = 0, totD = 0;
+  for (const m of L) {
+    const claves = m.claves.sort((a, b) => a.clave.localeCompare(b.clave) || a.suc - b.suc);
+    for (const c of claves) { nro++;
+      const p = PRECIOS[c.clave]; const p1 = p ? p.p1 : m.precio1; const pd = p && p.p2 > 0 && p.p2 < p.p1 ? p.p2 : (m.pd || null);
+      tot += p1 * c.pz; totD += (pd || p1) * c.pz;
+      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(c.clave) + '</td><td><div class="k num">' + esc(c.clave) + '</div><div class="d">' + esc(m.desc || "") + '</div></td><td class="num c">' + SUCS[c.suc] + '</td><td class="num c">' + c.pz + '</td><td class="num r">' + pesos(p1) + '</td><td class="num r b">' + (pd ? pesos(pd) : "definir") + '</td><td class="num c">' + (pd ? Math.round((1 - pd / p1) * 100) + " %" : "") + '</td></tr>';
+    }
+  }
+  const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
+  abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Liquidacion ' + ff.replace(/[\/:]/g, ".") + ' · MAKMEX</title><style>' +
+    "body{font:13px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}h1{font-size:22px;margin:0}h1 small{font-weight:400;font-size:13px;color:#777;display:block;margin-top:2px}" +
+    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:8px}.logo{font-weight:800;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px}" +
+    "table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #ddd;padding:5px 6px;vertical-align:middle;text-align:left}th{font-size:11.5px;color:#666;text-transform:uppercase;letter-spacing:.3px}" +
+    ".n{color:#999;width:26px;text-align:right}.f{width:44px}.f img{width:40px;height:40px;object-fit:contain;display:block}.k{font-weight:700}.d{font-size:12px;color:#555}.c{text-align:center}.r{text-align:right}.b{font-weight:800;color:#e8650f}.num{font-variant-numeric:tabular-nums}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}@media print{.boton{display:none}body{margin:0}}tr{break-inside:avoid}" +
+    '</style></head><body><button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>Liquidación a precio distribuidor<small>' + L.length + ' modelos · ' + nro + ' renglones · a lista ' + pesos(tot) + ' → en liquidación ' + pesos(totD) + ' · hoja impresa el ' + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
+    '<table><tr><th></th><th></th><th>Clave</th><th class="c">Tienda</th><th class="c">Pzas</th><th class="r">Lista</th><th class="r">Liquidación</th><th class="c">Desc.</th></tr>' + cuerpo + '</table>' +
+    '<p style="color:#555;font-size:12px;margin-top:16px">Precio de liquidación = precio distribuidor de makmex.com (o precio 2/3 de SICAR en accesorios y baterías). «Definir» = ese modelo no tiene precio distribuidor cargado.</p></body></html>');
+  accion("revisado", "liquidacion", {modelos: L.length, renglones: nro, lista: Math.round(tot), liquidacion: Math.round(totD)});
+}
+$("#btnPdfLiq").addEventListener("click", pdfLiquidacion);
 
 iniciar();
 </script>
