@@ -305,6 +305,16 @@ details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5
 .cztot{margin-top:12px;padding:4px 12px}
 .cztot .kv:last-child{border-bottom:0}
 .cztot input{width:110px;text-align:right;padding:6px 8px;font-size:14px}
+
+/* ---- ventas en rojo + historial con calendario ---- */
+.fila.roja{box-shadow:inset 3px 0 0 #e03131;background:rgba(224,49,49,.10)}
+.fila.roja .m{color:#e03131}
+.etq.rojo{background:#e03131;color:#fff}
+.barra.rango{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px}
+.rgChip{font:inherit;font-size:.85rem;padding:6px 12px;border-radius:999px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;cursor:pointer}
+.rgChip.sel{background:#e8650f;border-color:#e8650f;color:#ffffff;font-weight:700}
+.barra.rango input[type=date]{font:inherit;font-size:.85rem;width:auto;flex:0 0 auto;padding:5px 8px;border-radius:9px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;color-scheme:inherit}
+.rgSep{font-size:.8rem;opacity:.7}
 </style>
 </head>
 <body>
@@ -340,8 +350,15 @@ details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5
   <div id="avisos" class="panel ancho activo" style="display:block"></div>
 
   <section class="panel activo" id="p-ventas">
-    <h2>Ventas de hoy <small id="fechaHoy"></small></h2>
+    <h2><span id="ventasTit">Ventas de hoy</span> <small id="fechaHoy"></small></h2>
     <div class="marcador" id="marcador"></div>
+    <div class="barra rango" id="rangoBar">
+      <button type="button" class="rgChip sel" data-r="hoy">Hoy</button>
+      <button type="button" class="rgChip" data-r="ayer">Ayer</button>
+      <button type="button" class="rgChip" data-r="7">7 días</button>
+      <button type="button" class="rgChip" data-r="mes">Este mes</button>
+      <span class="rgSep">o del</span><input type="date" id="rgDe"><span class="rgSep">al</span><input type="date" id="rgA">
+    </div>
     <div class="barra" id="filtroVentas"></div>
     <div class="lista" id="ventas"></div>
     <div class="sub" id="ventasPie"></div>
@@ -563,13 +580,12 @@ async function refrescar(primera) {
     const hoy = hoyStr(), mes = hoy.slice(0, 7) + "-01";
     const [estado, ventasHoy, ventasMes, traspasos, compras] = await Promise.all([
       q("sicar_sucursal_estado", "select=*&order=suc"),
-      q("sicar_venta", "select=suc,ven_id,fecha,total,descuento,status,comprobante,renglones,piezas" + (sinCliente ? "" : ",cli_id") + "&fecha=gte." + hoy + "T00:00:00&order=fecha.desc")
-        .catch(e => { if (!sinCliente && /cli_id/.test(e.message)) { sinCliente = true; return q("sicar_venta", "select=suc,ven_id,fecha,total,descuento,status,comprobante,renglones,piezas&fecha=gte." + hoy + "T00:00:00&order=fecha.desc"); } throw e; }),
+      rConsultaVentas(),
       q("sicar_venta_dia", "select=suc,dia,ventas,total,piezas&dia=gte." + mes + "&order=dia"),
       q("sicar_traspaso_global", "select=suc,tra_id,folio,suc_ori,suc_des,alias_ori,alias_des,fecha,status,piezas,renglones&status=eq.1&order=fecha"),
       q("sicar_compra", "select=suc,com_id,fecha,folio,status,gasto,pro_id,renglones,piezas&suc=eq.1&fecha=gte." + hoy + "T00:00:00&order=fecha.desc"),
     ]);
-    Object.assign(D, {estado, ventasHoy, ventasMes, traspasos, compras});
+    Object.assign(D, {estado, ventasHoy, ventasMes, traspasos, compras}); D.rangoCargado = rLlaveRango();
     // nombres de clientes de las ventas de hoy (solo los que faltan)
     const faltan = sinCliente ? [] : ventasHoy.filter(v => v.cli_id != null && !D.clientes[v.suc + ":" + v.cli_id]);
     if (faltan.length) {
@@ -587,6 +603,7 @@ async function refrescar(primera) {
     }
     if (primera || Date.now() - D.dineroCargado > CADA_S_DINERO * 1000) { try { await cargarDinero(); } catch (e) { D.avisoV5 = D.avisoV5 || ("Pestaña Dinero sin datos (¿falta correr tablero_v5_bitacora.sql?): " + e.message); } }
     pintarTodo();
+    rCalcula();
   } catch (e) {
     if (e.message === "sesion") { await sb.auth.signOut(); mostrarLogin(); return; }
     $("#avisos").innerHTML = '<div class="aviso bad">No se pudo leer la base central: ' + esc(e.message) + '</div>';
@@ -634,6 +651,7 @@ function pintarEstado() {
 }
 
 function pintarVentas() {
+  rTitulo();
   const hoy = hoyStr();
   const vig = D.ventasHoy.filter(v => v.status === 1);
   const mes = {}; D.ventasMes.forEach(d => { mes[d.suc] = mes[d.suc] || {n: 0, t: 0}; mes[d.suc].n += d.ventas; mes[d.suc].t += Number(d.total); });
@@ -648,14 +666,14 @@ function pintarVentas() {
   const lista = D.ventasHoy.filter(v => !UI.filtroSuc || v.suc === UI.filtroSuc);
   $("#ventas").innerHTML = lista.length ? lista.map(v => {
     const cli = v.cli_id != null ? D.clientes[v.suc + ":" + v.cli_id] : null;
-    return '<button class="fila" data-suc="' + v.suc + '" data-id="' + v.ven_id + '"><div class="h num">' + hora(v.fecha) + '</div><div class="q"><div class="a">' + esc(nombreCliente(cli)) +
-      (v.status !== 1 ? '<span class="etq cancel">cancelada</span>' : "") + (!UI.filtroSuc ? '<span class="etq suc">' + SUCS[v.suc] + '</span>' : "") + '</div><div class="b">' +
+    return '<button class="fila' + rClase(v) + '" data-suc="' + v.suc + '" data-id="' + v.ven_id + '"><div class="h num">' + hora(v.fecha) + '</div><div class="q"><div class="a">' + esc(nombreCliente(cli)) +
+      (v.status !== 1 ? '<span class="etq cancel">cancelada</span>' : "") + rEtiq(v) + (!UI.filtroSuc ? '<span class="etq suc">' + SUCS[v.suc] + '</span>' : "") + '</div><div class="b">' +
       v.renglones + (v.renglones === 1 ? " artículo" : " artículos") + " · " + Number(v.piezas) + " pzas" + (Number(v.descuento) ? " · desc. " + pesos(v.descuento) : "") + (v.comprobante ? " · " + v.comprobante : "") +
       '</div></div><div class="m num">' + pesos(v.total) + '</div></button>';
-  }).join("") : '<div class="vacio">Todavía no hay ventas hoy' + (UI.filtroSuc ? " en " + SUCS[UI.filtroSuc] : "") + '.</div>';
+  }).join("") : '<div class="vacio">' + rSinVentas() + (UI.filtroSuc ? " en " + SUCS[UI.filtroSuc] : "") + '.</div>';
   $("#ventas").querySelectorAll(".fila").forEach(b => b.addEventListener("click", () => abrirVenta(+b.dataset.suc, +b.dataset.id)));
   const tot = vig.filter(v => !UI.filtroSuc || v.suc === UI.filtroSuc).reduce((a, v) => a + Number(v.total), 0);
-  $("#ventasPie").textContent = lista.length ? "Total vigente: " + pesos(tot) + " · " + hoy + " · se actualiza cada " + CADA_S + " s" : "";
+  $("#ventasPie").textContent = lista.length ? "Total vigente: " + pesos(tot) + rPie() : "";
 }
 
 async function abrirVenta(suc, id) {
@@ -670,6 +688,7 @@ async function abrirVenta(suc, id) {
     h += '<h4>Artículos</h4>' + det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '">' + fotoHtml(d.clave) + '<div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + pesosC(d.importe) + '<small>' + Number(d.cantidad) + " × " + pesosC(d.precio) + (Number(d.descuento) ? " · desc. " + pesosC(d.descuento) : "") + '</small></div></div>').join("");
     if (Number(v.descuento)) h += '<div class="kv"><span class="k">Antes de descuento</span><span class="v num">' + pesosC(Number(v.total) + Number(v.descuento)) + '</span></div>';
     if (Number(v.descuento)) h += '<div class="kv"><span class="k">Descuento</span><span class="v num">− ' + pesosC(v.descuento) + '</span></div>';
+    h += rCajon(v, det);
     h += '<div class="kv"><span class="k">Total</span><span class="v total num">' + pesosC(v.total) + '</span></div>';
     h += '<h4>Forma de pago</h4>' + (pag.length ? pag.filter(p => !p.borrado).map(p => '<div class="kv"><span class="k">' + esc(p.tipo || "pago") + '</span><span class="v num">' + pesosC(p.total) + '</span></div>').join("") : '<div class="vacio">Sin pagos registrados.</div>');
     $("#cajonCuerpo").innerHTML = h;
@@ -1484,6 +1503,237 @@ function czPdf() {
     czPintaLista(); czTotales();
   });
   czPintaIva(); czPintaLista(); czTotales();
+})();
+
+
+/* =============== ventas en rojo (reglas del carrito de makmex.com) + historial =============== */
+const RTOL = 10;                                   // tolerancia en pesos por venta
+const RGO = {AA: 0, A: 1, B: 2, C: 3, D: 4, E: 5, F: 6};
+const RKIT_CHG = [["48-59-1812","48-59-1808","48-59-1802","48-59-1806","48-59-1807","48-59-1809","48-59-1811"],
+ ["48-59-2401","48-59-1812","48-59-1807","48-59-1806","48-59-2402"],
+ ["DCB115","DCB112","DCB107","DCB1102","DCB1104","DCB1106","DCB118","DCB102","DCB104","DCB1112"],
+ ["PCG002","P118B","P118","PCG005","P117","P135","PCG006"],
+ ["OP404","OP401","OP406","OP403","OP40"],
+ ["AC86093N","AC840095","R840095","R840094","R840091"]];
+let RANGO = {de: hoyStr(), a: hoyStr()};
+const R = {listo: 0, cat: null, combos: null, fact: {}, factM: {}, factD: null, grados: null, intento: 0, ocupado: 0};
+D.rojo = {};
+D.rangoCargado = "";
+const rb10 = x => Math.round(x / 10) * 10;
+const rFecha = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const rDias = n => { const d = new Date(hoyStr() + "T12:00:00"); d.setDate(d.getDate() - n); return rFecha(d); };
+const rEsHoy = () => { const h = hoyStr(); return RANGO.de === h && RANGO.a === h; };
+const rLlaveRango = () => RANGO.de + "|" + RANGO.a;
+const rLlave = v => "r" + v.suc + ":" + v.ven_id + ":" + Math.round(Number(v.total));
+const rRojo = v => (v.status === 1 && D.rojo[rLlave(v)]) || null;
+const rClase = v => rRojo(v) ? " roja" : "";
+const rEtiq = v => { const r = rRojo(v); return r ? '<span class="etq rojo" title="Cobrada por debajo del mínimo que permite el carrito de makmex.com">desc. de más ' + pesos(r.exceso) + '</span>' : ""; };
+
+async function rLee(tabla, parametros) {
+  const todo = [];
+  for (let desde = 0; desde < 100000; desde += 1000) {
+    const parte = await q(tabla, parametros + "&limit=1000&offset=" + desde);
+    todo.push(...parte);
+    if (parte.length < 1000) break;
+  }
+  return todo;
+}
+function rConsultaVentas() {
+  if (RANGO.a < hoyStr() && D.rangoCargado === rLlaveRango()) return Promise.resolve(D.ventasHoy);  // el pasado no cambia
+  const sel = "select=suc,ven_id,fecha,total,descuento,status,comprobante,renglones,piezas";
+  const filtro = "&fecha=gte." + RANGO.de + "T00:00:00&fecha=lte." + RANGO.a + "T23:59:59.999&order=fecha.desc";
+  return rLee("sicar_venta", sel + (sinCliente ? "" : ",cli_id") + filtro)
+    .catch(e => { if (!sinCliente && /cli_id/.test(e.message)) { sinCliente = true; return rLee("sicar_venta", sel + filtro); } throw e; });
+}
+
+/* ---- reglas del carrito: core.json + combos.json + grados.json de makmex.com ---- */
+async function cargarReglas() {
+  if (R.listo) return 1;
+  if (R.intento && Date.now() - R.intento < 10 * 60 * 1000) return 0;   // reintenta cada 10 min
+  R.intento = Date.now();
+  try {
+    const [core, combos, grados] = await Promise.all(["core.json", "combos.json", "grados.json"].map(a =>
+      fetch("https://makmex.com/" + a, {cache: "no-cache"}).then(r => { if (!r.ok) throw new Error(a); return r.json(); })));
+    const idx = {}; core.cols.forEach((k, i) => idx[k] = i);
+    R.cat = {};
+    for (const f of core.rows) {
+      const v = {sku: String(f[idx.sku]).toUpperCase(), model: String(f[idx.model] || ""), grade: String(f[idx.grade] || "").toUpperCase(),
+        cat: String(f[idx.cat] || "").toLowerCase(), p1: +f[idx.p1] || 0, p2: +f[idx.p2] || 0, p3: +f[idx.p3] || 0,
+        disc: +f[idx.disc] || 0, ck: +f[idx.ck] || 0};
+      R.cat[v.sku] = v;
+    }
+    R.fact = {}; Object.entries(combos.fact || {}).forEach(([k, f]) => R.fact[k.toUpperCase()] = f);
+    R.factM = combos.fact_model || {};
+    R.factD = combos.fact_default || {bat: [0.24, 0.4], car: [0.35, 0.47]};
+    R.combos = combos.combos || [];
+    R.grados = grados.m || {};
+    R.listo = 1;
+  } catch (e) { R.listo = 0; }
+  return R.listo;
+}
+const rSuelto = v => (v.disc > 0 && v.disc < v.p1) ? v.disc : v.p1;   // precio de pieza suelta en el carrito (oferta si la hay)
+function rPrecioParteCombo(v, lista) {   // mismo cálculo que comboPartPrice del sitio
+  const tipo = v.cat.startsWith("bater") ? "bat" : v.cat.startsWith("cargador") ? "car" : null;
+  if (!tipo) return lista === 3 ? (v.p3 || v.p2 || v.p1) : (v.p2 || v.p1);
+  const f = R.fact[v.sku] || R.factM[v.model] || R.factD[tipo];
+  return rb10(v.p1 * (1 - f[lista === 3 ? 1 : 0]));
+}
+function rArmaCombo(c, unidades) {       // ¿alcanzan las piezas vendidas para este combo? (estuches y maletas son opcionales)
+  const usa = []; let descuento = 0;
+  for (const [modelo, cuantas] of c.parts) {
+    const libres = unidades.filter(u => !u.usado && !usa.includes(u) && u.v.model === modelo)
+      .sort((a, b) => rSuelto(b.v) - rSuelto(a.v));
+    if (libres.length < cuantas) { if (/^(estu|malet)/i.test(modelo)) continue; return null; }
+    for (let i = 0; i < cuantas; i++) { const u = libres[i]; usa.push(u); descuento += rSuelto(u.v) - rPrecioParteCombo(u.v, c.lista === 3 ? 3 : 2); }
+  }
+  return usa.length >= 2 && descuento > 0 ? {usa, descuento} : null;
+}
+function rPermitido(det) {               // mínimo cobrable de una venta según el carrito; claves desconocidas son neutras
+  const notas = [];
+  let permitido = 0;
+  const unidades = [];
+  for (const d of (det || [])) {
+    if (d.borrado) continue;
+    const v = R.cat[String(d.clave || "").trim().toUpperCase()];
+    const n = Math.max(1, Math.round(Number(d.cantidad) || 1));
+    if (!v) { permitido += Number(d.importe) || 0; continue; }
+    for (let i = 0; i < n; i++) unidades.push({v, usado: 0});
+  }
+  let base = 0; unidades.forEach(u => base += rSuelto(u.v));
+  let descuento = 0;
+  // 1) combos del catálogo, del mayor descuento al menor
+  for (let vuelta = 0; vuelta < 25; vuelta++) {
+    let mejor = null;
+    for (const c of (R.combos || [])) {
+      const arma = rArmaCombo(c, unidades);
+      if (arma && (!mejor || arma.descuento > mejor.descuento)) mejor = {c, usa: arma.usa, descuento: arma.descuento};
+    }
+    if (!mejor) break;
+    mejor.usa.forEach(u => u.usado = 1);
+    descuento += mejor.descuento;
+    notas.push("combo " + mejor.c.code + " −" + pesos(Math.round(mejor.descuento)));
+  }
+  // 2) kits de grados.json: herramienta + batería (+ cargador equivalente)
+  const bateriasDeKit = [];
+  const herramientas = unidades.filter(u => !u.usado && R.grados[u.v.model] && RGO[u.v.grade] !== undefined)
+    .sort((a, b) => rSuelto(b.v) - rSuelto(a.v));
+  for (const h of herramientas) {
+    if (h.usado) continue;
+    const t = R.grados[h.v.model]; if (!t || !t.bat) continue;
+    const gi = RGO[h.v.grade];
+    const bat = unidades.filter(u => !u.usado && u !== h && u.v.model === t.bat).sort((a, b) => rSuelto(a.v) - rSuelto(b.v))[0];
+    if (!bat) continue;
+    const grupo = RKIT_CHG.find(g => g.includes(t.car)) || [t.car];
+    const car = unidades.filter(u => !u.usado && u !== h && u !== bat && grupo.includes(u.v.model)).sort((a, b) => rSuelto(a.v) - rSuelto(b.v))[0];
+    let precioKit = 0, usa = null, tipo = "";
+    if (car && t.kp && +t.kp[gi] > 0) { precioKit = +t.kp[gi]; usa = [h, bat, car]; tipo = "kit completo"; }
+    else if (t.kt && +t.kt[gi] > 0) { precioKit = +t.kt[gi]; usa = [h, bat]; tipo = "herramienta+batería"; }
+    if (!usa) continue;
+    const suelto = usa.reduce((a, u) => a + rSuelto(u.v), 0);
+    if (precioKit >= suelto) continue;
+    usa.forEach(u => u.usado = 1);
+    if (tipo === "kit completo") bateriasDeKit.push(t.bat);
+    descuento += suelto - precioKit;
+    notas.push(tipo + " " + h.v.model + " " + h.v.grade + " −" + pesos(Math.round(suelto - precioKit)));
+  }
+  // 3) baterías extra con kit completo: min(ck, precio distribuidor)
+  for (const u of unidades) {
+    if (u.usado || !bateriasDeKit.includes(u.v.model)) continue;
+    const minimo = Math.min(u.v.ck || Infinity, u.v.p2 || Infinity, rSuelto(u.v));
+    if (minimo >= rSuelto(u.v)) continue;
+    u.usado = 1;
+    descuento += rSuelto(u.v) - minimo;
+    notas.push("batería extra " + u.v.model + " a " + pesos(Math.round(minimo)));
+  }
+  return {permitido: Math.round(permitido + base - descuento), notas};
+}
+async function calcularRojos() {
+  if (R.ocupado) return 0;
+  R.ocupado = 1;
+  try {
+    if (!await cargarReglas()) return 0;
+    const faltan = (D.ventasHoy || []).filter(v => v.status === 1 && D.rojo[rLlave(v)] === undefined);
+    if (!faltan.length) return 0;
+    const porSuc = {}; faltan.forEach(v => (porSuc[v.suc] = porSuc[v.suc] || []).push(v.ven_id));
+    const det = {};
+    for (const [suc, ids] of Object.entries(porSuc)) {           // ¡ven_id se repite entre sucursales! siempre por sucursal
+      for (let i = 0; i < ids.length; i += 40) {
+        (await rLee("sicar_venta_detalle", "select=ven_id,clave,cantidad,importe,borrado&suc=eq." + suc + "&ven_id=in." + enLista(ids.slice(i, i + 40)) + "&order=ven_id"))
+          .forEach(d => (det[suc + ":" + d.ven_id] = det[suc + ":" + d.ven_id] || []).push(d));
+      }
+    }
+    let hechas = 0;
+    for (const v of faltan) {
+      const lineas = det[v.suc + ":" + v.ven_id];
+      if (!lineas || !lineas.length) { D.rojo[rLlave(v)] = null; continue; }
+      const r = rPermitido(lineas);
+      const exceso = Math.round(r.permitido - Number(v.total));
+      D.rojo[rLlave(v)] = exceso > RTOL ? {exceso, permitido: r.permitido, notas: r.notas} : null;
+      hechas++;
+    }
+    return hechas;
+  } catch (e) { return 0; }
+  finally { R.ocupado = 0; }
+}
+function rCalcula() { calcularRojos().then(n => { if (n) pintarVentas(); }).catch(() => {}); }
+function rCajon(v, det) {                 // renglón del cajón de la venta
+  if (v.status !== 1 || !R.listo) return "";
+  const r = rPermitido(det);
+  const exceso = Math.round(r.permitido - Number(v.total));
+  let h = '<div class="kv"><span class="k">Mínimo del carrito</span><span class="v num">' + pesosC(r.permitido) + '</span></div>';
+  if (r.notas.length) h += '<div class="sub" style="margin:2px 0 8px">Reconocido: ' + esc(r.notas.join(" · ")) + '</div>';
+  if (exceso > RTOL) h += '<div class="aviso bad" style="margin:8px 0">Descuento de más: ' + pesosC(exceso) + ' por debajo del mínimo que permite el carrito de makmex.com. Habla con el vendedor.</div>';
+  return h;
+}
+
+/* ---- historial con calendario ---- */
+function rTitulo() {
+  const t = $("#ventasTit"), s = $("#fechaHoy"); if (!t) return;
+  const larga = f => new Date(f + "T12:00:00").toLocaleDateString("es-MX", {weekday: "long", day: "numeric", month: "long", year: "numeric"});
+  if (rEsHoy()) { t.textContent = "Ventas de hoy"; s.textContent = new Date().toLocaleDateString("es-MX", {weekday: "long", day: "numeric", month: "long"}); }
+  else if (RANGO.de === RANGO.a) { t.textContent = "Ventas del día"; s.textContent = larga(RANGO.de); }
+  else { t.textContent = "Ventas"; s.textContent = "del " + larga(RANGO.de) + " al " + larga(RANGO.a); }
+}
+function rSinVentas() { return rEsHoy() ? "Todavía no hay ventas hoy" : RANGO.de === RANGO.a ? "No hubo ventas ese día" : "No hubo ventas en ese periodo"; }
+function rPie() {
+  const rojas = (D.ventasHoy || []).filter(v => rRojo(v)).length;
+  return (RANGO.a >= hoyStr() ? " · se actualiza cada " + CADA_S + " s" : " · historial") +
+    (rojas ? " · ⚠ " + rojas + (rojas === 1 ? " venta" : " ventas") + " con descuento de más" : "");
+}
+function rPonRango(de, a) {
+  RANGO = {de, a};
+  $("#rgDe").value = de; $("#rgA").value = a;
+  const h = hoyStr(), ayer = rDias(1), hace7 = rDias(6), dia1 = h.slice(0, 8) + "01";
+  document.querySelectorAll("#rangoBar .rgChip").forEach(b => {
+    const r = b.dataset.r;
+    b.classList.toggle("sel", r === "hoy" ? (de === h && a === h) : r === "ayer" ? (de === ayer && a === ayer) :
+      r === "7" ? (de === hace7 && a === h) : (de === dia1 && a === h));
+  });
+  rTitulo();
+  refrescar(false);
+}
+(function () {
+  const h = hoyStr();
+  $("#rgDe").value = h; $("#rgA").value = h;
+  $("#rgDe").max = h; $("#rgA").max = h;
+  $("#rangoBar").addEventListener("click", ev => {
+    const b = ev.target.closest(".rgChip"); if (!b) return;
+    const hh = hoyStr();
+    if (b.dataset.r === "hoy") rPonRango(hh, hh);
+    else if (b.dataset.r === "ayer") rPonRango(rDias(1), rDias(1));
+    else if (b.dataset.r === "7") rPonRango(rDias(6), hh);
+    else rPonRango(hh.slice(0, 8) + "01", hh);
+  });
+  const cambia = () => {
+    let de = $("#rgDe").value, a = $("#rgA").value;
+    if (!de || !a) return;
+    if (de > a) { const t = de; de = a; a = t; }
+    const dias = (new Date(a + "T12:00:00") - new Date(de + "T12:00:00")) / 86400000;
+    if (dias > 92) { const d = new Date(a + "T12:00:00"); d.setDate(d.getDate() - 92); de = rFecha(d); }   // máximo 92 días
+    rPonRango(de, a);
+  };
+  $("#rgDe").addEventListener("change", cambia);
+  $("#rgA").addEventListener("change", cambia);
 })();
 
 iniciar();
