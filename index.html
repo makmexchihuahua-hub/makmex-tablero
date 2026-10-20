@@ -1332,59 +1332,132 @@ function czPintaIva() {
   $("#czIva").innerHTML = Object.entries(CZ_IVAS).map(([k, v]) => '<button type="button" class="chip' + (CZ.iva === k ? " sel" : "") + '" data-iva="' + k + '">' + v + '</button>').join("");
   $("#czIva").querySelectorAll("[data-iva]").forEach(b => b.addEventListener("click", () => { CZ.iva = b.dataset.iva; czGuardar(); czPintaIva(); czTotales(); }));
 }
+// total en palabras, estilo factura: «SIETE MIL TRESCIENTOS CINCUENTA PESOS 00/100 M.N.»
+function czLetras(n) {
+  const U = ["", "UN", "DOS", "TRES", "CUATRO", "CINCO", "SEIS", "SIETE", "OCHO", "NUEVE", "DIEZ", "ONCE", "DOCE", "TRECE", "CATORCE", "QUINCE", "DIECISÉIS", "DIECISIETE", "DIECIOCHO", "DIECINUEVE", "VEINTE"];
+  const D = ["", "", "VEINTI", "TREINTA", "CUARENTA", "CINCUENTA", "SESENTA", "SETENTA", "OCHENTA", "NOVENTA"];
+  const C = ["", "CIENTO", "DOSCIENTOS", "TRESCIENTOS", "CUATROCIENTOS", "QUINIENTOS", "SEISCIENTOS", "SETECIENTOS", "OCHOCIENTOS", "NOVECIENTOS"];
+  function cien(x) {
+    if (x === 0) return "";
+    if (x === 100) return "CIEN";
+    let s = C[Math.floor(x / 100)];
+    const r = x % 100;
+    if (r) {
+      if (s) s += " ";
+      if (r <= 20) s += U[r];
+      else if (r < 30) s += "VEINTI" + U[r % 10].toLowerCase().toUpperCase();
+      else s += D[Math.floor(r / 10)] + (r % 10 ? " Y " + U[r % 10] : "");
+    }
+    return s;
+  }
+  const entero = Math.floor(Math.abs(n));
+  const cent = Math.round((Math.abs(n) - entero) * 100);
+  let s;
+  if (entero === 0) s = "CERO";
+  else {
+    const mill = Math.floor(entero / 1000000), miles = Math.floor((entero % 1000000) / 1000), resto = entero % 1000;
+    s = "";
+    if (mill) s += (mill === 1 ? "UN MILLÓN" : cien(Math.floor(mill / 1000)) + (mill >= 1000 ? " MIL " : "") + cien(mill % 1000) + " MILLONES").trim();
+    if (miles) s += (s ? " " : "") + (miles === 1 ? "MIL" : cien(miles) + " MIL");
+    if (resto) s += (s ? " " : "") + cien(resto);
+  }
+  return s + " PESOS " + String(cent).padStart(2, "0") + "/100 M.N.";
+}
 function czPdf() {
   if (!CZ.items.length) { alert("La cotización está vacía: agrega al menos un producto."); return; }
   const c = czCuentas();
   const f = new Date();
   const folio = "COT-" + f.getFullYear().toString().slice(2) + String(f.getMonth() + 1).padStart(2, "0") + String(f.getDate()).padStart(2, "0") + "-" + String(f.getHours()).padStart(2, "0") + String(f.getMinutes()).padStart(2, "0");
-  const ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "long", year: "numeric"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
+  const ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "long", year: "numeric"});
   const foto = sku => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(sku || "");
     const id = FOTOS.clave[sku] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[sku];
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
+  const pz = CZ.items.reduce((a, it) => a + Number(it.n || 0), 0);
   const cuerpo = CZ.items.map((it, i) => {
     const conDesc = it.pdesc != null && it.pdesc !== "" && Number(it.pdesc) > 0 && Number(it.pdesc) < Number(it.precio);
     return '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(it.sku) +
-      '</td><td><div class="k num">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div></td>' +
-      '<td class="pz num">' + Number(it.n) + '</td>' +
-      '<td class="pr num">' + (conDesc ? '<s>' + pesosC(it.precio) + '</s><br><b>' + pesosC(it.pdesc) + '</b>' : pesosC(it.precio)) + '</td>' +
+      '</td><td class="pz num">' + Number(it.n) + '</td>' +
+      '<td><div class="k num">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div></td>' +
+      '<td class="pr num">' + (conDesc ? '<s>' + pesosC(it.precio) + '</s> <b class="oferta">' + pesosC(it.pdesc) + '</b>' : pesosC(it.precio)) + '</td>' +
       '<td class="pr num"><b>' + pesosC(czImporte(it)) + '</b></td></tr>';
   }).join("");
-  let tot = '<tr class="t"><td colspan="5">Total parcial</td><td class="pr num">' + pesosC(c.parcial) + '</td></tr>';
-  if (Number(CZ.desc)) tot += '<tr class="t"><td colspan="5">Descuento</td><td class="pr num">− ' + pesosC(CZ.desc) + '</td></tr>';
-  if (Number(CZ.envio)) tot += '<tr class="t"><td colspan="5">Envío</td><td class="pr num">' + pesosC(CZ.envio) + '</td></tr>';
-  if (CZ.iva !== "sin") {
-    tot += '<tr class="t"><td colspan="5">' + (CZ.iva === "inc" ? "Subtotal (sin IVA)" : "Subtotal") + '</td><td class="pr num">' + pesosC(c.subtotal) + '</td></tr>';
-    tot += '<tr class="t"><td colspan="5">' + (CZ.iva === "inc" ? "IVA 16 % (incluido en el total)" : "IVA 16 %") + '</td><td class="pr num">' + pesosC(c.impuesto) + '</td></tr>';
-  }
-  tot += '<tr class="tt"><td colspan="5">TOTAL</td><td class="pr num">' + pesosC(c.total) + '</td></tr>';
+  let tot = '<tr><td>' + (CZ.iva === "inc" ? "Subtotal (sin IVA)" : "Subtotal") + '</td><td class="pr num">' + pesosC(CZ.iva === "sin" ? c.parcial : c.subtotal) + '</td></tr>';
+  if (Number(CZ.desc)) tot += '<tr><td>Descuento</td><td class="pr num">− ' + pesosC(CZ.desc) + '</td></tr>';
+  if (Number(CZ.envio)) tot += '<tr><td>Envío</td><td class="pr num">' + pesosC(CZ.envio) + '</td></tr>';
+  if (CZ.iva !== "sin") tot += '<tr><td>IVA 16 %' + (CZ.iva === "inc" ? " (incluido)" : "") + '</td><td class="pr num">' + pesosC(c.impuesto) + '</td></tr>';
+  tot += '<tr class="tt"><td>TOTAL MXN</td><td class="pr num">' + pesosC(c.total) + '</td></tr>';
+  const precioTxt = CZ.iva === "inc" ? "En pesos mexicanos; el IVA (16 %) ya está incluido y se desglosa en el total."
+    : CZ.iva === "mas" ? "Unitarios en pesos mexicanos, antes de IVA. El IVA (16 %) se suma en el total."
+    : "En pesos mexicanos. Cotización sin IVA.";
   abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Cotizacion ' + folio + (CZ.cliente ? " " + esc(CZ.cliente) : "") + '</title><style>' +
-    "body{font:14px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}" +
-    "h1{font-size:22px;margin:0}h1 small{font-weight:400;font-size:13px;color:#777;display:block;margin-top:2px}" +
-    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:4px}" +
-    ".logo{font-weight:800;font-style:italic;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px;white-space:nowrap}" +
-    ".datos{display:flex;gap:26px;flex-wrap:wrap;margin:8px 0 10px;font-size:13px;color:#444}" +
-    ".datos b{display:block;font-size:11px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.4px}" +
-    "table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #ddd;padding:5px 7px;vertical-align:middle}" +
-    ".n{color:#999;width:26px;text-align:right}.f{width:48px}.f img{width:44px;height:44px;object-fit:contain;display:block}" +
-    ".k{font-weight:700}.d{font-size:12.5px;color:#555}.pz{text-align:center;font-weight:700;width:42px}.pr{text-align:right;white-space:nowrap}" +
-    "s{color:#999}" +
-    "tr.t td{border-bottom:1px solid #eee;color:#555;text-align:right;padding:4px 7px}" +
-    "tr.tt td{border-top:2px solid #1c1917;border-bottom:0;font-weight:800;font-size:17px;text-align:right;padding-top:8px}" +
+    "body{font:13.5px/1.45 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:0;padding:26px 30px}" +
+    ".enc{display:flex;align-items:center;gap:18px;padding-bottom:14px;border-bottom:4px solid #e8650f}" +
+    ".logo{flex:none;background:#ffffff;border-radius:10px;padding:8px 14px;display:grid;place-items:center}" +
+    ".logo img{height:62px;display:block}" +
+    ".emp{flex:1;min-width:0}.emp b{font-size:16.5px;letter-spacing:.3px}.emp div{font-size:12px;color:#666;margin-top:2px}" +
+    ".tit{text-align:right;white-space:nowrap}.tit h1{margin:0;font-size:27px;letter-spacing:.5px}" +
+    ".tit .no{color:#e8650f;font-weight:800;font-size:14px;margin-top:2px}" +
+    ".fila2{display:flex;gap:16px;margin:16px 0 14px;align-items:stretch}" +
+    ".cli{flex:1.2;background:#f7f5f1;border-left:4px solid #e8650f;border-radius:0 10px 10px 0;padding:10px 14px}" +
+    ".cli b{display:block;font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.6px}" +
+    ".cli .nom{font-size:17px;font-weight:800;margin-top:2px}" +
+    ".met{flex:1;font-size:12.5px}.met table{width:100%;border-collapse:collapse}" +
+    ".met td{padding:4.5px 2px;border-bottom:1px solid #eee}" +
+    ".met td:first-child{color:#888;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}" +
+    ".met td:last-child{text-align:right;font-weight:600}" +
+    "table.art{width:100%;border-collapse:collapse}" +
+    "table.art thead td{background:#1c1917;color:#fff;font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;padding:7px;font-weight:700}" +
+    "table.art td{border-bottom:1px solid #e4e0d8;padding:6px 7px;vertical-align:middle}" +
+    ".n{color:#999;width:24px;text-align:right}.f{width:50px}.f img{width:46px;height:46px;object-fit:contain;display:block;background:#fff}" +
+    ".k{font-weight:700}.d{font-size:12px;color:#555}.pz{text-align:center;font-weight:700;width:44px}.pr{text-align:right;white-space:nowrap}" +
+    "s{color:#999;font-size:12px}.oferta{color:#e8650f}" +
+    ".bajo{display:flex;gap:18px;margin-top:14px;align-items:flex-start}" +
+    ".letra{flex:1.3}.letra b{font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.6px}" +
+    ".letra div{margin-top:4px;font-size:12.5px;font-weight:600}" +
+    ".tots{flex:1}.tots table{width:100%;border-collapse:collapse;font-size:13px}" +
+    ".tots td{padding:5px 8px;border-bottom:1px solid #eee;color:#555;text-align:right}" +
+    ".tots td:first-child{text-align:right}" +
+    ".tots tr.tt td{background:#1c1917;color:#fff;font-weight:800;font-size:16px;border-bottom:0}" +
+    ".tots tr.tt td.pr{color:#fff}" +
+    ".cond{margin-top:20px}.cond h3{font-size:12px;letter-spacing:.6px;margin:0 0 4px;border-bottom:2px solid #1c1917;padding-bottom:4px}" +
+    ".cond table{width:100%;border-collapse:collapse;font-size:12.5px}" +
+    ".cond td{padding:5px 2px;border-bottom:1px solid #eee;vertical-align:top}" +
+    ".cond td:first-child{width:150px;color:#888;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;font-weight:700;padding-top:7px}" +
+    ".acciones{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap}" +
+    ".acc{display:inline-block;text-decoration:none;font-weight:700;font-size:13px;padding:9px 16px;border-radius:999px;border:2px solid #e8650f;color:#e8650f}" +
+    ".acc.lleno{background:#e8650f;color:#fff}" +
+    ".atte{margin-top:26px;font-size:13px;color:#555}.atte b{display:block;color:#1c1917;margin-top:2px}" +
+    ".notapie{margin-top:26px;border-top:1px solid #ddd;padding-top:7px;font-size:11px;color:#999;display:flex;justify-content:space-between;gap:10px}" +
     ".num{font-variant-numeric:tabular-nums}" +
-    ".vig{margin:10px 0 0;padding:8px 10px;background:#f6f3ec;border-radius:8px;font-size:13px;color:#555}" +
-    ".pie{display:flex;gap:40px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;font-size:13px;color:#555}" +
-    ".tel{margin-top:14px;font-size:13px;color:#555}" +
-    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}" +
-    "@media print{.boton{display:none}body{margin:0}}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}" +
+    "@media print{.boton{display:none}body{padding:10px 6px}}" +
     "tr{break-inside:avoid}" +
     '</style></head><body>' +
     '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
-    '<div class="enc"><h1>Cotización<small>Folio ' + folio + ' · ' + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
-    '<div class="datos"><div><b>Cliente</b>' + esc(CZ.cliente || "—") + '</div><div><b>Renglones</b>' + CZ.items.length + '</div><div><b>Piezas</b>' + CZ.items.reduce((a, it) => a + Number(it.n || 0), 0) + '</div><div><b>IVA</b>' + esc(CZ_IVAS[CZ.iva]) + '</div></div>' +
-    '<table><tr style="font-size:11px;color:#999;text-transform:uppercase"><td></td><td></td><td>Producto</td><td class="pz">Cant</td><td class="pr">Precio</td><td class="pr">Importe</td></tr>' + cuerpo + tot + '</table>' +
-    '<p class="vig">' + esc(CZ.vigencia || CZ_VIGENCIA_BASE) + '. Esta cotización no es un comprobante fiscal. Precios en pesos mexicanos.</p>' +
-    '<p class="tel">MAKMEX · WhatsApp Chihuahua 614 366 0847 · CDMX 56 3655 8728 · Monterrey 81 2588 7312 · makmex.com</p>' +
-    '<div class="pie"><div>Atendió (nombre y firma)</div><div>Cliente</div></div>' +
+    '<div class="enc"><span class="logo"><img src="data:image/webp;base64,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" alt="MAKMEX"></span>' +
+    '<div class="emp"><b>MAKMEX · Herramienta profesional</b><div>Chihuahua · CDMX · Monterrey · makmex.com · Herramienta nueva y seminueva probada y calificada</div><div>WhatsApp Chihuahua 614 366 0847 · CDMX 56 3655 8728 · Monterrey 81 2588 7312</div></div>' +
+    '<div class="tit"><h1>COTIZACIÓN</h1><div class="no">No. ' + folio + '</div></div></div>' +
+    '<div class="fila2">' +
+    '<div class="cli"><b>Cliente</b><div class="nom">' + esc(CZ.cliente || "Público en general") + '</div></div>' +
+    '<div class="met"><table>' +
+    '<tr><td>Fecha de emisión</td><td>' + ff + '</td></tr>' +
+    '<tr><td>Vigencia</td><td>' + esc(CZ.vigencia || CZ_VIGENCIA_BASE) + '</td></tr>' +
+    '<tr><td>Moneda</td><td>MXN · Peso Mexicano</td></tr>' +
+    '<tr><td>Artículos</td><td>' + CZ.items.length + (CZ.items.length === 1 ? " renglón" : " renglones") + ' · ' + pz + ' pzas</td></tr>' +
+    '</table></div></div>' +
+    '<table class="art"><thead><tr><td>#</td><td></td><td class="pz">Cant</td><td>Descripción</td><td class="pr">Precio unitario</td><td class="pr">Importe</td></tr></thead><tbody>' + cuerpo + '</tbody></table>' +
+    '<div class="bajo">' +
+    '<div class="letra"><b>Importe con letra</b><div>' + czLetras(c.total) + '</div></div>' +
+    '<div class="tots"><table>' + tot + '</table></div></div>' +
+    '<div class="cond"><h3>CONDICIONES COMERCIALES</h3><table>' +
+    '<tr><td>Precios</td><td>' + precioTxt + '</td></tr>' +
+    '<tr><td>Vigencia</td><td>' + esc(CZ.vigencia || CZ_VIGENCIA_BASE) + '</td></tr>' +
+    '<tr><td>Forma de pago</td><td>Efectivo, transferencia o tarjeta.</td></tr>' +
+    '</table></div>' +
+    '<div class="acciones"><a class="acc lleno" href="https://wa.me/526143660847?text=' + encodeURIComponent("Hola, me interesa la cotización " + folio) + '">Pedir por WhatsApp</a>' +
+    '<a class="acc" href="https://makmex.com">Ver catálogo en línea</a></div>' +
+    '<div class="atte">Atentamente,<b>MAKMEX · Herramienta profesional</b></div>' +
+    '<div class="notapie"><span>Documento informativo: esta cotización no es un comprobante fiscal (CFDI).</span><span>Página 1 de 1</span></div>' +
     "</body></html>");
 }
 (function czInicio() {
