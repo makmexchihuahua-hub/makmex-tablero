@@ -195,7 +195,7 @@ main{max-width:1240px;margin:0 auto;padding:14px var(--gutter) 0}
 h4{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:.3px;color:var(--ink-2);margin:16px 0 4px}
 
 /* navegación móvil */
-nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:10}
+nav{position:fixed;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,1fr);z-index:10}
 nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;color:var(--ink-3);position:relative}
 nav button.sel{color:var(--accent)}
 nav button svg{width:22px;height:22px}
@@ -277,6 +277,34 @@ details.sec[open] summary::before{content:"▾"}
 details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5px;color:var(--ink-3)}
 .dem{margin:0 0 12px}
 .dem .lista{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+
+/* cotizador */
+.czcab{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:10px}
+@media (min-width:700px){.czcab{grid-template-columns:2fr 3fr}}
+.czcab label{margin:0 0 3px}
+#czSug{position:relative}
+#czBuscar{font-size:16px}
+#czSugLista{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:15;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;max-height:340px;overflow:auto;box-shadow:0 14px 34px rgba(0,0,0,.4)}
+.czsug{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-top:1px solid var(--line);width:100%;text-align:left}
+.czsug:first-child{border-top:0}
+.czsug:hover{background:var(--surface-2)}
+.czsug .s1{font-family:var(--display);font-weight:600;font-size:15px}
+.czsug .s2{font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.czsug .sp{font-family:var(--display);font-weight:700;text-align:right;font-size:15px}
+.czsug .sp small{display:block;font-family:var(--body);font-weight:400;font-size:11px;color:var(--ink-3)}
+.czfila{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:9px 12px;border-top:1px solid var(--line);align-items:start}
+.czfila:first-child{border-top:0}
+.czfila .k{font-family:var(--display);font-size:16px;font-weight:600}
+.czfila .d{font-size:12px;color:var(--ink-3)}
+.czcampos{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:7px}
+.czcampos label{display:flex;flex-direction:column;font-size:11px;color:var(--ink-3);margin:0;gap:3px}
+.czcampos input{width:92px;padding:6px 8px;font-size:14px}
+.czlado{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.czimp{font-family:var(--display);font-size:18px;font-weight:700;text-align:right}
+.czquitar{width:30px;height:30px;border-radius:8px;background:var(--surface-2);border:1px solid var(--line-2);color:var(--bad);font-size:15px;display:grid;place-items:center}
+.cztot{margin-top:12px;padding:4px 12px}
+.cztot .kv:last-child{border-bottom:0}
+.cztot input{width:110px;text-align:right;padding:6px 8px;font-size:14px}
 </style>
 </head>
 <body>
@@ -370,6 +398,32 @@ details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5
     <h2>Entradas de hoy en CEDIS <small id="entResumen"></small></h2>
     <div class="lista" id="entradas"></div>
   </section>
+
+  <section class="panel" id="p-cotizar">
+    <h2>Cotizador <small id="czResumen"></small></h2>
+    <div class="czcab">
+      <div><label for="czCliente">Cliente</label><input id="czCliente" placeholder="Nombre del cliente" autocomplete="off"></div>
+      <div><label for="czVigencia">Vigencia</label><input id="czVigencia" autocomplete="off"></div>
+    </div>
+    <div class="barra" id="czIva"></div>
+    <div id="czSug">
+      <input id="czBuscar" placeholder="Busca por clave, modelo o nombre… (ej. 2953 o taladro)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div id="czSugLista" class="hidden"></div>
+    </div>
+    <div class="lista" id="czLista" style="margin-top:10px"></div>
+    <div class="lista cztot">
+      <div class="kv"><span class="k">Total parcial</span><span class="v num" id="czParcial">$0.00</span></div>
+      <div class="kv"><span class="k">Descuento global $</span><span class="v"><input id="czDesc" type="number" min="0" step="any" placeholder="0" inputmode="decimal"></span></div>
+      <div class="kv"><span class="k">Envío $</span><span class="v"><input id="czEnvio" type="number" min="0" step="any" placeholder="0" inputmode="decimal"></span></div>
+      <div class="kv" id="czL1"><span class="k" id="czL1k"></span><span class="v num" id="czL1v"></span></div>
+      <div class="kv" id="czL2"><span class="k" id="czL2k"></span><span class="v num" id="czL2v"></span></div>
+      <div class="kv"><span class="k" style="font-weight:700">TOTAL</span><span class="v total num" id="czTotal">$0.00</span></div>
+    </div>
+    <div class="barra" style="margin-top:10px">
+      <button type="button" class="pdfbtn" id="czPdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:15px;height:15px"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>Descargar PDF de la cotización</button>
+      <button type="button" class="pdfbtn" id="czVaciar" style="border-color:var(--bad);color:var(--bad)">Vaciar</button>
+    </div>
+  </section>
 </main>
 
 <nav id="nav">
@@ -378,6 +432,7 @@ details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5
   <button data-p="traspasos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h13l-3-3m3 3-3 3M20 16H7l3-3m-3 3 3 3"/></svg>Traspasos<span class="cnt hidden" id="cntTras"></span></button>
   <button data-p="entradas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>Entradas</button>
   <button data-p="dinero"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M8 7.5h6a2.5 2.5 0 0 1 0 5H9a2.5 2.5 0 0 0 0 5h7"/></svg>Dinero<span class="cnt hidden" id="cntDinero"></span></button>
+  <button data-p="cotizar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3h8l4 4v14H4V3h4zM15 3v5h5"/><path d="M8 12h8M8 16h5"/></svg>Cotizar</button>
 </nav>
 </div>
 
@@ -1171,6 +1226,192 @@ function pdfLiquidacion() {
   accion("revisado", "liquidacion", {modelos: L.length, renglones: nro, lista: Math.round(tot), liquidacion: Math.round(totD)});
 }
 $("#btnPdfLiq").addEventListener("click", pdfLiquidacion);
+
+
+/* ---------------- cotizador (presupuestos para clientes; no toca la base) ---------------- */
+const CZ_LLAVE = "cotizadorMK";
+const CZ_VIGENCIA_BASE = "Precios válidos 3 días o hasta agotar existencias";
+let CZ = {cliente: "", vigencia: CZ_VIGENCIA_BASE, iva: "inc", desc: 0, envio: 0, items: []};
+try { const g = JSON.parse(localStorage.getItem(CZ_LLAVE) || "null"); if (g && Array.isArray(g.items)) CZ = Object.assign(CZ, g); } catch (e) {}
+let CZCAT = null, CZCARGANDO = null;
+function czGuardar() { try { localStorage.setItem(CZ_LLAVE, JSON.stringify(CZ)); } catch (e) {} }
+function czCatalogo() {
+  if (CZCAT) return Promise.resolve(CZCAT);
+  CZCARGANDO = CZCARGANDO || fetch("https://makmex.com/core.json", {cache: "no-cache"}).then(r => r.json()).then(c => {
+    const ix = {}; ["sku", "model", "grade", "name", "brand", "p1", "st", "img"].forEach(k => ix[k] = c.cols.indexOf(k));
+    const v = (f, k) => ix[k] >= 0 ? f[ix[k]] : null;
+    CZCAT = c.rows.map(f => ({
+      sku: String(v(f, "sku") || ""), model: String(v(f, "model") || ""), grade: String(v(f, "grade") || ""),
+      name: String(v(f, "name") || ""), brand: String(v(f, "brand") || ""),
+      p1: Number(v(f, "p1") || 0),
+      st: Array.isArray(v(f, "st")) ? v(f, "st").reduce((a, b) => a + Number(b || 0), 0) : Number(v(f, "st") || 0),
+      img: v(f, "img")
+    })).filter(p => p.sku);
+    return CZCAT;
+  }).catch(e => { CZCARGANDO = null; throw e; });
+  return CZCARGANDO;
+}
+function czBusca(q) {
+  q = (q || "").trim().toLowerCase();
+  if (q.length < 2 || !CZCAT) return [];
+  const partes = q.split(/\s+/);
+  const out = [];
+  for (const p of CZCAT) {
+    const txt = (p.sku + " " + p.model + " " + p.name + " " + p.brand).toLowerCase();
+    if (partes.every(t => txt.includes(t))) { out.push(p); if (out.length >= 80) break; }
+  }
+  out.sort((a, b) => (b.st > 0) - (a.st > 0) || a.model.localeCompare(b.model) || a.sku.localeCompare(b.sku));
+  return out.slice(0, 24);
+}
+function czPintaSug(res) {
+  const el = $("#czSugLista");
+  if (!res.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
+  el.innerHTML = res.map((p, i) => '<button type="button" class="czsug" data-cz="' + i + '">' + fotoHtml(p.sku) +
+    '<div><div class="s1">' + esc(p.sku) + '</div><div class="s2">' + esc(p.name || p.model) + '</div></div>' +
+    '<div class="sp num">' + (p.p1 ? pesos(p.p1) : "—") + '<small>' + (p.st > 0 ? p.st + " en existencia" : "sin existencia") + '</small></div></button>').join("");
+  el.classList.remove("hidden");
+  el.querySelectorAll("[data-cz]").forEach(b => b.addEventListener("click", () => czAgregar(res[+b.dataset.cz])));
+}
+function czAgregar(p) {
+  const it = CZ.items.find(x => x.sku === p.sku);
+  if (it) it.n += 1;
+  else CZ.items.push({sku: p.sku, nombre: p.name || p.model, img: p.img || null, precio: p.p1 || 0, pdesc: null, n: 1});
+  czGuardar(); czPintaLista(); czTotales();
+  const b = $("#czBuscar"); b.value = ""; czPintaSug([]); b.focus();
+}
+function czImporte(it) { const pu = (it.pdesc != null && it.pdesc !== "" && Number(it.pdesc) > 0) ? Number(it.pdesc) : Number(it.precio || 0); return pu * Number(it.n || 0); }
+function czPintaLista() {
+  const el = $("#czLista");
+  el.innerHTML = CZ.items.length ? CZ.items.map((it, i) => '<div class="czfila">' + fotoHtml(it.sku) +
+    '<div><div class="k">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div>' +
+    '<div class="czcampos">' +
+      '<label>Cantidad<input type="number" min="1" step="1" inputmode="numeric" value="' + Number(it.n) + '" data-i="' + i + '" data-f="n"></label>' +
+      '<label>Precio<input type="number" min="0" step="any" inputmode="decimal" value="' + Number(it.precio) + '" data-i="' + i + '" data-f="precio"></label>' +
+      '<label>Precio con descuento<input type="number" min="0" step="any" inputmode="decimal" placeholder="—" value="' + (it.pdesc != null && it.pdesc !== "" ? Number(it.pdesc) : "") + '" data-i="' + i + '" data-f="pdesc"></label>' +
+    '</div></div>' +
+    '<div class="czlado"><button type="button" class="czquitar" data-q="' + i + '" aria-label="Quitar ' + esc(it.sku) + '">✕</button><span class="czimp num" id="czImp' + i + '">' + pesosC(czImporte(it)) + '</span></div></div>').join("")
+    : '<div class="vacio">Busca un producto arriba y tócalo para agregarlo a la cotización.</div>';
+  el.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => { CZ.items.splice(+b.dataset.q, 1); czGuardar(); czPintaLista(); czTotales(); }));
+}
+$("#czLista").addEventListener("input", ev => {
+  const inp = ev.target.closest("input[data-i]"); if (!inp) return;
+  const it = CZ.items[+inp.dataset.i]; if (!it) return;
+  const f = inp.dataset.f;
+  if (f === "n") it.n = Math.max(1, Math.round(Number(inp.value) || 1));
+  else if (f === "precio") it.precio = Math.max(0, Number(inp.value) || 0);
+  else it.pdesc = inp.value === "" ? null : Math.max(0, Number(inp.value) || 0);
+  czGuardar();
+  const imp = $("#czImp" + inp.dataset.i); if (imp) imp.textContent = pesosC(czImporte(it));
+  czTotales();
+});
+function czCuentas() {
+  const parcial = CZ.items.reduce((a, it) => a + czImporte(it), 0);
+  const base = Math.max(0, parcial - Number(CZ.desc || 0)) + Number(CZ.envio || 0);
+  if (CZ.iva === "mas") return {parcial, subtotal: base, impuesto: base * 0.16, total: base * 1.16};
+  if (CZ.iva === "inc") return {parcial, subtotal: base / 1.16, impuesto: base - base / 1.16, total: base};
+  return {parcial, subtotal: base, impuesto: 0, total: base};
+}
+function czTotales() {
+  const c = czCuentas();
+  $("#czParcial").textContent = pesosC(c.parcial);
+  const L1 = $("#czL1"), L2 = $("#czL2");
+  if (CZ.iva === "sin") { L1.classList.add("hidden"); L2.classList.add("hidden"); }
+  else {
+    L1.classList.remove("hidden"); L2.classList.remove("hidden");
+    $("#czL1k").textContent = CZ.iva === "inc" ? "Subtotal (sin IVA)" : "Subtotal";
+    $("#czL1v").textContent = pesosC(c.subtotal);
+    $("#czL2k").textContent = CZ.iva === "inc" ? "IVA 16 % (incluido)" : "IVA 16 % (se suma)";
+    $("#czL2v").textContent = pesosC(c.impuesto);
+  }
+  $("#czTotal").textContent = pesosC(c.total);
+  const pz = CZ.items.reduce((a, it) => a + Number(it.n || 0), 0);
+  $("#czResumen").textContent = CZ.items.length ? CZ.items.length + (CZ.items.length === 1 ? " renglón · " : " renglones · ") + pz + " pzas" : "";
+}
+const CZ_IVAS = {inc: "IVA incluido (desglosado)", mas: "+ IVA 16 %", sin: "Sin IVA"};
+function czPintaIva() {
+  $("#czIva").innerHTML = Object.entries(CZ_IVAS).map(([k, v]) => '<button type="button" class="chip' + (CZ.iva === k ? " sel" : "") + '" data-iva="' + k + '">' + v + '</button>').join("");
+  $("#czIva").querySelectorAll("[data-iva]").forEach(b => b.addEventListener("click", () => { CZ.iva = b.dataset.iva; czGuardar(); czPintaIva(); czTotales(); }));
+}
+function czPdf() {
+  if (!CZ.items.length) { alert("La cotización está vacía: agrega al menos un producto."); return; }
+  const c = czCuentas();
+  const f = new Date();
+  const folio = "COT-" + f.getFullYear().toString().slice(2) + String(f.getMonth() + 1).padStart(2, "0") + String(f.getDate()).padStart(2, "0") + "-" + String(f.getHours()).padStart(2, "0") + String(f.getMinutes()).padStart(2, "0");
+  const ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "long", year: "numeric"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
+  const foto = sku => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(sku || "");
+    const id = FOTOS.clave[sku] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[sku];
+    return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
+  const cuerpo = CZ.items.map((it, i) => {
+    const conDesc = it.pdesc != null && it.pdesc !== "" && Number(it.pdesc) > 0 && Number(it.pdesc) < Number(it.precio);
+    return '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(it.sku) +
+      '</td><td><div class="k num">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div></td>' +
+      '<td class="pz num">' + Number(it.n) + '</td>' +
+      '<td class="pr num">' + (conDesc ? '<s>' + pesosC(it.precio) + '</s><br><b>' + pesosC(it.pdesc) + '</b>' : pesosC(it.precio)) + '</td>' +
+      '<td class="pr num"><b>' + pesosC(czImporte(it)) + '</b></td></tr>';
+  }).join("");
+  let tot = '<tr class="t"><td colspan="5">Total parcial</td><td class="pr num">' + pesosC(c.parcial) + '</td></tr>';
+  if (Number(CZ.desc)) tot += '<tr class="t"><td colspan="5">Descuento</td><td class="pr num">− ' + pesosC(CZ.desc) + '</td></tr>';
+  if (Number(CZ.envio)) tot += '<tr class="t"><td colspan="5">Envío</td><td class="pr num">' + pesosC(CZ.envio) + '</td></tr>';
+  if (CZ.iva !== "sin") {
+    tot += '<tr class="t"><td colspan="5">' + (CZ.iva === "inc" ? "Subtotal (sin IVA)" : "Subtotal") + '</td><td class="pr num">' + pesosC(c.subtotal) + '</td></tr>';
+    tot += '<tr class="t"><td colspan="5">' + (CZ.iva === "inc" ? "IVA 16 % (incluido en el total)" : "IVA 16 %") + '</td><td class="pr num">' + pesosC(c.impuesto) + '</td></tr>';
+  }
+  tot += '<tr class="tt"><td colspan="5">TOTAL</td><td class="pr num">' + pesosC(c.total) + '</td></tr>';
+  abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Cotizacion ' + folio + (CZ.cliente ? " " + esc(CZ.cliente) : "") + '</title><style>' +
+    "body{font:14px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}" +
+    "h1{font-size:22px;margin:0}h1 small{font-weight:400;font-size:13px;color:#777;display:block;margin-top:2px}" +
+    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:4px}" +
+    ".logo{font-weight:800;font-style:italic;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px;white-space:nowrap}" +
+    ".datos{display:flex;gap:26px;flex-wrap:wrap;margin:8px 0 10px;font-size:13px;color:#444}" +
+    ".datos b{display:block;font-size:11px;color:#999;font-weight:600;text-transform:uppercase;letter-spacing:.4px}" +
+    "table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #ddd;padding:5px 7px;vertical-align:middle}" +
+    ".n{color:#999;width:26px;text-align:right}.f{width:48px}.f img{width:44px;height:44px;object-fit:contain;display:block}" +
+    ".k{font-weight:700}.d{font-size:12.5px;color:#555}.pz{text-align:center;font-weight:700;width:42px}.pr{text-align:right;white-space:nowrap}" +
+    "s{color:#999}" +
+    "tr.t td{border-bottom:1px solid #eee;color:#555;text-align:right;padding:4px 7px}" +
+    "tr.tt td{border-top:2px solid #1c1917;border-bottom:0;font-weight:800;font-size:17px;text-align:right;padding-top:8px}" +
+    ".num{font-variant-numeric:tabular-nums}" +
+    ".vig{margin:10px 0 0;padding:8px 10px;background:#f6f3ec;border-radius:8px;font-size:13px;color:#555}" +
+    ".pie{display:flex;gap:40px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;font-size:13px;color:#555}" +
+    ".tel{margin-top:14px;font-size:13px;color:#555}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}" +
+    "@media print{.boton{display:none}body{margin:0}}" +
+    "tr{break-inside:avoid}" +
+    '</style></head><body>' +
+    '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>Cotización<small>Folio ' + folio + ' · ' + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
+    '<div class="datos"><div><b>Cliente</b>' + esc(CZ.cliente || "—") + '</div><div><b>Renglones</b>' + CZ.items.length + '</div><div><b>Piezas</b>' + CZ.items.reduce((a, it) => a + Number(it.n || 0), 0) + '</div><div><b>IVA</b>' + esc(CZ_IVAS[CZ.iva]) + '</div></div>' +
+    '<table><tr style="font-size:11px;color:#999;text-transform:uppercase"><td></td><td></td><td>Producto</td><td class="pz">Cant</td><td class="pr">Precio</td><td class="pr">Importe</td></tr>' + cuerpo + tot + '</table>' +
+    '<p class="vig">' + esc(CZ.vigencia || CZ_VIGENCIA_BASE) + '. Esta cotización no es un comprobante fiscal. Precios en pesos mexicanos.</p>' +
+    '<p class="tel">MAKMEX · WhatsApp Chihuahua 614 366 0847 · CDMX 56 3655 8728 · Monterrey 81 2588 7312 · makmex.com</p>' +
+    '<div class="pie"><div>Atendió (nombre y firma)</div><div>Cliente</div></div>' +
+    "</body></html>");
+}
+(function czInicio() {
+  const cli = $("#czCliente"), vig = $("#czVigencia");
+  cli.value = CZ.cliente || ""; vig.value = CZ.vigencia || CZ_VIGENCIA_BASE;
+  cli.addEventListener("input", () => { CZ.cliente = cli.value; czGuardar(); });
+  vig.addEventListener("input", () => { CZ.vigencia = vig.value; czGuardar(); });
+  $("#czDesc").value = Number(CZ.desc) || ""; $("#czEnvio").value = Number(CZ.envio) || "";
+  $("#czDesc").addEventListener("input", () => { CZ.desc = Math.max(0, Number($("#czDesc").value) || 0); czGuardar(); czTotales(); });
+  $("#czEnvio").addEventListener("input", () => { CZ.envio = Math.max(0, Number($("#czEnvio").value) || 0); czGuardar(); czTotales(); });
+  const busca = $("#czBuscar");
+  busca.addEventListener("focus", () => { czCatalogo().then(() => czPintaSug(czBusca(busca.value))).catch(() => {}); });
+  busca.addEventListener("input", () => {
+    if (!CZCAT) { czCatalogo().then(() => czPintaSug(czBusca(busca.value))).catch(() => {}); return; }
+    czPintaSug(czBusca(busca.value));
+  });
+  document.addEventListener("click", ev => { if (!ev.target.closest("#czSug")) czPintaSug([]); });
+  $("#czPdf").addEventListener("click", czPdf);
+  $("#czVaciar").addEventListener("click", () => {
+    if (!CZ.items.length && !CZ.cliente) { return; }
+    if (!confirm("¿Vaciar la cotización? Se borran los renglones y el cliente (descarga el PDF antes si lo necesitas).")) return;
+    CZ = {cliente: "", vigencia: CZ_VIGENCIA_BASE, iva: CZ.iva, desc: 0, envio: 0, items: []};
+    czGuardar(); cli.value = ""; vig.value = CZ_VIGENCIA_BASE; $("#czDesc").value = ""; $("#czEnvio").value = "";
+    czPintaLista(); czTotales();
+  });
+  czPintaIva(); czPintaLista(); czTotales();
+})();
 
 iniciar();
 </script>
