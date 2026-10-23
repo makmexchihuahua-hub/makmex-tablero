@@ -345,6 +345,13 @@ details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5
 .invdif .num{font-variant-numeric:tabular-nums;text-align:center}
 .invdif .mal{color:#e03131;font-weight:700}.invdif .bien{color:var(--ok);font-weight:700}
 .invnube{font-size:12.5px;color:var(--ink-3);margin:0 2px 8px;min-height:18px}.invnube.ok{color:var(--ok)}.invnube.mal{color:var(--warn)}
+
+/* existencias negativas: el texto rojo se abre */
+button.neg{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--bad);font-weight:600;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;text-align:left}
+button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
+.art .i.neg{color:var(--bad)}
+.negtot{display:flex;justify-content:space-between;gap:10px;padding:12px 0 4px;font-weight:600}
+.negnota{font-size:12.5px;color:var(--ink-3);margin:2px 0 10px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -1150,12 +1157,78 @@ function filtroDinero(M) {
   }
   return out.sort((a, b) => b.score - a.score);
 }
+/* ---------------- existencias negativas de una tienda (clic en «N en negativo» de Dinero) ---------------- */
+async function verNegativos(s) {
+  const titulo = "En negativo · " + SUCS[s], tok = verNegativos.tok = (verNegativos.tok || 0) + 1;
+  abrirCajon(titulo, "Cargando…", '<div class="vacio">Cargando las claves en negativo…</div>');
+  const sigue = () => tok === verNegativos.tok && $("#cajonTitulo").textContent === titulo && $("#cajon").classList.contains("abierto");
+  let L, otras = [];
+  try {
+    L = await q("sicar_existencia", "select=clave,descripcion,existencia,precio1,categoria,actualizado&suc=eq." + s + "&existencia=lt.0&order=existencia.asc");
+    if (L.length) otras = await q("sicar_existencia", "select=suc,clave,existencia&existencia=gt.0&clave=in.(" + L.map(x => '"' + String(x.clave).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"').map(encodeURIComponent).join(",") + ")");
+  } catch (e) {
+    if (!sigue()) return;
+    $("#cajonSub").textContent = ""; $("#cajonCuerpo").innerHTML = '<div class="vacio">No se pudo leer: ' + esc(e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message) + '</div>'; return;
+  }
+  if (!sigue()) return;
+  const valor = x => Number(x.existencia || 0) * Number(x.precio1 || 0);
+  L.sort((a, b) => valor(a) - valor(b) || Number(a.existencia) - Number(b.existencia) || String(a.clave).localeCompare(b.clave));
+  const enOtras = {};
+  for (const o of otras) if (o.suc !== s) (enOtras[o.clave] = enOtras[o.clave] || []).push(o);
+  const otrasTxt = c => (enOtras[c] || []).sort((a, b) => a.suc - b.suc).map(o => SUCS[o.suc] + " " + Number(o.existencia)).join(" · ");
+  const pz = L.reduce((a, x) => a + Number(x.existencia || 0), 0), tot = L.reduce((a, x) => a + valor(x), 0);
+  const act = L.reduce((m, x) => x.actualizado && x.actualizado > m ? x.actualizado : m, "");
+  const hace = act ? Math.max(0, Math.round((Date.now() - Date.parse(act)) / 60000)) : null;
+  const pzTxt = n => Math.abs(n) === 1 ? n + " pz" : n + " pzas";
+  $("#cajonSub").textContent = L.length + (L.length === 1 ? " clave" : " claves") + " · " + pzTxt(pz) + " · " + pesos(tot) + (hace != null ? " · SICAR de hace " + (hace < 60 ? hace + " min" : Math.round(hace / 60) + " h") : "");
+  $("#cajonCuerpo").innerHTML = !L.length ? '<div class="vacio">Ya no hay claves en negativo en ' + esc(SUCS[s]) + '.</div>' :
+    '<div class="negnota">Existencia menor a cero en SICAR: casi siempre es una venta o un traspaso que salió sin que la pieza estuviera registrada (entrada o traspaso pendiente de capturar, o clave/calificación equivocada). «En otras tiendas» ayuda a encontrar de dónde vino.</div>' +
+    L.map(x => { const o = otrasTxt(x.clave); return '<div class="art">' + fotoHtml(x.clave) + '<div><div class="c">' + esc(x.clave) + '</div><div class="d">' + esc(x.descripcion || "") +
+      (o ? '<br>En otras tiendas: ' + esc(o) : '') + '</div></div><div class="i num neg">' + pzTxt(Number(x.existencia)) + '<small>' + pesos(valor(x)) + '</small></div></div>'; }).join("") +
+    '<div class="negtot num"><span>Total ' + esc(SUCS[s]) + '</span><span>' + pzTxt(pz) + ' · ' + pesos(tot) + '</span></div>';
+  if (L.length) { pdfCajon = () => pdfNegativos(s, L, otrasTxt); $("#btnPdfCajon").classList.remove("hidden"); }
+}
+function pdfNegativos(s, L, otrasTxt) {
+  const valor = x => Number(x.existencia || 0) * Number(x.precio1 || 0);
+  const foto = clave => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || "");
+    const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
+    return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
+  const pz = L.reduce((a, x) => a + Number(x.existencia || 0), 0), tot = L.reduce((a, x) => a + valor(x), 0);
+  const cuerpo = L.map((x, i) => { const o = otrasTxt(x.clave); return '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(x.clave) +
+    '</td><td><div class="k num">' + esc(x.clave) + '</div><div class="d">' + esc(x.descripcion || "") + (o ? ' · <i>otras tiendas: ' + esc(o) + '</i>' : '') + '</div></td>' +
+    '<td class="pz num neg">' + Number(x.existencia) + '</td><td class="v num">' + pesos(valor(x)) + '</td><td><span class="chk"></span></td></tr>'; }).join("");
+  const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
+  abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Existencias negativas ' + esc(SUCS[s]) + ' ' + ff.replace(/[\/:]/g, ".") + ' · MAKMEX</title><style>' +
+    "body{font:14px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}" +
+    "h1{font-size:22px;margin:0}h1 small{font-weight:400;font-size:13px;color:#777;display:block;margin-top:2px}" +
+    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:4px}" +
+    ".logo{font-weight:800;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px;white-space:nowrap}" +
+    "table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #ddd;padding:5px 7px;vertical-align:middle}" +
+    "thead td{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#777;font-weight:700}" +
+    ".n{color:#999;width:26px;text-align:right}.f{width:48px}.f img{width:44px;height:44px;object-fit:contain;display:block}" +
+    ".k{font-weight:700}.d{font-size:12.5px;color:#555}.pz{text-align:center;font-weight:700;width:60px}.v{text-align:right;width:90px}.neg{color:#c9302c}" +
+    ".chk{display:block;width:44px;height:22px;border:1.5px solid #444;border-radius:4px;margin:0 auto}td:last-child{width:60px}" +
+    ".num{font-variant-numeric:tabular-nums}" +
+    ".pie{display:flex;gap:40px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;font-size:13px;color:#555}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}" +
+    "@media print{.boton{display:none}body{margin:0}}tr{break-inside:avoid}" +
+    '</style></head><body>' +
+    '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>Existencias en negativo · ' + esc(SUCS[s]) + '<small>Según SICAR · hoja impresa el ' + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
+    '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + L.length + (L.length === 1 ? " clave" : " claves") + " · " + pz + " piezas · " + pesos(tot) + ' a precio de lista.</b> Cuenta cada clave en la tienda, anota lo que hay en «Real» y corrige en SICAR la entrada o el traspaso que faltó capturar.</p>' +
+    '<table><thead><tr><td></td><td></td><td>Clave</td><td style="text-align:center">SICAR</td><td style="text-align:right">Valor</td><td style="text-align:center">Real</td></tr></thead>' + cuerpo + "</table>" +
+    '<div style="text-align:right;font-weight:700;padding:8px 7px">Total: ' + pz + ' piezas · ' + pesos(tot) + "</div>" +
+    '<div class="pie"><div>Contó (nombre y firma)</div><div>Corrigió en SICAR</div><div>Fecha</div></div>' +
+    "</body></html>");
+}
+
 function pintarDinero() {
   if (!$("#p-dinero")) return;
   // valor por tienda (debe cuadrar con el reporte de inventario de SICAR a precio de venta)
   const V = {}; D.valor.forEach(v => V[v.suc] = v);
   const tot = D.valor.reduce((a, v) => a + Number(v.valor || 0), 0), totPz = D.valor.reduce((a, v) => a + Number(v.piezas || 0), 0);
-  $("#valorTiendas").innerHTML = [1, 3, 2, 4].map(s => { const v = V[s] || {}; return '<div class="tile num"><div class="n"><span>' + SUCS[s] + '</span><span>' + Number(v.piezas || 0) + ' pzas</span></div><div class="t chico' + (v.valor ? "" : " cero") + '">' + pesos(v.valor) + '</div><div class="s">' + (v.claves || 0) + ' claves' + (v.claves_negativas ? ' · <span class="neg">' + v.claves_negativas + ' en negativo (' + pesos(v.valor_negativo) + ')</span>' : "") + '</div></div>'; }).join("");
+  $("#valorTiendas").innerHTML = [1, 3, 2, 4].map(s => { const v = V[s] || {}; return '<div class="tile num"><div class="n"><span>' + SUCS[s] + '</span><span>' + Number(v.piezas || 0) + ' pzas</span></div><div class="t chico' + (v.valor ? "" : " cero") + '">' + pesos(v.valor) + '</div><div class="s">' + (v.claves || 0) + ' claves' + (v.claves_negativas ? ' · <button type="button" class="neg" data-negsuc="' + s + '" title="Ver qué productos están en negativo">' + v.claves_negativas + ' en negativo (' + pesos(v.valor_negativo) + ')</button>' : "") + '</div></div>'; }).join("");
+  $("#valorTiendas").querySelectorAll("[data-negsuc]").forEach(b => b.addEventListener("click", () => verNegativos(+b.dataset.negsuc)));
   const M = agruparDinero();
   const muerto = Object.values(M).filter(m => m.diasG == null || m.diasG > 180).reduce((a, m) => a + m.valor, 0);
   const comp = D.comprasSinVenta.reduce((a, c) => a + Number(c.valor_hoy || 0), 0);
