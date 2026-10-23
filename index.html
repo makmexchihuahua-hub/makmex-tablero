@@ -352,6 +352,10 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .art .i.neg{color:var(--bad)}
 .negtot{display:flex;justify-content:space-between;gap:10px;padding:12px 0 4px;font-weight:600}
 .negnota{font-size:12.5px;color:var(--ink-3);margin:2px 0 10px;line-height:1.4}
+
+/* Denmor: modelos repetidos */
+.renglon .d.rep{white-space:normal;overflow:visible;color:var(--ink-2);margin-top:2px}
+.renglon .d.rep b{font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -777,7 +781,8 @@ function calcularReparto() {
     if (ESPECIAL.test(e.clave) || Number(e.existencia) <= 0) continue;
     const r = m(e.clave); if (!r.desc) { r.desc = e.descripcion; r.cat = e.categoria; r.dep = e.departamento; }
     if (e.suc === 1) { r.ced[e.clave] = (r.ced[e.clave] || 0) + Number(e.existencia); r.precio = r.precio ?? e.precio1; }
-    else r.tienda[e.suc] = (r.tienda[e.suc] || 0) + Number(e.existencia);
+    else { r.tienda[e.suc] = (r.tienda[e.suc] || 0) + Number(e.existencia);
+      if (e.suc === 2) { r.den = r.den || {}; r.den[e.clave] = (r.den[e.clave] || 0) + Number(e.existencia); r.precioDen = r.precioDen ?? e.precio1; } }
   }
   const destinoDe = {}; D.traspasos.forEach(t => destinoDe[t.suc + ":" + t.tra_id] = t.suc_des);
   for (const d of D.trasDet) {
@@ -804,11 +809,31 @@ function calcularReparto() {
       libre[c] -= 1; if (libre[c] <= 0) delete libre[c];
     }
   }
+  // Denmor con 2 o más piezas del mismo modelo (todas las calificaciones juntas): Emilio decide qué regresa a CEDIS
+  const repetidos = [];
+  for (const r of Object.values(MOD)) {
+    if (!(r.tienda[2] >= 2)) continue;
+    const claves = Object.entries(r.den || {}).sort((a, b) => rango(partes(a[0])[1]) - rango(partes(b[0])[1]) || a[0].localeCompare(b[0]));
+    const tc = Object.values(r.ced).reduce((a, b) => a + b, 0);
+    repetidos.push({clave: claves.length ? claves[0][0] : r.mod, mod: r.mod, desc: r.desc, cat: r.cat, dep: r.dep, piezas: r.tienda[2], sobran: r.tienda[2] - 1,
+                    claves, precio: r.precioDen ?? r.precio, cedis: tc, camino: r.camino[2] || 0});
+  }
+  repetidos.sort((a, b) => b.sobran * Number(b.precio || 0) - a.sobran * Number(a.precio || 0) || a.mod.localeCompare(b.mod));
   for (const k in envios) envios[k].sort((a, b) => (a.dep || "").localeCompare(b.dep || "") || a.clave.localeCompare(b.clave));
   regresar.sort((a, b) => a.clave.localeCompare(b.clave));
-  return {envios, regresar, modelos: Object.keys(MOD).length, hora: new Date()};
+  return {envios, regresar, repetidos, modelos: Object.keys(MOD).length, hora: new Date()};
 }
 const tipoDe = r => /bater|cargador/i.test((r.cat || "") + " " + (r.dep || "") + " " + (r.desc || "")) ? "bateria" : /accesor|consumible|disco|broca|punta|hoja|lija|cuchilla|ropa|guante|lente|malet|estuche|bolsa/i.test((r.cat || "") + " " + (r.dep || "")) ? "accesorio" : "herramienta";
+
+/* ---------------- Denmor: modelos repetidos (botón en Qué mandar) ---------------- */
+function repDesglose(e) { return e.claves.map(([c, n]) => c + (n > 1 ? " ×" + n : "")).join(" + "); }
+function repRenglon(e, venDen) {
+  const v = venDen.get(e.mod);
+  const vend = !v ? "" : Number(v.pzas_180_aqui) > 0 ? " · Denmor vendió " + Number(v.pzas_180_aqui) + " en 180 días" : " · Denmor no lo ha vendido en 180 días";
+  return '<div class="renglon">' + fotoHtml(e.clave) + '<div><div class="k">' + esc(e.mod) + '</div><div class="d">' + esc(e.desc || "") + '</div>' +
+    '<div class="d rep"><b>' + esc(repDesglose(e)) + '</b>' + (e.cedis ? " · CEDIS tiene " + e.cedis : " · CEDIS no tiene") + (e.camino ? " · van " + e.camino + " en camino a Denmor" : "") + esc(vend) + '</div></div>' +
+    '<div class="p num"><b>' + e.piezas + ' pzas</b>en Denmor · ' + (e.sobran === 1 ? "sobra 1" : "sobran " + e.sobran) + (e.precio ? '<br>' + pesos(e.precio) + ' c/u' : '') + '</div></div>';
+}
 
 function pintarReparto() {
   const R = D.reparto; if (!R) return;
@@ -817,17 +842,19 @@ function pintarReparto() {
   const val = k => (k === 0 ? R.regresar : R.envios[k]).reduce((a, e) => a + Number(e.precio || 0) * (e.piezas || 1), 0);
   $("#cntEnviar").textContent = n[3] + n[2] + n[4]; $("#cntEnviar").classList.toggle("hidden", !(n[3] + n[2] + n[4]));
   $("#destinos").innerHTML = ORDEN_REPARTO.map(k => '<button data-d="' + k + '"' + (UI.destino === k ? ' class="sel"' : "") + '><div class="n">a ' + SUCS[k] + '</div><div class="t num">' + n[k] + '</div><div class="s">' + (n[k] === 1 ? "pieza" : "piezas") + " · " + pesos(val(k)) + (nd(k) ? ' · <b>+' + nd(k) + ' por demanda</b>' : '') + '</div></button>').join("") +
-    '<button data-d="0"' + (UI.destino === 0 ? ' class="sel"' : "") + ' style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center"><span class="n">Denmor regresa a CEDIS (CEDIS ya no tiene el modelo)</span><span class="t num" style="font-size:22px">' + n[0] + '</span></button>';
+    '<button data-d="0"' + (UI.destino === 0 ? ' class="sel"' : "") + ' style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center"><span class="n">Denmor regresa a CEDIS (CEDIS ya no tiene el modelo)</span><span class="t num" style="font-size:22px">' + n[0] + '</span></button>' +
+    '<button data-d="-2"' + (UI.destino === -2 ? ' class="sel"' : "") + ' style="grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:10px"><span class="n">Denmor tiene modelos repetidos (2 o más piezas del mismo modelo, cualquier calificación)</span><span class="t num" style="font-size:22px">' + (R.repetidos || []).length + '</span></button>';
   $("#destinos").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { UI.destino = +b.dataset.d; pintarReparto(); }));
   pintarDemanda();
-  const base = UI.destino === 0 ? R.regresar : R.envios[UI.destino];
+  const base = UI.destino === 0 ? R.regresar : UI.destino === -2 ? (R.repetidos || []) : R.envios[UI.destino];
   const tipos = {todo: "Todo", herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
   $("#filtroEnviar").innerHTML = Object.entries(tipos).map(([k, v]) => '<button class="chip' + (UI.filtroTipo === k ? " sel" : "") + '" data-t="' + k + '">' + v + (k === "todo" ? "" : " · " + base.filter(e => tipoDe(e) === k).length) + '</button>').join("");
   $("#filtroEnviar").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { UI.filtroTipo = b.dataset.t; pintarReparto(); }));
   const lista = base.filter(e => UI.filtroTipo === "todo" || tipoDe(e) === UI.filtroTipo);
-  $("#reparto").innerHTML = lista.length ? lista.map(e => '<div class="renglon">' + fotoHtml(e.clave) + '<div><div class="k">' + esc(e.clave) + (e.grado ? "" : "") + '</div><div class="d">' + esc(e.desc || "") + '</div></div><div class="p num">' +
+  const venDen = new Map((D.invModelo || []).filter(x => x.suc === 2).map(x => [x.modelo, x]));
+  $("#reparto").innerHTML = lista.length ? lista.map(e => UI.destino === -2 ? repRenglon(e, venDen) : '<div class="renglon">' + fotoHtml(e.clave) + '<div><div class="k">' + esc(e.clave) + (e.grado ? "" : "") + '</div><div class="d">' + esc(e.desc || "") + '</div></div><div class="p num">' +
     (UI.destino === 0 ? '<b>' + e.piezas + (e.piezas === 1 ? " pza" : " pzas") + '</b>en Denmor' : '<b>' + (e.precio ? pesos(e.precio) : "—") + '</b>CEDIS tiene ' + e.cedis + " de " + e.total) + '</div></div>').join("")
-    : '<div class="vacio">Nada que mandar aquí por ahora.</div>';
+    : '<div class="vacio">' + (UI.destino === -2 ? 'Denmor no tiene modelos repetidos.' : 'Nada que mandar aquí por ahora.') + '</div>';
   $("#repartoPie").textContent = "Calculado a las " + R.hora.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + " con las existencias de las 4 tiendas y lo que va en camino · " + R.modelos + " modelos · se recalcula cada " + (CADA_S_REPARTO / 60) + " min";
 }
 
@@ -835,11 +862,11 @@ function pintarReparto() {
 /* ---------------- hoja de surtido (botón PDF): imprimir o guardar la lista del destino elegido ---------------- */
 function pdfReparto() {
   const R = D.reparto; if (!R) { alert("Todavía no hay reparto calculado; espera unos segundos."); return; }
-  const base = UI.destino === 0 ? R.regresar : R.envios[UI.destino];
+  const base = UI.destino === 0 ? R.regresar : UI.destino === -2 ? (R.repetidos || []) : R.envios[UI.destino];
   const lista = base.filter(e => UI.filtroTipo === "todo" || tipoDe(e) === UI.filtroTipo);
-  const demN = UI.destino === 0 ? 0 : D.demanda.filter(x => x.suc === UI.destino && x.fuente === 1 && !(x.en_camino > 0)).length;
+  const demN = UI.destino <= 0 ? 0 : D.demanda.filter(x => x.suc === UI.destino && x.fuente === 1 && !(x.en_camino > 0)).length;
   if (!lista.length && !demN) { alert("No hay nada en esta lista."); return; }
-  const destino = UI.destino === 0 ? "Denmor regresa a CEDIS" : "Envío a " + SUCS[UI.destino];
+  const destino = UI.destino === 0 ? "Denmor regresa a CEDIS" : UI.destino === -2 ? "Denmor: modelos repetidos" : "Envío a " + SUCS[UI.destino];
   const piezas = lista.reduce((a, e) => a + (e.piezas || 1), 0) + demN;
   const tipos = {herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
   const filtroTxt = UI.filtroTipo === "todo" ? "" : " · solo " + tipos[UI.filtroTipo].toLowerCase();
@@ -847,7 +874,7 @@ function pdfReparto() {
     const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
   let cuerpo = "", nro = 0;
-  const dem = UI.destino === 0 ? [] : D.demanda.filter(x => x.suc === UI.destino && x.fuente === 1 && !(x.en_camino > 0));
+  const dem = UI.destino <= 0 ? [] : D.demanda.filter(x => x.suc === UI.destino && x.fuente === 1 && !(x.en_camino > 0));
   if (dem.length) {
     cuerpo += '<tr class="grupo"><td colspan="5">Lo que ' + SUCS[UI.destino] + ' vende y no tiene (de CEDIS, que conserva 1) · ' + dem.length + (dem.length === 1 ? ' renglón' : ' renglones') + '</td></tr>';
     for (const e of dem) { nro++;
@@ -859,7 +886,7 @@ function pdfReparto() {
     if (!del.length) continue;
     if (UI.filtroTipo === "todo") cuerpo += '<tr class="grupo"><td colspan="5">' + tipos[t] + " · " + del.length + (del.length === 1 ? " renglón" : " renglones") + "</td></tr>";
     for (const e of del) { nro++;
-      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(e.clave) + '</td><td><div class="k num">' + esc(e.clave) + '</div><div class="d">' + esc(e.desc || "") + "</div></td>" +
+      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(e.clave) + '</td><td><div class="k num">' + esc(UI.destino === -2 ? e.mod : e.clave) + '</div><div class="d">' + esc(e.desc || "") + (UI.destino === -2 ? ' · <b>' + esc(repDesglose(e)) + '</b>' + (e.cedis ? ' · CEDIS tiene ' + e.cedis : ' · CEDIS no tiene') : '') + "</div></td>" +
         '<td class="pz num">' + (e.piezas || 1) + "</td><td><span class=\"chk\"></span></td></tr>";
     }
   }
@@ -883,7 +910,8 @@ function pdfReparto() {
     '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
     '<div class="enc"><h1>' + esc(destino) + "<small>Hoja de surtido para el almacén · lista calculada a las " +
     R.hora.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + " · impresa el " + ff + filtroTxt + "</small></h1><span class=\"logo\">MAKMEX</span></div>" +
-    '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + nro + (nro === 1 ? " renglón" : " renglones") + " · " + piezas + (piezas === 1 ? " pieza" : " piezas") + ".</b> Marca la casilla al apartar cada pieza. La clave trae la calificación exacta que se manda" + (demN ? "; en el bloque de demanda elige la mejor calificación disponible" : "") + ".</p>" +
+    (UI.destino === -2 ? '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + nro + (nro === 1 ? " modelo" : " modelos") + " · " + piezas + " piezas en Denmor · sobran " + (piezas - nro) + " si se queda con 1 de cada uno.</b> Marca los que regresan a CEDIS y anota la calificación que se manda.</p>"
+     : '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + nro + (nro === 1 ? " renglón" : " renglones") + " · " + piezas + (piezas === 1 ? " pieza" : " piezas") + ".</b> Marca la casilla al apartar cada pieza. La clave trae la calificación exacta que se manda" + (demN ? "; en el bloque de demanda elige la mejor calificación disponible" : "") + ".</p>") +
     "<table>" + cuerpo + "</table>" +
     '<div class="pie"><div>Preparó (nombre y firma)</div><div>Revisó / empacó</div><div>Fecha y hora de salida</div></div>' +
     "</body></html>";
