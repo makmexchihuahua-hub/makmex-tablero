@@ -641,10 +641,10 @@ async function refrescar(primera) {
         (await q("sicar_cliente", "select=suc,cli_id,nombre&suc=eq." + suc + "&cli_id=in." + enLista([...ids]))).forEach(c => D.clientes[c.suc + ":" + c.cli_id] = c.nombre);
       }
     }
-    if (compras.length) D.comprasDet = await q("sicar_compra_detalle", "select=com_id,clave,descripcion,cantidad,borrado&suc=eq.1&com_id=in." + enLista(compras.map(c => c.com_id)) + "&order=orden"); else D.comprasDet = [];
+    if (compras.length) D.comprasDet = await q("sicar_compra_detalle", "select=com_id,clave,descripcion,cantidad,borrado&suc=eq.1&com_id=in." + enLista(compras.map(c => c.com_id)) + "&order=com_id,orden,art_id"); else D.comprasDet = [];
     if (primera || Date.now() - ultimoReparto > CADA_S_REPARTO * 1000) {
-      D.existencias = await q("sicar_existencia", "select=suc,clave,descripcion,existencia,precio1,categoria,departamento&existencia=gt.0&order=clave");
-      D.trasDet = traspasos.length ? await q("sicar_traspaso_detalle", "select=suc,tra_id,clave,cantidad,borrado&tra_id=in." + enLista([...new Set(traspasos.map(t => t.tra_id))])) : [];
+      D.existencias = await q("sicar_existencia", "select=suc,clave,descripcion,existencia,precio1,categoria,departamento&existencia=gt.0&order=clave,suc");
+      D.trasDet = traspasos.length ? await q("sicar_traspaso_detalle", "select=suc,tra_id,clave,cantidad,borrado&tra_id=in." + enLista([...new Set(traspasos.map(t => t.tra_id))]) + "&order=suc,tra_id,art_id") : [];
       D.reparto = calcularReparto(); ultimoReparto = Date.now();
       try { await cargarDemanda(); } catch (e) { D.avisoV5 = D.avisoV5 || ("Reparto por demanda sin datos: " + e.message); }
     }
@@ -1104,8 +1104,8 @@ async function accion(tipo, ref, datos, suc) {
 async function cargarDinero() {
   const [valor, inv, csv, liq, bit] = await Promise.all([
     q("v_inventario_valor", "select=*&order=suc"),
-    q("v_inventario_modelo", "select=suc,modelo,piezas,valor,precio1,precio_dist,descripcion,categoria,departamento,claves,especial,pzas_90_aqui,pzas_180_aqui,imp_180_aqui,pzas_365_aqui,ultima_aqui,pzas_90_global,pzas_180_global,imp_180_global,pzas_365_global,ultima_global,dias_sin_venta_aqui,dias_sin_venta_global&order=valor.desc"),
-    q("v_compras_sin_venta", "select=*&order=valor_hoy.desc.nullslast"),
+    q("v_inventario_modelo", "select=suc,modelo,piezas,valor,precio1,precio_dist,descripcion,categoria,departamento,claves,especial,pzas_90_aqui,pzas_180_aqui,imp_180_aqui,pzas_365_aqui,ultima_aqui,pzas_90_global,pzas_180_global,imp_180_global,pzas_365_global,ultima_global,dias_sin_venta_aqui,dias_sin_venta_global&order=valor.desc,suc,modelo"),
+    q("v_compras_sin_venta", "select=*&order=valor_hoy.desc.nullslast,modelo"),
     q("v_liquidacion", "select=*"),
     q("bitacora_vista", "select=id,ts,suc,usuario,rol,tipo,ref,datos&order=id.desc&limit=120", {unaPagina: true}),
   ]);
@@ -1118,7 +1118,7 @@ async function cargarDinero() {
 }
 async function cargarDemanda() {
   try {
-    D.demanda = await q("v_reparto_demanda", "select=suc,modelo,descripcion,precio1,pzas_180,imp_180,ultima,stock_1,stock_2,stock_3,stock_4,en_camino,fuente,stock_total&order=imp_180.desc");
+    D.demanda = await q("v_reparto_demanda", "select=suc,modelo,descripcion,precio1,pzas_180,imp_180,ultima,stock_1,stock_2,stock_3,stock_4,en_camino,fuente,stock_total&order=imp_180.desc,suc,modelo");
     const ped = await q("bitacora_vista", "select=id,ts,suc,usuario,tipo,ref&tipo=in.(reparto_pedir,reparto_atendido)&order=id.desc&limit=400", {unaPagina: true});
     D.pedidos = new Map(); for (const p of ped) { const k = p.suc + ":" + p.ref; if (!D.pedidos.has(k)) D.pedidos.set(k, p); }
   } catch (e) { D.demanda = []; if (!/v_reparto_demanda|bitacora_vista/.test(e.message)) throw e; }
@@ -1678,7 +1678,7 @@ async function rLee(tabla, parametros) {
 function rConsultaVentas() {
   if (RANGO.a < hoyStr() && D.rangoCargado === rLlaveRango()) return Promise.resolve(D.ventasHoy);  // el pasado no cambia
   const sel = "select=suc,ven_id,fecha,total,descuento,status,comprobante,renglones,piezas";
-  const filtro = "&fecha=gte." + RANGO.de + "T00:00:00&fecha=lte." + RANGO.a + "T23:59:59.999&order=fecha.desc";
+  const filtro = "&fecha=gte." + RANGO.de + "T00:00:00&fecha=lte." + RANGO.a + "T23:59:59.999&order=fecha.desc,suc,ven_id";   // orden único: sin empates en los cortes de 1000
   return rLee("sicar_venta", sel + (sinCliente ? "" : ",cli_id") + filtro)
     .catch(e => { if (!sinCliente && /cli_id/.test(e.message)) { sinCliente = true; return rLee("sicar_venta", sel + filtro); } throw e; });
 }
@@ -1795,7 +1795,7 @@ async function calcularRojos() {
     const det = {};
     for (const [suc, ids] of Object.entries(porSuc)) {           // ¡ven_id se repite entre sucursales! siempre por sucursal
       for (let i = 0; i < ids.length; i += 40) {
-        (await rLee("sicar_venta_detalle", "select=ven_id,clave,cantidad,importe,borrado&suc=eq." + suc + "&ven_id=in." + enLista(ids.slice(i, i + 40)) + "&order=ven_id"))
+        (await rLee("sicar_venta_detalle", "select=ven_id,clave,cantidad,importe,borrado&suc=eq." + suc + "&ven_id=in." + enLista(ids.slice(i, i + 40)) + "&order=ven_id,orden,clave"))
           .forEach(d => (det[suc + ":" + d.ven_id] = det[suc + ":" + d.ven_id] || []).push(d));
       }
     }
@@ -2052,7 +2052,7 @@ async function invCargarLista(mas) {
     const desde = mas ? INV_LISTA.historial.length : 0;
     const [b, h] = await Promise.all([
       mas ? Promise.resolve(INV_LISTA.borradores) : q("inventario_borrador", "select=id,suc,alcance_tipo,alcance_valor,inicio,claves,piezas,usuario,correo,disp,actualizado,origen&order=actualizado.desc" + f),
-      q("inventario", "select=id,origen,suc,alcance_tipo,alcance_valor,inicio,fin,usuario,correo,claves,piezas,comparado,cuadradas,claves_sistema,faltan_claves,faltan_pz,sobran_claves,sobran_pz,fuera_claves&order=fin.desc&limit=26&offset=" + desde + f, {unaPagina: true})]);
+      q("inventario", "select=id,origen,suc,alcance_tipo,alcance_valor,inicio,fin,usuario,correo,claves,piezas,comparado,cuadradas,claves_sistema,faltan_claves,faltan_pz,sobran_claves,sobran_pz,fuera_claves&order=fin.desc,id.desc&limit=26&offset=" + desde + f, {unaPagina: true})]);
     INV_LISTA.borradores = b;
     INV_LISTA.historial = (mas ? INV_LISTA.historial : []).concat(h.slice(0, 25));
     INV_LISTA.mas = h.length > 25; INV_LISTA.error = null;
