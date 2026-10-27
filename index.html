@@ -1391,22 +1391,55 @@ let CZ = {cliente: "", vigencia: CZ_VIGENCIA_BASE, iva: "inc", desc: 0, envio: 0
 try { const g = JSON.parse(localStorage.getItem(CZ_LLAVE) || "null"); if (g && Array.isArray(g.items)) CZ = Object.assign(CZ, g); } catch (e) {}
 let CZCAT = null, CZCARGANDO = null;
 function czGuardar() { try { localStorage.setItem(CZ_LLAVE, JSON.stringify(CZ)); } catch (e) {} }
+const CZ_G = ["AA", "A", "B", "C", "D", "E", "F"];
+/* El catálogo del cotizador = core.json (lo dado de alta en la página, con su existencia) COMPLETADO con
+   grados.json (los precios del maestro por calificación): toda calificación AA–F que no esté dada de alta
+   sale como «sobre pedido» con su precio de lista, y cada modelo con kit ofrece el kit completo (batería +
+   cargador, precio kp) y el kit sin cargador (herramienta + batería, precio kt) en las 7 calificaciones.
+   Si grados.json no carga, el cotizador sigue solo con lo del core (como antes). */
 function czCatalogo() {
   if (CZCAT) return Promise.resolve(CZCAT);
-  CZCARGANDO = CZCARGANDO || fetch("https://makmex.com/core.json", {cache: "no-cache"}).then(r => r.json()).then(c => {
-    const ix = {}; ["sku", "model", "grade", "name", "brand", "p1", "st", "img"].forEach(k => ix[k] = c.cols.indexOf(k));
+  CZCARGANDO = CZCARGANDO || Promise.all([
+    fetch("https://makmex.com/core.json", {cache: "no-cache"}).then(r => r.json()),
+    fetch("https://makmex.com/core.json".replace("core.json", "grados.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : {m: {}}).catch(() => ({m: {}}))
+  ]).then(([c, g]) => {
+    const ix = {}; ["sku", "model", "grade", "name", "brand", "p1", "st", "img", "kit", "bat", "car"].forEach(k => ix[k] = c.cols.indexOf(k));
     const v = (f, k) => ix[k] >= 0 ? f[ix[k]] : null;
-    CZCAT = c.rows.map(f => ({
-      sku: String(v(f, "sku") || ""), model: String(v(f, "model") || ""), grade: String(v(f, "grade") || ""),
-      name: String(v(f, "name") || ""), brand: String(v(f, "brand") || ""),
-      p1: Number(v(f, "p1") || 0),
-      st: Array.isArray(v(f, "st")) ? v(f, "st").reduce((a, b) => a + Number(b || 0), 0) : Number(v(f, "st") || 0),
-      img: v(f, "img")
-    })).filter(p => p.sku);
+    CZCAT = c.rows.map(f => {
+      const kit = Number(v(f, "kit") || 0) ? 1 : 0;
+      let name = String(v(f, "name") || "");
+      if (kit) name += " · Kit: batería " + (v(f, "bat") || "") + " + cargador " + (v(f, "car") || "");
+      return {
+        sku: String(v(f, "sku") || ""), model: String(v(f, "model") || ""), grade: String(v(f, "grade") || ""),
+        name, brand: String(v(f, "brand") || ""), kit,
+        p1: Number(v(f, "p1") || 0),
+        st: Array.isArray(v(f, "st")) ? v(f, "st").reduce((a, b) => a + Number(b || 0), 0) : Number(v(f, "st") || 0),
+        img: v(f, "img")
+      };
+    }).filter(p => p.sku);
+    const ya = new Set(CZCAT.map(p => p.sku));
+    const base = {};   // nombre, marca y foto del modelo (de su fila suelta del core)
+    for (const p of CZCAT) if (!p.kit && !base[p.model]) base[p.model] = p;
+    for (const mod in (g.m || {})) {
+      const d = g.m[mod], b = base[mod];
+      if (!b || !d || !d.pp) continue;
+      const suf = d.ah ? "-KIT" + d.ah + "A" : null;
+      for (let k = 0; k < 7; k++) {
+        const pz = mod + "-" + CZ_G[k];
+        if (d.pp[k] > 0 && !ya.has(pz)) { ya.add(pz);
+          CZCAT.push({sku: pz, model: mod, grade: CZ_G[k], name: b.name, brand: b.brand, kit: 0, p1: d.pp[k], st: 0, img: b.img, pedido: 1}); }
+        if (suf && d.kp && d.kp[k] > 0 && !ya.has(pz + suf)) { ya.add(pz + suf);
+          CZCAT.push({sku: pz + suf, model: mod, grade: CZ_G[k], name: b.name + " · Kit: batería " + (d.bat || "") + " + cargador " + (d.car || ""), brand: b.brand, kit: 1, p1: d.kp[k], st: 0, img: b.img, pedido: 1}); }
+        if (suf && d.kt && d.kt[k] > 0 && !ya.has(pz + "+BAT")) { ya.add(pz + "+BAT");
+          CZCAT.push({sku: pz + "+BAT", model: mod, grade: CZ_G[k], name: b.name + " · Kit: herramienta + batería " + (d.bat || "") + " (sin cargador)", brand: b.brand, kit: 1, p1: d.kt[k], st: 0, img: b.img, pedido: 1}); }
+      }
+    }
     return CZCAT;
   }).catch(e => { CZCARGANDO = null; throw e; });
   return CZCARGANDO;
 }
+/* foto: a los kits y al «+BAT» se les quita el sufijo para usar la foto de la pieza */
+function czFoto(sku) { return fotoHtml(String(sku || "").replace(/(-KIT\d+A|\+BAT)$/i, "")); }
 function czBusca(q) {
   q = (q || "").trim().toLowerCase();
   if (q.length < 2 || !CZCAT) return [];
@@ -1414,17 +1447,18 @@ function czBusca(q) {
   const out = [];
   for (const p of CZCAT) {
     const txt = (p.sku + " " + p.model + " " + p.name + " " + p.brand).toLowerCase();
-    if (partes.every(t => txt.includes(t))) { out.push(p); if (out.length >= 80) break; }
+    if (partes.every(t => txt.includes(t))) { out.push(p); if (out.length >= 200) break; }
   }
-  out.sort((a, b) => (b.st > 0) - (a.st > 0) || a.model.localeCompare(b.model) || a.sku.localeCompare(b.sku));
-  return out.slice(0, 24);
+  const gi = p => { const k = CZ_G.indexOf(p.grade); return k < 0 ? 9 : k; };
+  out.sort((a, b) => (b.st > 0) - (a.st > 0) || (a.kit || 0) - (b.kit || 0) || a.model.localeCompare(b.model) || gi(a) - gi(b) || a.sku.localeCompare(b.sku));
+  return out.slice(0, 30);
 }
 function czPintaSug(res) {
   const el = $("#czSugLista");
   if (!res.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
-  el.innerHTML = res.map((p, i) => '<button type="button" class="czsug" data-cz="' + i + '">' + fotoHtml(p.sku) +
+  el.innerHTML = res.map((p, i) => '<button type="button" class="czsug" data-cz="' + i + '">' + czFoto(p.sku) +
     '<div><div class="s1">' + esc(p.sku) + '</div><div class="s2">' + esc(p.name || p.model) + '</div></div>' +
-    '<div class="sp num">' + (p.p1 ? pesos(p.p1) : "—") + '<small>' + (p.st > 0 ? p.st + " en existencia" : "sin existencia") + '</small></div></button>').join("");
+    '<div class="sp num">' + (p.p1 ? pesos(p.p1) : "—") + '<small>' + (p.st > 0 ? p.st + " en existencia" : p.pedido ? "sobre pedido" : "sin existencia") + '</small></div></button>').join("");
   el.classList.remove("hidden");
   el.querySelectorAll("[data-cz]").forEach(b => b.addEventListener("click", () => czAgregar(res[+b.dataset.cz])));
 }
@@ -1438,7 +1472,7 @@ function czAgregar(p) {
 function czImporte(it) { const pu = (it.pdesc != null && it.pdesc !== "" && Number(it.pdesc) > 0) ? Number(it.pdesc) : Number(it.precio || 0); return pu * Number(it.n || 0); }
 function czPintaLista() {
   const el = $("#czLista");
-  el.innerHTML = CZ.items.length ? CZ.items.map((it, i) => '<div class="czfila">' + fotoHtml(it.sku) +
+  el.innerHTML = CZ.items.length ? CZ.items.map((it, i) => '<div class="czfila">' + czFoto(it.sku) +
     '<div><div class="k">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div>' +
     '<div class="czcampos">' +
       '<label>Cantidad<input type="number" min="1" step="1" inputmode="numeric" value="' + Number(it.n) + '" data-i="' + i + '" data-f="n"></label>' +
@@ -1525,7 +1559,8 @@ function czPdf() {
   const f = new Date();
   const folio = "COT-" + f.getFullYear().toString().slice(2) + String(f.getMonth() + 1).padStart(2, "0") + String(f.getDate()).padStart(2, "0") + "-" + String(f.getHours()).padStart(2, "0") + String(f.getMinutes()).padStart(2, "0");
   const ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "long", year: "numeric"});
-  const foto = sku => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(sku || "");
+  const foto = skuRaw => { const sku = String(skuRaw || "").replace(/(-KIT\d+A|\+BAT)$/i, "");
+    const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(sku || "");
     const id = FOTOS.clave[sku] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[sku];
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
   const pz = CZ.items.reduce((a, it) => a + Number(it.n || 0), 0);
