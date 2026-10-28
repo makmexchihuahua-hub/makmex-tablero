@@ -356,6 +356,17 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 /* Denmor: modelos repetidos */
 .renglon .d.rep{white-space:normal;overflow:visible;color:var(--ink-2);margin-top:2px}
 .renglon .d.rep b{font-weight:600;color:var(--ink)}
+
+/* historial de traspasos */
+.thBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.thBarra input[type=date]{font:inherit;font-size:.85rem;width:auto;flex:0 0 auto;padding:5px 8px;border-radius:9px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit;color-scheme:inherit}
+.thBarra input[type=search]{font:inherit;font-size:.9rem;flex:1 1 220px;min-width:0;padding:7px 11px;border-radius:9px;border:1px solid rgba(128,128,128,.4);background:transparent;color:inherit}
+.thRes{font-size:12.5px;color:var(--ink-3);margin:-2px 2px 8px;min-height:16px}
+.tras .est{font-family:var(--body);font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;align-self:center}
+.tras .est.e1{background:var(--warn-soft);color:var(--warn)}
+.tras .est.e2{background:var(--ok-soft);color:var(--ok)}
+.tras .est.e-1{background:var(--bad-soft);color:var(--bad)}
+.tras.cancel .ruta{text-decoration:line-through;text-decoration-color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -415,8 +426,28 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </section>
 
   <section class="panel" id="p-traspasos">
-    <h2>Traspasos en curso <small id="trasResumen"></small></h2>
+    <h2><span id="trasTit">Traspasos en curso</span> <small id="trasResumen"></small></h2>
+    <div class="thBarra" id="thModo"><button type="button" class="rgChip sel" data-m="curso">En curso</button><button type="button" class="rgChip" data-m="hist">Historial</button></div>
     <div class="lista" id="traspasos"></div>
+    <div id="thVista" class="hidden">
+      <div class="thBarra" id="thRango">
+        <button type="button" class="rgChip sel" data-r="7">7 días</button>
+        <button type="button" class="rgChip" data-r="mes">Este mes</button>
+        <button type="button" class="rgChip" data-r="30">30 días</button>
+        <button type="button" class="rgChip" data-r="90">90 días</button>
+        <span class="rgSep">o del</span><input type="date" id="thDe" aria-label="Fecha inicial"><span class="rgSep">al</span><input type="date" id="thA" aria-label="Fecha final">
+      </div>
+      <div class="thBarra" id="thEstado">
+        <button type="button" class="rgChip sel" data-e="">Todos</button>
+        <button type="button" class="rgChip" data-e="1">En camino</button>
+        <button type="button" class="rgChip" data-e="2">Aplicado</button>
+        <button type="button" class="rgChip" data-e="-1">Cancelado</button>
+      </div>
+      <div class="thBarra" id="thTienda"></div>
+      <div class="thBarra"><input type="search" id="thBuscar" placeholder="Buscar folio o artículo (clave, p. ej. 2953-20)" autocomplete="off"></div>
+      <div class="thRes" id="thRes"></div>
+      <div class="lista" id="thLista"></div>
+    </div>
   </section>
 
   <section class="panel ancho" id="p-dinero">
@@ -927,6 +958,7 @@ document.getElementById("btnPdf").addEventListener("click", pdfReparto);
 
 /* ---------------- traspasos en curso ---------------- */
 function pintarTraspasos() {
+  if (TH.modo === "hist" && TH.a >= hoyStr()) thCargar(true);
   const hoy = new Date(hoyStr() + "T00:00:00");
   const T = D.traspasos.map(t => ({...t, dias: Math.round((hoy - new Date(t.fecha + "T00:00:00")) / 86400000)})).sort((a, b) => b.dias - a.dias);
   const pz = T.reduce((a, t) => a + Number(t.piezas || 0), 0);
@@ -938,17 +970,107 @@ function pintarTraspasos() {
   $("#traspasos").querySelectorAll(".tras").forEach(b => b.addEventListener("click", () => abrirTraspaso(+b.dataset.suc, +b.dataset.id)));
 }
 async function abrirTraspaso(suc, id) {
-  const t = D.traspasos.find(x => x.suc === suc && x.tra_id === id); if (!t) return;
-  abrirCajon("Folio " + t.folio, (SUCS[t.suc_ori] || t.alias_ori) + " → " + (SUCS[t.suc_des] || t.alias_des) + " · salió el " + t.fecha, '<div class="vacio">Cargando…</div>');
+  const t = D.traspasos.find(x => x.suc === suc && x.tra_id === id) || TH.filas.find(x => x.suc === suc && x.tra_id === id); if (!t) return;
+  abrirCajon("Folio " + t.folio, (SUCS[t.suc_ori] || t.alias_ori) + " → " + (SUCS[t.suc_des] || t.alias_des) + " · salió el " + thF(t.fecha), '<div class="vacio">Cargando…</div>');
   try {
     const det = await q("sicar_traspaso_detalle", "select=clave,descripcion,cantidad,borrado&suc=eq." + suc + "&tra_id=eq." + id + "&order=orden");
-    $("#cajonCuerpo").innerHTML = '<div class="kv"><span class="k">Estado</span><span class="v">enviado, pendiente de recibir en ' + esc(SUCS[t.suc_des] || t.alias_des) + '</span></div><h4>Artículos</h4>' +
+    $("#cajonCuerpo").innerHTML = '<div class="kv"><span class="k">Estado</span><span class="v">' + esc(thEstadoTxt(t)) + '</span></div><h4>Artículos</h4>' +
       det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '">' + fotoHtml(d.clave) + '<div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + Number(d.cantidad) + ' pz</div></div>').join("") +
       '<div class="kv"><span class="k">Piezas</span><span class="v total num">' + Number(t.piezas || 0) + '</span></div>';
     pdfCajon = () => pdfTraspaso(t, det); $("#btnPdfCajon").classList.remove("hidden");
   } catch (e) { $("#cajonCuerpo").innerHTML = '<div class="aviso bad">' + esc(e.message) + '</div>'; }
 }
 
+
+/* ---------------- historial de traspasos (vista «Historial» del panel Traspasos) ---------------- */
+const TH = {modo: "curso", de: "", a: "", estado: "", tienda: 0, buscar: "", filas: [], llave: "", tok: 0, artTok: 0, art: null};
+const thF = s => { const m = /^(\d{4})-(\d\d)-(\d\d)(?:[T ](\d\d):(\d\d))?/.exec(s || ""); return !m ? "" : m[3] + "/" + m[2] + "/" + m[1] + (m[4] && (m[4] !== "00" || m[5] !== "00") ? " " + m[4] + ":" + m[5] : ""); };
+const thNombre = (s, alias) => SUCS[s] || alias || ("sucursal " + s);
+function thEstadoTxt(t) {
+  const st = Number(t.status);
+  if (st === 2) return "aplicado (recibido en " + thNombre(t.suc_des, t.alias_des) + ")" + (t.fecha_apl ? " el " + thF(t.fecha_apl) : "");
+  if (st === -1) return "cancelado" + (t.fecha_can ? " el " + thF(t.fecha_can) : "");
+  return "enviado, pendiente de recibir en " + thNombre(t.suc_des, t.alias_des);
+}
+function thDias(n) { const d = new Date(hoyStr() + "T00:00:00"); d.setDate(d.getDate() - n); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function thRango(r) {
+  const h = hoyStr();
+  TH.a = h; TH.de = r === "mes" ? h.slice(0, 8) + "01" : thDias(Number(r) - 1);
+  $("#thDe").value = TH.de; $("#thA").value = TH.a;
+  document.querySelectorAll("#thRango .rgChip").forEach(b => b.classList.toggle("sel", b.dataset.r === r));
+}
+function thModo(m) {
+  TH.modo = m;
+  document.querySelectorAll("#thModo .rgChip").forEach(b => b.classList.toggle("sel", b.dataset.m === m));
+  $("#traspasos").classList.toggle("hidden", m === "hist"); $("#thVista").classList.toggle("hidden", m !== "hist");
+  $("#trasTit").textContent = m === "hist" ? "Historial de traspasos" : "Traspasos en curso";
+  $("#trasResumen").classList.toggle("hidden", m === "hist");
+  if (m === "hist") { if (!TH.de) thRango("7"); thCargar(false); } else pintarTraspasos();
+}
+async function thCargar(silencio) {
+  if (!TH.de || !TH.a || TH.de > TH.a) { $("#thRes").textContent = "Elige una fecha inicial anterior o igual a la final."; $("#thLista").innerHTML = ""; return; }
+  const tok = ++TH.tok, llave = TH.de + "|" + TH.a;
+  if (!silencio || TH.llave !== llave) { $("#thRes").textContent = "Cargando traspasos del " + thF(TH.de) + " al " + thF(TH.a) + "…"; if (TH.llave !== llave) $("#thLista").innerHTML = ""; }
+  try {
+    const filas = await q("sicar_traspaso_global", "select=suc,tra_id,folio,suc_ori,suc_des,alias_ori,alias_des,fecha,status,fecha_apl,fecha_can,piezas,renglones&fecha=gte." + TH.de + "&fecha=lte." + TH.a + "&order=fecha.desc,folio.desc,suc_ori,suc_des");
+    if (tok !== TH.tok) return;
+    TH.filas = filas; if (TH.llave !== llave) TH.art = null; TH.llave = llave;
+    if (TH.buscar) await thBuscarArticulo();
+    if (tok !== TH.tok) return;
+    thPintar();
+  } catch (e) {
+    if (tok !== TH.tok) return;
+    $("#thRes").textContent = ""; $("#thLista").innerHTML = '<div class="aviso bad">No se pudo leer el historial: ' + esc(e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message) + '</div>';
+  }
+}
+// artículo: qué traspasos del rango llevan una clave que contenga el texto (en cualquier calificación)
+async function thBuscarArticulo() {
+  const txt = TH.buscar.replace(/[*,()"\\%]/g, "").trim(), tok = ++TH.artTok;
+  if (!txt) { TH.art = null; return; }
+  const ids = [...new Set(TH.filas.map(t => t.tra_id))];
+  if (!ids.length) { TH.art = {txt, llaves: new Set()}; return; }
+  const det = await q("sicar_traspaso_detalle", "select=suc,tra_id&borrado=eq.0&clave=ilike." + encodeURIComponent("*" + txt + "*") +
+    (ids.length <= 600 ? "&tra_id=in." + enLista(ids) : "") + "&order=suc,tra_id,art_id");
+  if (tok !== TH.artTok) return;
+  TH.art = {txt, llaves: new Set(det.map(d => d.suc + ":" + d.tra_id))};
+}
+function thFiltrar() {
+  const b = TH.buscar;
+  return TH.filas.filter(t => (!TH.estado || String(t.status) === TH.estado) &&
+    (!TH.tienda || t.suc_ori === TH.tienda || t.suc_des === TH.tienda) &&
+    (!b || String(t.folio).includes(b) || (TH.art && TH.art.llaves.has(t.suc + ":" + t.tra_id))));
+}
+function thPintar() {
+  const tiendas = [...new Set(TH.filas.flatMap(t => [t.suc_ori, t.suc_des]))].sort((a, b) => a - b);
+  $("#thTienda").innerHTML = tiendas.length > 1 ? '<button type="button" class="rgChip' + (TH.tienda ? "" : " sel") + '" data-t="0">Todas las tiendas</button>' +
+    tiendas.map(s => '<button type="button" class="rgChip' + (TH.tienda === s ? " sel" : "") + '" data-t="' + s + '">' + esc(thNombre(s)) + '</button>').join("") : "";
+  const L = thFiltrar(), pz = L.filter(t => Number(t.status) !== -1).reduce((a, t) => a + Number(t.piezas || 0), 0);
+  const cuenta = st => L.filter(t => Number(t.status) === st).length;
+  $("#thRes").textContent = L.length + (L.length === 1 ? " traspaso" : " traspasos") + " del " + thF(TH.de) + " al " + thF(TH.a) +
+    (L.length ? " · " + cuenta(2) + " aplicados · " + cuenta(1) + " en camino · " + cuenta(-1) + " cancelados · " + pz + " piezas (sin cancelados)" : "");
+  const ET = {"1": "En camino", "2": "Aplicado", "-1": "Cancelado"};
+  $("#thLista").innerHTML = L.length ? L.map(t => { const st = String(Number(t.status));
+    return '<button class="tras' + (st === "-1" ? " cancel" : "") + '" data-suc="' + t.suc + '" data-id="' + t.tra_id + '"><div><div class="ruta">' + esc(thNombre(t.suc_ori, t.alias_ori)) +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>' + esc(thNombre(t.suc_des, t.alias_des)) + '</div><div class="f num">folio ' + t.folio + " · " + Number(t.piezas || 0) + " pzas · envío " + thF(t.fecha) +
+      " · aplicación " + (st === "2" && t.fecha_apl ? thF(t.fecha_apl) : "N/A") + (st === "-1" && t.fecha_can ? " · cancelado " + thF(t.fecha_can) : "") + '</div></div><span class="est e' + st + '">' + (ET[st] || "Estado " + st) + '</span></button>'; }).join("")
+    : '<div class="vacio">' + (TH.filas.length ? "Ningún traspaso coincide con los filtros." : "No hubo traspasos en esas fechas.") + '</div>';
+  $("#thLista").querySelectorAll(".tras").forEach(b => b.addEventListener("click", () => abrirTraspaso(+b.dataset.suc, +b.dataset.id)));
+}
+(function thIniciar() {
+  $("#thModo").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (b) thModo(b.dataset.m); });
+  $("#thRango").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (!b) return; thRango(b.dataset.r); thCargar(false); });
+  const fechas = () => { TH.de = $("#thDe").value; TH.a = $("#thA").value; document.querySelectorAll("#thRango .rgChip").forEach(b => b.classList.remove("sel")); thCargar(false); };
+  $("#thDe").addEventListener("change", fechas); $("#thA").addEventListener("change", fechas);
+  $("#thEstado").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (!b) return; TH.estado = b.dataset.e;
+    document.querySelectorAll("#thEstado .rgChip").forEach(x => x.classList.toggle("sel", x === b)); thPintar(); });
+  $("#thTienda").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (!b) return; TH.tienda = +b.dataset.t; thPintar(); });
+  let espera = null;
+  $("#thBuscar").addEventListener("input", () => { clearTimeout(espera); espera = setTimeout(async () => {
+    TH.buscar = $("#thBuscar").value.trim(); TH.art = null;
+    if (TH.buscar) { $("#thRes").textContent = "Buscando…"; try { await thBuscarArticulo(); } catch (e) { TH.art = null; } }
+    thPintar(); }, 350); });
+  const h = hoyStr(); $("#thDe").max = h; $("#thA").max = h;
+})();
 
 /* ---------------- hoja del traspaso (botón PDF del cajón) ---------------- */
 let pdfCajon = null;
@@ -986,8 +1108,8 @@ function pdfTraspaso(t, det) {
     "tr{break-inside:avoid}" +
     '</style></head><body>' +
     '<button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
-    '<div class="enc"><h1>Traspaso · folio ' + t.folio + "<small>" + esc(ruta) + " · salió el " + esc(t.fecha) +
-    " · enviado, pendiente de recibir en " + esc(SUCS[t.suc_des] || t.alias_des) + " · hoja impresa el " + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
+    '<div class="enc"><h1>Traspaso · folio ' + t.folio + "<small>" + esc(ruta) + " · salió el " + esc(thF(t.fecha)) +
+    " · " + esc(thEstadoTxt(t)) + " · hoja impresa el " + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
     '<p style="margin:6px 0 10px;font-size:13px;color:#555"><b>' + filas.length + (filas.length === 1 ? " renglón" : " renglones") + " · " + piezas + (piezas === 1 ? " pieza" : " piezas") + ".</b> Marca la casilla al recibir cada artículo; la clave trae la calificación exacta.</p>" +
     "<table>" + cuerpo + "</table>" +
     '<div class="kv" style="text-align:right;font-weight:700;padding:8px 7px">Total: ' + piezas + (piezas === 1 ? " pieza" : " piezas") + "</div>" +
