@@ -367,6 +367,32 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .tras .est.e2{background:var(--ok-soft);color:var(--ok)}
 .tras .est.e-1{background:var(--bad-soft);color:var(--bad)}
 .tras.cancel .ruta{text-decoration:line-through;text-decoration-color:var(--ink-3)}
+
+/* críticos para kits */
+.crRes{font-size:13px;color:var(--ink-2);margin:-4px 0 10px}
+.crRes b.mal{color:var(--bad)}.crRes b.ojo{color:var(--warn)}
+.crTabla{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.crFila{display:grid;grid-template-columns:minmax(0,1fr) repeat(4,minmax(54px,92px));gap:6px;align-items:center;padding:8px 10px;border-top:1px solid var(--line)}
+.crFila:first-child{border-top:0}
+.crFila.cab{font-size:11.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px;padding:7px 10px;background:var(--surface-2)}
+.crFila.cab span{text-align:center}
+.crFila.cab .sh{display:none}
+.crFila.grupo{display:block;font-family:var(--display);font-size:15px;font-weight:600;color:var(--ink-2);background:var(--surface-2);padding:6px 10px}
+.crMod{display:flex;gap:8px;align-items:center;min-width:0}
+.crMod .ft{flex:none}
+.crMod .k{font-weight:700;font-size:14px}
+.crMod .d{font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crMod .kits{font-size:11.5px;color:var(--ink-3)}
+.crMod .sug{font-size:12px;margin-top:2px;color:var(--ink-2)}
+.crMod .sug.mal{color:var(--bad);font-weight:600}
+.crCel{text-align:center;border-radius:8px;padding:4px 2px;line-height:1.15}
+.crCel .n{font-family:var(--display);font-size:20px;font-weight:600}
+.crCel small{display:block;font-size:10.5px;color:var(--ink-3);white-space:nowrap}
+.crCel .cam{color:var(--ok);font-weight:600}
+.crCel.cero{background:var(--bad-soft)}.crCel.cero .n{color:var(--bad)}
+.crCel.una{background:var(--warn-soft)}.crCel.una .n{color:var(--warn)}
+@media (min-width:1000px){#avisos{order:-3}#p-ventas{order:-2}#p-enviar{order:-1}}
+@media (max-width:520px){.crFila.cab .lg{display:none}.crFila.cab .sh{display:inline}.crFila{grid-template-columns:minmax(0,1fr) repeat(4,44px);gap:4px;padding:7px 8px}.crMod .ft{display:none}.crCel .n{font-size:17px}.crCel small{font-size:9.5px}.crMod .d{display:none}}
 </style>
 </head>
 <body>
@@ -414,6 +440,18 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div class="barra" id="filtroVentas"></div>
     <div class="lista" id="ventas"></div>
     <div class="sub" id="ventasPie"></div>
+  </section>
+
+  <section class="panel ancho" id="p-criticos">
+    <h2>Críticos para kits <small>baterías y cargadores que siempre deben estar en cada tienda</small></h2>
+    <div class="crRes" id="crRes"></div>
+    <div class="barra rango" id="crFiltro">
+      <button type="button" class="rgChip sel" data-f="todo">Todos</button>
+      <button type="button" class="rgChip" data-f="falta">Con faltantes</button>
+      <button type="button" class="rgChip" data-f="bat">Baterías</button>
+      <button type="button" class="rgChip" data-f="car">Cargadores</button>
+    </div>
+    <div class="crTabla" id="crTabla"><div class="vacio">Cargando…</div></div>
   </section>
 
   <section class="panel" id="p-enviar">
@@ -701,12 +739,12 @@ $("#nav").addEventListener("click", ev => { const b = ev.target.closest("button"
 function mostrarPanel(p) {
   UI.panel = p;
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("sel", b.dataset.p === p));
-  document.querySelectorAll("main .panel").forEach(s => s.classList.toggle("activo", s.id === "p-" + p || s.id === "avisos"));
+  document.querySelectorAll("main .panel").forEach(s => s.classList.toggle("activo", s.id === "p-" + p || s.id === "avisos" || (p === "enviar" && s.id === "p-criticos")));
   window.scrollTo({top: 0});
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { pintarEstado(); pintarVentas(); pintarReparto(); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
+function pintarTodo() { pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -955,6 +993,84 @@ function pdfReparto() {
 }
 
 document.getElementById("btnPdf").addEventListener("click", pdfReparto);
+
+/* ---------------- críticos para kits (baterías y cargadores de grados.json) ---------------- */
+const CR = {filtro: "todo", tiendas: [1, 3, 2, 4]};    // mismo orden que la hoja: CEDIS, CDMX, Denmor, Monterrey
+function crLista() {                                   // {modelo: {tipo, kits}} desde la regla de kits del sitio
+  const L = {};
+  for (const t of Object.values(R.grados || {})) {
+    if (t.bat) { L[t.bat] = L[t.bat] || {tipo: "bat", kits: 0}; L[t.bat].kits++; }
+    if (t.car) { L[t.car] = L[t.car] || {tipo: "car", kits: 0}; if (L[t.car].tipo === "car") L[t.car].kits++; }
+  }
+  return L;
+}
+function crCalcula() {
+  const L = crLista(), mods = Object.keys(L);
+  if (!mods.length) return null;
+  const pzas = {}, otras = {}, desc = {}, camino = {};
+  const set = new Set(mods);
+  const parte = c => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(c || ""); return m ? [m[1].toUpperCase(), m[2].toUpperCase()] : [String(c || "").toUpperCase(), ""]; };
+  const MM = {}; mods.forEach(m => MM[m.toUpperCase()] = m);
+  for (const e of D.existencias) {
+    const [m0, g] = parte(e.clave), m = MM[m0]; if (!m) continue;
+    desc[m] = desc[m] || e.descripcion;
+    const k = m + ":" + e.suc, n = Number(e.existencia) || 0;
+    if (g === "AA" || g === "A") { pzas[k] = pzas[k] || {AA: 0, A: 0}; pzas[k][g] += n; }
+    else otras[k] = (otras[k] || 0) + n;
+  }
+  const destinoDe = {}; D.traspasos.forEach(t => destinoDe[t.suc + ":" + t.tra_id] = t.suc_des);
+  for (const d of D.trasDet) {
+    if (d.borrado) continue;
+    const [m0, g] = parte(d.clave), m = MM[m0], des = destinoDe[d.suc + ":" + d.tra_id];
+    if (!m || !des || (g !== "AA" && g !== "A")) continue;
+    camino[m + ":" + des] = (camino[m + ":" + des] || 0) + (Number(d.cantidad) || 0);
+  }
+  const filas = mods.map(m => {
+    const cel = {};
+    for (const s of CR.tiendas) { const p = pzas[m + ":" + s] || {AA: 0, A: 0};
+      cel[s] = {AA: p.AA, A: p.A, n: p.AA + p.A, otras: otras[m + ":" + s] || 0, camino: camino[m + ":" + s] || 0}; }
+    const ceros = CR.tiendas.filter(s => cel[s].n <= 0), unas = CR.tiendas.filter(s => cel[s].n === 1);
+    const faltan = ceros.filter(s => s !== 1 && !cel[s].camino), reserva = Math.max(0, cel[1].n - 1);
+    let sug = "", mal = false;
+    if (faltan.length && reserva > 0) sug = "Manda de CEDIS a " + faltan.slice(0, reserva).map(s => SUCS[s]).join(", ") + (faltan.length > reserva ? " · comprar para " + faltan.slice(reserva).map(s => SUCS[s]).join(", ") : "");
+    else if (faltan.length && ceros.length === CR.tiendas.length) { sug = "Agotado en las 4 tiendas: comprar"; mal = true; }
+    else if (faltan.length) { sug = (cel[1].n === 1 ? "CEDIS solo tiene 1" : "CEDIS en cero") + ": comprar para " + faltan.map(s => SUCS[s]).join(", "); mal = true; }
+    else if (cel[1].n <= 0) { sug = "CEDIS en cero: comprar"; mal = true; }
+    return {m, tipo: L[m].tipo, kits: L[m].kits, desc: desc[m] || "", cel, ceros: ceros.length, unas: unas.length, sug, mal};
+  });
+  filas.sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === "bat" ? -1 : 1) || b.kits - a.kits || a.m.localeCompare(b.m));
+  return filas;
+}
+function crCelda(c) {
+  const cls = c.n <= 0 ? " cero" : c.n === 1 ? " una" : "";
+  const tip = "AA " + c.AA + " · A " + c.A + (c.otras ? " · otras calificaciones " + c.otras : "") + (c.camino ? " · en camino " + c.camino : "");
+  return '<div class="crCel' + cls + '" title="' + esc(tip) + '"><div class="n num">' + c.n + '</div><small class="num">' + c.AA + "·" + c.A + '</small>' +
+    (c.camino ? '<small class="cam num">+' + c.camino + ' llega</small>' : '') + '</div>';
+}
+async function pintarCriticos() {
+  if (!R.listo && !(await cargarReglas())) { $("#crTabla").innerHTML = '<div class="vacio">No se pudo leer la regla de kits (grados.json de makmex.com); se reintenta sola.</div>'; return; }
+  if (!D.existencias.length) return;
+  const F = crCalcula(); if (!F) { $("#crTabla").innerHTML = '<div class="vacio">La regla de kits no trae baterías ni cargadores.</div>'; return; }
+  const conFalta = F.filter(f => f.ceros), kitsRiesgo = conFalta.reduce((a, f) => a + f.kits, 0);
+  const huecos = F.reduce((a, f) => a + f.ceros, 0), ultimas = F.reduce((a, f) => a + f.unas, 0);
+  $("#crRes").innerHTML = F.length + " modelos críticos (" + F.filter(f => f.tipo === "bat").length + " baterías, " + F.filter(f => f.tipo === "car").length + " cargadores) · " +
+    (huecos ? '<b class="mal">' + huecos + (huecos === 1 ? " hueco" : " huecos") + '</b> (tienda en cero) en ' + conFalta.length + " modelos" : '<b>ninguna tienda en cero</b>') +
+    (ultimas ? ' · <b class="ojo">' + ultimas + (ultimas === 1 ? " tienda con la última pieza" : " con la última pieza") + '</b>' : "") +
+    ' · cuenta piezas AA + A, como la hoja.';
+  const ver = F.filter(f => CR.filtro === "todo" || (CR.filtro === "falta" && (f.ceros || f.unas)) || f.tipo === CR.filtro);
+  const CORTO = {1: "CED", 2: "DEN", 3: "CDMX", 4: "MTY"};
+  let html = '<div class="crFila cab"><span style="text-align:left">Modelo</span>' + CR.tiendas.map(s => '<span title="' + esc(SUCS[s]) + '"><span class="lg">' + esc(SUCS[s]) + '</span><span class="sh">' + CORTO[s] + '</span></span>').join("") + '</div>', grupo = "";
+  for (const f of ver) {
+    if (f.tipo !== grupo) { grupo = f.tipo; html += '<div class="crFila grupo">' + (grupo === "bat" ? "Baterías" : "Cargadores") + '</div>'; }
+    html += '<div class="crFila"><div class="crMod"><span class="ft">' + fotoHtml(f.m + "-A") + '</span><div style="min-width:0"><div class="k">' + esc(f.m) +
+      ' <span class="kits">· ' + f.kits + (f.kits === 1 ? " kit" : " kits") + '</span></div><div class="d">' + esc(f.desc) + '</div>' +
+      (f.sug ? '<div class="sug' + (f.mal ? " mal" : "") + '">' + esc(f.sug) + '</div>' : '') + '</div></div>' +
+      CR.tiendas.map(s => crCelda(f.cel[s])).join("") + '</div>';
+  }
+  $("#crTabla").innerHTML = ver.length ? html : '<div class="vacio">Ningún crítico con faltantes. Todo surtido.</div>';
+}
+$("#crFiltro").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (!b) return; CR.filtro = b.dataset.f;
+  document.querySelectorAll("#crFiltro .rgChip").forEach(x => x.classList.toggle("sel", x === b)); pintarCriticos(); });
 
 /* ---------------- traspasos en curso ---------------- */
 function pintarTraspasos() {
