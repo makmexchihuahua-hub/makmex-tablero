@@ -393,6 +393,44 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .crCel.una{background:var(--warn-soft)}.crCel.una .n{color:var(--warn)}
 @media (min-width:1000px){#avisos{order:-3}#p-ventas{order:-2}#p-enviar{order:-1}}
 @media (max-width:520px){.crFila.cab .lg{display:none}.crFila.cab .sh{display:inline}.crFila{grid-template-columns:minmax(0,1fr) repeat(4,44px);gap:4px;padding:7px 8px}.crMod .ft{display:none}.crCel .n{font-size:17px}.crCel small{font-size:9.5px}.crMod .d{display:none}}
+
+/* verificación de traspasos */
+.vtBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.vtBarra .nota{font-size:12.5px;color:var(--ink-3)}
+.vtBarra .aviso{margin:0;flex:1 1 100%}
+.vtModo .tras{grid-template-columns:auto minmax(0,1fr) auto}
+.vtModo .tras::before{content:"";width:22px;height:22px;border:2px solid var(--line-2);border-radius:6px;align-self:center;box-sizing:border-box}
+.vtModo .tras.vtSel{background:var(--accent-soft)}
+.vtModo .tras.vtSel::before{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 3px var(--surface)}
+.vtModo .tras.cancel{opacity:.45}
+#vtCapa{position:fixed;inset:0;background:var(--bg);z-index:60;overflow:auto;padding:14px var(--gutter) 40px}
+#vtCapa .vtIn{max-width:880px;margin:0 auto}
+#vtCapa h3{font-family:var(--display);font-size:24px;margin:0;line-height:1.1}
+#vtCapa .vtSub{font-size:13px;color:var(--ink-3);margin:2px 0 12px}
+#vtCapa form input{width:100%;font:inherit;font-size:20px;padding:14px 16px;border-radius:12px;border:2px solid var(--accent);background:var(--surface);color:var(--ink);box-sizing:border-box}
+.vtProg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.vtProg div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.vtProg b{display:block;font-family:var(--display);font-size:24px;line-height:1.1}
+.vtProg span{font-size:12px;color:var(--ink-3)}
+.vtUlt{min-height:22px;font-size:14px;font-weight:600;margin:8px 2px}
+.vtUlt.bien{color:var(--ok)}.vtUlt.mal{color:var(--bad)}.vtUlt.ojo{color:var(--warn)}
+.vtFila{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px;border-top:1px solid var(--line)}
+.vtFila:first-child{border-top:0}
+.vtFila .k{font-weight:700}.vtFila .d{font-size:12px;color:var(--ink-3)}
+.vtFila .ops{display:flex;align-items:center;gap:6px}
+.vtFila .ops button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line-2);font-size:18px;line-height:1}
+.vtFila .cnt{min-width:64px;text-align:center;font-family:var(--display);font-size:20px;font-weight:600}
+.vtFila .cnt small{display:block;font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink-3)}
+.vtFila.ok{background:var(--ok-soft)}.vtFila.ok .cnt{color:var(--ok)}
+.vtFila.mas{background:var(--warn-soft)}.vtFila.mas .cnt{color:var(--warn)}
+.vtFila.extra{background:var(--bad-soft)}.vtFila.extra .cnt{color:var(--bad)}
+.vtFila.nueva{outline:2px solid var(--accent);outline-offset:-2px}
+.vtTit{font-family:var(--display);font-size:16px;font-weight:600;margin:14px 2px 6px;color:var(--ink-2)}
+.vtBtns{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.vtRes{border-radius:12px;padding:14px;margin:10px 0;font-size:15px}
+.vtRes.ok{background:var(--ok-soft);color:var(--ok)}.vtRes.mal{background:var(--bad-soft);color:var(--bad)}
+.vtQuien{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
+.vtQuien input{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);flex:1 1 200px}
 </style>
 </head>
 <body>
@@ -466,6 +504,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   <section class="panel" id="p-traspasos">
     <h2><span id="trasTit">Traspasos en curso</span> <small id="trasResumen"></small></h2>
     <div class="thBarra" id="thModo"><button type="button" class="rgChip sel" data-m="curso">En curso</button><button type="button" class="rgChip" data-m="hist">Historial</button></div>
+    <div class="vtBarra" id="vtBarra"></div>
     <div class="lista" id="traspasos"></div>
     <div id="thVista" class="hidden">
       <div class="thBarra" id="thRango">
@@ -585,6 +624,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 </div>
 <div id="toast" class="toast" aria-live="polite"></div>
 <div id="velo" class="hidden"></div>
+<div id="vtCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificación de traspasos"><div class="vtIn" id="vtIn"></div></div>
 <aside id="cajon" aria-hidden="true">
   <div class="cab"><div><h3 id="cajonTitulo"></h3><div class="sub" id="cajonSub"></div></div><button class="pdfbtn hidden" id="btnPdfCajon" type="button" title="Imprimir o guardar en PDF el contenido del traspaso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button><button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button></div>
   <div class="cuerpo" id="cajonCuerpo"></div>
@@ -1196,6 +1236,252 @@ function thPintar() {
     thPintar(); }, 350); });
   const h = hoyStr(); $("#thDe").max = h; $("#thA").max = h;
 })();
+
+/* ---------------- verificación de traspasos con escáner ---------------- */
+const VT_LLAVE = "vtActual", VT_ULT = "vtUltima";
+let VT = null, VT_SEL = new Map(), VT_MODO = false;   // VT: verificación en curso (se guarda en el dispositivo)
+try { VT = JSON.parse(localStorage.getItem(VT_LLAVE) || "null"); } catch (e) { VT = null; }
+const vtGuarda = () => { try { if (VT) localStorage.setItem(VT_LLAVE, JSON.stringify(VT)); else localStorage.removeItem(VT_LLAVE); } catch (e) {} };
+const vtNorm = s => String(s || "").trim().toUpperCase().replace(/\s+/g, "");
+const vtModelo = c => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/.exec(c || ""); return m ? m[1] : c; };
+const vtNombreSuc = (s, alias) => SUCS[s] || alias || ("sucursal " + s);
+const vtFechaHora = t => new Date(t).toLocaleString("es-MX", {day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"});
+function vtQuienDefault() {
+  try { if (typeof EMP !== "undefined" && EMP && EMP.nombre && EMP.rol !== "dueno") return EMP.nombre; } catch (e) {}
+  try { const g = localStorage.getItem("vtQuien"); if (g) return g; } catch (e) {}
+  return "";
+}
+function vtCuenta() {
+  try { if (typeof CUENTA !== "undefined" && CUENTA && CUENTA.correo) return CUENTA.correo; } catch (e) {}
+  try { if (sesion && sesion.user && sesion.user.email) return sesion.user.email; } catch (e) {}
+  return "";
+}
+function vtBuscaT(suc, id) {
+  return D.traspasos.find(x => x.suc === suc && x.tra_id === id) || (typeof TH !== "undefined" && TH.filas ? TH.filas.find(x => x.suc === suc && x.tra_id === id) : null);
+}
+/* ---- barra y modo selección en la lista de traspasos ---- */
+function vtPintarBarra(aviso) {
+  const b = $("#vtBarra"); if (!b) return;
+  if (VT && !VT.fin) {
+    b.innerHTML = '<div class="aviso">Hay una verificación sin terminar: folio' + (VT.tras.length > 1 ? "s " : " ") + VT.tras.map(t => t.folio).join(" + ") + " · " + vtTot().esc + " de " + vtTot().esp + ' piezas escaneadas.</div>' +
+      '<button type="button" class="invbtn lleno" id="vtSeguir">Continuar verificación</button>';
+    $("#vtSeguir").addEventListener("click", vtAbrirCapa); return;
+  }
+  if (!VT_MODO) {
+    let ult = null; try { ult = JSON.parse(localStorage.getItem(VT_ULT) || "null"); } catch (e) {}
+    b.innerHTML = '<button type="button" class="invbtn" id="vtEmpezarSel">Verificar mercancía (escáner)</button>' +
+      (ult ? '<button type="button" class="invbtn" id="vtUltPdf" title="Volver a abrir el reporte de la última verificación">Último reporte: folio' + (ult.tras.length > 1 ? "s " : " ") + ult.tras.map(t => t.folio).join(" + ") + '</button>' : '');
+    $("#vtEmpezarSel").addEventListener("click", () => { VT_MODO = true; VT_SEL.clear(); vtPintarBarra(); vtMarcar(); });
+    if (ult) $("#vtUltPdf").addEventListener("click", () => vtPdf(ult));
+    return;
+  }
+  const sel = [...VT_SEL.values()], pz = sel.reduce((a, t) => a + Number(t.piezas || 0), 0);
+  b.innerHTML = '<span class="nota">' + (sel.length ? "<b>" + sel.length + (sel.length === 1 ? " traspaso" : " traspasos") + "</b> · " + pz + " piezas · folio" + (sel.length > 1 ? "s " : " ") + sel.map(t => t.folio).join(" + ") : "Toca los traspasos que vienen en la caja (puedes elegir varios).") + '</span>' +
+    '<button type="button" class="invbtn lleno" id="vtArrancar"' + (sel.length ? "" : " disabled") + '>Empezar verificación</button><button type="button" class="invbtn" id="vtCancelSel">Cancelar</button>' +
+    (aviso ? '<div class="aviso bad">' + esc(aviso) + '</div>' : '');
+  $("#vtArrancar").addEventListener("click", vtArrancar);
+  $("#vtCancelSel").addEventListener("click", () => { VT_MODO = false; VT_SEL.clear(); vtPintarBarra(); vtMarcar(); });
+}
+function vtMarcar() {
+  const p = $("#p-traspasos"); if (!p) return;
+  p.classList.toggle("vtModo", VT_MODO);
+  p.querySelectorAll(".tras").forEach(b => b.classList.toggle("vtSel", VT_MODO && VT_SEL.has(b.dataset.suc + ":" + b.dataset.id)));
+}
+// en modo selección, tocar un traspaso lo palomea en lugar de abrir su detalle
+document.addEventListener("click", ev => {
+  if (!VT_MODO) return;
+  const b = ev.target.closest && ev.target.closest("#p-traspasos .tras"); if (!b) return;
+  ev.stopPropagation(); ev.preventDefault();
+  const k = b.dataset.suc + ":" + b.dataset.id, t = vtBuscaT(+b.dataset.suc, +b.dataset.id); if (!t) return;
+  if (VT_SEL.has(k)) { VT_SEL.delete(k); vtPintarBarra(); vtMarcar(); return; }
+  if (Number(t.status) === -1) { vtPintarBarra("El folio " + t.folio + " está cancelado; no se puede verificar."); return; }
+  const otro = [...VT_SEL.values()][0];
+  if (otro && otro.suc_des !== t.suc_des) { vtPintarBarra("El folio " + t.folio + " va a " + vtNombreSuc(t.suc_des, t.alias_des) + " y los elegidos van a " + vtNombreSuc(otro.suc_des, otro.alias_des) + ": solo se verifican juntos traspasos que llegan a la misma tienda."); return; }
+  VT_SEL.set(k, t); vtPintarBarra(); vtMarcar();
+}, true);
+(function () { const p = $("#p-traspasos"); if (p) new MutationObserver(() => vtMarcar()).observe(p, {childList: true, subtree: true}); })();
+/* ---- arrancar: baja lo que dice SICAR de cada traspaso ---- */
+async function vtArrancar() {
+  const sel = [...VT_SEL.values()]; if (!sel.length) return;
+  const btn = $("#vtArrancar"); btn.disabled = true; btn.textContent = "Leyendo traspasos…";
+  try {
+    const esp = {};
+    for (const t of sel) {
+      const det = await q("sicar_traspaso_detalle", "select=clave,descripcion,cantidad,borrado&suc=eq." + t.suc + "&tra_id=eq." + t.tra_id + "&order=orden,art_id");
+      for (const d of det) {
+        if (d.borrado) continue;
+        const c = vtNorm(d.clave), n = Number(d.cantidad) || 0; if (!c || n <= 0) continue;
+        const e = esp[c] = esp[c] || {n: 0, d: d.descripcion || "", folios: {}};
+        e.n += n; e.folios[t.folio] = (e.folios[t.folio] || 0) + n;
+      }
+    }
+    if (!Object.keys(esp).length) { btn.disabled = false; btn.textContent = "Empezar verificación"; vtPintarBarra("SICAR no tiene artículos en esos traspasos."); return; }
+    VT = {id: Date.now(), inicio: Date.now(), fin: null, quien: vtQuienDefault(), cuenta: vtCuenta(),
+      tras: sel.map(t => ({suc: t.suc, tra_id: t.tra_id, folio: t.folio, suc_ori: t.suc_ori, suc_des: t.suc_des, alias_ori: t.alias_ori, alias_des: t.alias_des, fecha: t.fecha, piezas: Number(t.piezas || 0), status: Number(t.status)}))
+        .sort((a, b) => a.folio - b.folio),
+      esp, esc: {}, desc: {}, hist: [], ult: null};
+    VT_MODO = false; VT_SEL.clear(); vtGuarda(); vtMarcar(); vtPintarBarra(); vtAbrirCapa();
+  } catch (e) {
+    btn.disabled = false; btn.textContent = "Empezar verificación";
+    vtPintarBarra(e.message === "sesion" ? "La sesión caducó; vuelve a entrar." : "No se pudo leer el traspaso: " + e.message);
+  }
+}
+function vtTot(v) {
+  const x = v || VT; let esp = 0, esc = 0;
+  for (const c in x.esp) esp += x.esp[c].n;
+  for (const c in x.esc) esc += x.esc[c];
+  return {esp, esc};
+}
+/* ---- pantalla de escaneo ---- */
+function vtAbrirCapa() { $("#vtCapa").classList.remove("hidden"); document.body.style.overflow = "hidden"; vtPintarCapa(); }
+function vtCerrarCapa() { $("#vtCapa").classList.add("hidden"); document.body.style.overflow = ""; vtPintarBarra(); }
+function vtFoco() { setTimeout(() => { const i = $("#vtClave"); if (i) i.focus(); }, 60); }
+function vtDesc(c) {
+  if (VT.esp[c]) return VT.esp[c].d;
+  if (VT.desc[c]) return VT.desc[c];
+  const e = (D.existencias || []).find(x => vtNorm(x.clave) === c);
+  return e ? e.descripcion : "";
+}
+function vtSumar(c, delta, esEscaneo) {
+  c = vtNorm(c); if (!c || !VT || VT.fin) return;
+  const antes = VT.esc[c] || 0, ahora = Math.max(0, antes + delta);
+  if (ahora === antes) return;
+  if (ahora) VT.esc[c] = ahora; else delete VT.esc[c];
+  if (!VT.esp[c] && ahora && !VT.desc[c]) VT.desc[c] = vtDesc(c);
+  if (delta > 0) VT.hist.push(c);
+  else { const i = VT.hist.lastIndexOf(c); if (i >= 0) VT.hist.splice(i, 1); }
+  const e = VT.esp[c];
+  let tipo = "bien", txt;
+  if (!e) {
+    const mod = vtModelo(c), primo = Object.keys(VT.esp).find(x => vtModelo(x) === mod && x !== c);
+    tipo = "mal"; txt = "✗ " + c + " no viene en " + (VT.tras.length > 1 ? "estos traspasos" : "este traspaso") + (primo ? " — SICAR manda " + primo + ": ¿calificación distinta?" : "") + (ahora > 1 ? " (llevas " + ahora + ")" : "");
+  } else if (ahora > e.n) { tipo = "ojo"; txt = "⚠ " + c + ": ya estaba completo — llevas " + ahora + " y SICAR dice " + e.n; }
+  else txt = "✓ " + c + ": " + ahora + " de " + e.n + (ahora === e.n ? " — completo" : "");
+  VT.ult = {c, tipo, txt: delta > 0 ? txt : "Quitaste una pieza de " + c + " (" + ahora + ")"};
+  vtGuarda();
+  if (esEscaneo) invBip(tipo === "bien");
+  vtPintarCapa(c);
+  if (esEscaneo) vtFoco();
+}
+function vtFilaHtml(c, nueva) {
+  const e = VT.esp[c], n = VT.esc[c] || 0;
+  const cls = !e ? "extra" : n > e.n ? "mas" : n === e.n ? "ok" : "";
+  const folios = e && VT.tras.length > 1 ? " · " + Object.entries(e.folios).map(([f, k]) => "folio " + f + ": " + k).join(", ") : "";
+  return '<div class="vtFila ' + cls + (c === nueva ? " nueva" : "") + '">' + fotoHtml(c) + '<div style="min-width:0"><div class="k">' + esc(c) + '</div><div class="d">' + esc((e ? e.d : VT.desc[c]) || (e ? "" : "no viene en el traspaso")) + esc(folios) + '</div></div>' +
+    '<div class="ops"><button type="button" data-vm="' + esc(c) + '" aria-label="Quitar una pieza de ' + esc(c) + '">−</button><div class="cnt num">' + n + '<small>' + (e ? "de " + e.n : "no venía") + '</small></div><button type="button" data-vp="' + esc(c) + '" aria-label="Sumar una pieza de ' + esc(c) + '">+</button></div></div>';
+}
+function vtPintarCapa(nueva) {
+  const x = $("#vtIn"); if (!VT) { vtCerrarCapa(); return; }
+  const tr = VT.tras, t = vtTot(), dest = vtNombreSuc(tr[0].suc_des, tr[0].alias_des);
+  const rutas = [...new Set(tr.map(z => vtNombreSuc(z.suc_ori, z.alias_ori)))].join(", ") + " → " + dest;
+  const cab = '<h3>Verificación · folio' + (tr.length > 1 ? "s " : " ") + tr.map(z => z.folio).join(" + ") + '</h3><div class="vtSub">' + esc(rutas) + " · " + t.esp + " piezas según SICAR · empezada el " + vtFechaHora(VT.inicio) + '</div>';
+  if (VT.fin) { vtPintarResultado(x, cab); return; }
+  const claves = Object.keys(VT.esp), extras = Object.keys(VT.esc).filter(c => !VT.esp[c]);
+  const pend = claves.filter(c => (VT.esc[c] || 0) < VT.esp[c].n), comp = claves.filter(c => (VT.esc[c] || 0) >= VT.esp[c].n);
+  const orden = c => { const i = VT.hist.lastIndexOf(c); return i < 0 ? -1 : i; };
+  pend.sort((a, b) => orden(b) - orden(a) || a.localeCompare(b)); comp.sort((a, b) => orden(b) - orden(a));
+  const faltan = pend.reduce((a, c) => a + VT.esp[c].n - (VT.esc[c] || 0), 0), sobran = extras.reduce((a, c) => a + VT.esc[c], 0) + comp.reduce((a, c) => a + Math.max(0, VT.esc[c] - VT.esp[c].n), 0);
+  x.innerHTML = cab +
+    '<div class="vtQuien"><label for="vtQuienIn" style="font-size:13px;color:var(--ink-3)">Verifica:</label><input id="vtQuienIn" placeholder="Nombre de quien revisa la caja" value="' + esc(VT.quien || "") + '"></div>' +
+    '<form id="vtForm" autocomplete="off"><input id="vtClave" placeholder="Escanea la etiqueta de SICAR…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="Clave escaneada"></form>' +
+    '<div class="vtUlt ' + (VT.ult ? VT.ult.tipo : "") + '" id="vtUlt" role="status">' + esc(VT.ult ? VT.ult.txt : "Escanea cada pieza de la caja. Si el escáner falla, escribe la clave y da Enter.") + '</div>' +
+    '<div class="vtProg"><div><b class="num">' + t.esc + '</b><span>escaneadas de ' + t.esp + '</span></div><div><b class="num"' + (faltan ? ' style="color:var(--warn)"' : '') + '>' + faltan + '</b><span>faltan por escanear</span></div><div><b class="num"' + (sobran ? ' style="color:var(--bad)"' : '') + '>' + sobran + '</b><span>de más / no venían</span></div></div>' +
+    (extras.length ? '<div class="vtTit">No vienen en el traspaso</div><div class="lista">' + extras.map(c => vtFilaHtml(c, nueva)).join("") + '</div>' : '') +
+    '<div class="vtTit">Por escanear (' + pend.length + ')</div><div class="lista">' + (pend.length ? pend.map(c => vtFilaHtml(c, nueva)).join("") : '<div class="vacio">Ya se escaneó todo lo que dice SICAR.</div>') + '</div>' +
+    (comp.length ? '<div class="vtTit">Completos (' + comp.length + ')</div><div class="lista">' + comp.map(c => vtFilaHtml(c, nueva)).join("") + '</div>' : '') +
+    '<div class="vtBtns"><button type="button" class="invbtn lleno" id="vtTerminar">Terminar y verificar traspaso</button><button type="button" class="invbtn" id="vtDeshacer"' + (VT.hist.length ? "" : " disabled") + '>Deshacer último escaneo</button>' +
+    '<button type="button" class="invbtn" id="vtPausar">Pausar (queda guardado)</button><button type="button" class="invbtn rojo" id="vtDescartar">Descartar</button></div>';
+  $("#vtForm").addEventListener("submit", ev => { ev.preventDefault(); const v = $("#vtClave").value; $("#vtClave").value = ""; vtSumar(v, 1, true); });
+  $("#vtQuienIn").addEventListener("change", ev => { VT.quien = ev.target.value.trim(); try { localStorage.setItem("vtQuien", VT.quien); } catch (e) {} vtGuarda(); });
+  x.querySelectorAll("[data-vp]").forEach(b => b.addEventListener("click", () => vtSumar(b.dataset.vp, 1, false)));
+  x.querySelectorAll("[data-vm]").forEach(b => b.addEventListener("click", () => vtSumar(b.dataset.vm, -1, false)));
+  $("#vtDeshacer").addEventListener("click", () => { const c = VT.hist[VT.hist.length - 1]; if (c) vtSumar(c, -1, false); vtFoco(); });
+  $("#vtPausar").addEventListener("click", vtCerrarCapa);
+  $("#vtDescartar").addEventListener("click", () => { if (!confirm("¿Descartar esta verificación? Se borra lo escaneado (" + t.esc + " piezas).")) return; VT = null; vtGuarda(); vtCerrarCapa(); });
+  $("#vtTerminar").addEventListener("click", () => {
+    const q2 = $("#vtQuienIn").value.trim(); if (!q2) { alert("Escribe el nombre de quien verifica la caja."); $("#vtQuienIn").focus(); return; }
+    VT.quien = q2; try { localStorage.setItem("vtQuien", q2); } catch (e) {}
+    if (!t.esc) { alert("Todavía no se escanea nada."); vtFoco(); return; }
+    if ((faltan || sobran) && !confirm("Hay diferencias: faltan " + faltan + " y sobran " + sobran + ". ¿Terminar y sacar el reporte así?")) { vtFoco(); return; }
+    VT.fin = Date.now(); vtGuarda();
+    try { localStorage.setItem(VT_ULT, JSON.stringify(VT)); } catch (e) {}
+    vtPintarCapa(); vtPdf(VT);
+  });
+  if (!nueva) vtFoco();
+}
+/* ---- comparación (para pantalla y PDF) ---- */
+function vtComparar(v) {
+  const filas = [];
+  const todas = new Set([...Object.keys(v.esp), ...Object.keys(v.esc)]);
+  for (const c of todas) {
+    const e = v.esp[c] ? v.esp[c].n : 0, r = v.esc[c] || 0;
+    filas.push({c, d: (v.esp[c] && v.esp[c].d) || v.desc[c] || "", e, r, dif: r - e, folios: v.esp[c] ? v.esp[c].folios : {}});
+  }
+  // misma herramienta con calificación distinta: falta una y sobra otra del mismo modelo
+  for (const f of filas) if (f.dif !== 0) {
+    const otra = filas.find(g => g !== f && vtModelo(g.c) === vtModelo(f.c) && Math.sign(g.dif) === -Math.sign(f.dif));
+    if (otra) f.primo = otra.c;
+  }
+  const faltan = filas.filter(f => f.dif < 0).sort((a, b) => a.c.localeCompare(b.c));
+  const sobran = filas.filter(f => f.dif > 0).sort((a, b) => a.c.localeCompare(b.c));
+  const ok = filas.filter(f => f.dif === 0).sort((a, b) => a.c.localeCompare(b.c));
+  const t = vtTot(v);
+  return {faltan, sobran, ok, t, pzFaltan: -faltan.reduce((a, f) => a + f.dif, 0), pzSobran: sobran.reduce((a, f) => a + f.dif, 0)};
+}
+function vtPintarResultado(x, cab) {
+  const C = vtComparar(VT), bien = !C.faltan.length && !C.sobran.length;
+  x.innerHTML = cab + '<div class="vtRes ' + (bien ? "ok" : "mal") + '"><b>' + (bien ? "✓ Todo llegó completo." : "Hay diferencias.") + '</b> ' + C.t.esc + " piezas escaneadas de " + C.t.esp + " según SICAR" +
+    (C.pzFaltan ? " · faltan " + C.pzFaltan : "") + (C.pzSobran ? " · sobran o no venían " + C.pzSobran : "") + ". Verificó " + esc(VT.quien) + " · terminada el " + vtFechaHora(VT.fin) + ".</div>" +
+    '<div class="vtBtns"><button type="button" class="invbtn lleno" id="vtPdfOtra">Abrir el reporte PDF</button><button type="button" class="invbtn" id="vtCerrar">Cerrar</button></div>' +
+    '<p style="font-size:13px;color:var(--ink-3)">Si la hoja no se abrió, permite las ventanas emergentes de esta página y toca «Abrir el reporte PDF». El reporte queda disponible en «Último reporte».</p>';
+  const ver = VT;
+  $("#vtPdfOtra").addEventListener("click", () => vtPdf(ver));
+  $("#vtCerrar").addEventListener("click", () => { VT = null; vtGuarda(); vtCerrarCapa(); });
+}
+/* ---- reporte PDF ---- */
+function vtPdf(v) {
+  const C = vtComparar(v), bien = !C.faltan.length && !C.sobran.length, tr = v.tras;
+  const dest = vtNombreSuc(tr[0].suc_des, tr[0].alias_des);
+  const folios = tr.map(z => z.folio).join(" + ");
+  const foto = clave => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || "");
+    const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
+    return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
+  const fol = f => tr.length > 1 && Object.keys(f.folios).length ? '<div class="fo">' + Object.entries(f.folios).map(([a, b]) => "folio " + a + ": " + b).join(" · ") + '</div>' : '';
+  const tabla = (L, tipo) => '<table><thead><tr><td></td><td></td><td>Clave</td><td class="c">SICAR</td><td class="c">Recibido</td><td class="c">' + (tipo === "ok" ? "" : "Diferencia") + '</td></tr></thead>' +
+    L.map((f, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(f.c) + '</td><td><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d) + '</div>' + fol(f) +
+      (f.primo ? '<div class="pr">¿Calificación distinta? ' + (f.dif < 0 ? "llegó " : "SICAR manda ") + esc(f.primo) + '</div>' : '') + (tipo === "sobra" && !f.e ? '<div class="pr">No viene en el traspaso</div>' : '') +
+      '</td><td class="c num">' + f.e + '</td><td class="c num b">' + f.r + '</td><td class="c num ' + (f.dif < 0 ? "mal" : f.dif > 0 ? "mas" : "") + '">' + (f.dif > 0 ? "+" : "") + (f.dif || "✓") + '</td></tr>').join("") + "</table>";
+  const ff = vtFechaHora(v.fin || Date.now());
+  abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Verificación folio' + (tr.length > 1 ? "s " : " ") + folios.replace(/ \+ /g, "-") + " " + ff.replace(/[\/:,]/g, ".") + ' · MAKMEX</title><style>' +
+    "body{font:13.5px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}" +
+    "h1{font-size:21px;margin:0}h1 small{font-weight:400;font-size:12.5px;color:#666;display:block;margin-top:3px}" +
+    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:10px}" +
+    ".logo{font-weight:800;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px;white-space:nowrap}" +
+    ".res{border-radius:8px;padding:10px 12px;font-size:15px;margin:8px 0 6px}.res.ok{background:#e3f5ea;color:#1e6b3c}.res.mal{background:#fbe4e3;color:#9b1c1c}" +
+    ".kv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 4px}.kv div{border:1px solid #ddd;border-radius:6px;padding:6px 8px}.kv b{display:block;font-size:18px}.kv span{font-size:11px;color:#777}" +
+    "h2{font-size:15px;margin:16px 0 4px}table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #ddd;padding:5px 7px;vertical-align:middle}" +
+    "thead td{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:#777;font-weight:700}" +
+    ".n{color:#999;width:22px;text-align:right}.f{width:44px}.f img{width:40px;height:40px;object-fit:contain;display:block}" +
+    ".k{font-weight:700}.d{font-size:12px;color:#555}.fo{font-size:11px;color:#777}.pr{font-size:11.5px;color:#a85a00;font-weight:600}" +
+    ".c{text-align:center;width:64px}.b{font-weight:700}.mal{color:#c9302c;font-weight:700}.mas{color:#a85a00;font-weight:700}.num{font-variant-numeric:tabular-nums}" +
+    ".pie{display:flex;gap:30px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;font-size:12.5px;color:#555}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}" +
+    "@media print{.boton{display:none}body{margin:0}}tr{break-inside:avoid}" +
+    '</style></head><body><button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>Verificación de traspaso · folio' + (tr.length > 1 ? "s " : " ") + esc(folios) + '<small>' +
+      tr.map(z => "Folio " + z.folio + ": " + esc(vtNombreSuc(z.suc_ori, z.alias_ori)) + " → " + esc(vtNombreSuc(z.suc_des, z.alias_des)) + ", salió el " + esc(z.fecha) + ", " + z.piezas + " pzas según SICAR").join("<br>") +
+      '<br>Verificó: <b>' + esc(v.quien || "—") + '</b>' + (v.cuenta ? " (" + esc(v.cuenta) + ")" : "") + " · empezó " + vtFechaHora(v.inicio) + " · terminó " + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
+    '<div class="res ' + (bien ? "ok" : "mal") + '"><b>' + (bien ? "COMPLETO: llegó todo lo que dice SICAR." : "CON DIFERENCIAS: revisar antes de aplicar el traspaso en SICAR.") + '</b></div>' +
+    '<div class="kv"><div><b class="num">' + C.t.esp + '</b><span>piezas según SICAR</span></div><div><b class="num">' + C.t.esc + '</b><span>piezas recibidas (escaneadas)</span></div>' +
+      '<div><b class="num" style="color:' + (C.pzFaltan ? "#c9302c" : "#1c1917") + '">' + C.pzFaltan + '</b><span>faltan</span></div><div><b class="num" style="color:' + (C.pzSobran ? "#a85a00" : "#1c1917") + '">' + C.pzSobran + '</b><span>sobran / no venían</span></div></div>' +
+    (C.faltan.length ? '<h2>Faltantes (' + C.faltan.length + (C.faltan.length === 1 ? " clave" : " claves") + ')</h2>' + tabla(C.faltan, "falta") : '') +
+    (C.sobran.length ? '<h2>Sobrantes o que no venían (' + C.sobran.length + (C.sobran.length === 1 ? " clave" : " claves") + ')</h2>' + tabla(C.sobran, "sobra") : '') +
+    (C.ok.length ? '<h2>Completos (' + C.ok.length + (C.ok.length === 1 ? " clave" : " claves") + ')</h2>' + tabla(C.ok, "ok") : '') +
+    '<div class="pie"><div>Verificó (nombre y firma)</div><div>Encargado de tienda</div><div>Enterado: quien envió (' + esc([...new Set(tr.map(z => vtNombreSuc(z.suc_ori, z.alias_ori)))].join(", ")) + ')</div></div>' +
+    '<p style="margin-top:12px;font-size:11px;color:#888">Comparación contra el detalle del traspaso en SICAR (base central) al empezar la verificación. Recibido = etiquetas escaneadas en ' + esc(dest) + '.</p>' +
+    "</body></html>");
+}
+vtPintarBarra();
 
 /* ---------------- hoja del traspaso (botón PDF del cajón) ---------------- */
 let pdfCajon = null;
