@@ -714,18 +714,30 @@ let CUENTA = null, EMP = null, ultimoToque = Date.now();   // CUENTA: fila de «
 
 /* ---------------- acceso a la base central (REST de PostgREST, con el token de la sesión) ---------------- */
 async function q(tabla, params, opciones = {}) {
-  const todo = []; let desde = 0; const paso = 1000;
-  while (true) {
+  // páginas de 1,000 en OLAS de 4 en paralelo (28 oct 2026): las listas grandes bajan varias veces más rápido.
+  // Es seguro porque cada consulta lleva orden único (arreglo del 23 oct): cada página es un rango fijo.
+  const paso = 1000;
+  const pide = async desde => {
     const cab = {apikey: LLAVE, Authorization: "Bearer " + (sesion ? sesion.access_token : LLAVE), Range: desde + "-" + (desde + paso - 1), "Range-Unit": "items"};
     const r = await fetch(URL_BASE + "/rest/v1/" + tabla + "?" + params, {headers: cab});
-    if (r.status === 416) break;
+    if (r.status === 416) return null;
     if (r.status === 401 || r.status === 403) throw new Error("sesion");
     if (!r.ok) throw new Error(tabla + ": HTTP " + r.status + " " + (await r.text()).slice(0, 120));
-    const filas = await r.json(); todo.push(...filas);
-    if (filas.length < paso || opciones.unaPagina) break;
-    desde += paso;
+    return r.json();
+  };
+  const todo = [];
+  const p0 = await pide(0);
+  if (p0 === null) return todo;
+  todo.push(...p0);
+  if (opciones.unaPagina || p0.length < paso) return todo;
+  for (let desde = paso; ; desde += 4 * paso) {
+    const ola = await Promise.all([0, 1, 2, 3].map(i => pide(desde + i * paso)));
+    for (const filas of ola) {
+      if (filas === null) return todo;
+      todo.push(...filas);
+      if (filas.length < paso) return todo;
+    }
   }
-  return todo;
 }
 const enLista = ids => "(" + ids.map(x => encodeURIComponent(x)).join(",") + ")";
 
@@ -782,13 +794,25 @@ async function refrescar(primera) {
       }
     }
     if (compras.length) D.comprasDet = await q("sicar_compra_detalle", "select=com_id,clave,descripcion,cantidad,borrado&suc=eq.1&com_id=in." + enLista(compras.map(c => c.com_id)) + "&order=com_id,orden,art_id"); else D.comprasDet = [];
+    // carga rápida (28 oct 2026): al entrar se pinta DE INMEDIATO lo que ya llegó, y lo pesado baja en paralelo
+    if (primera) { pintarEstado(); pintarVentas(); pintarTraspasos(); pintarEntradas(); rCalcula(); }
+    const tareas = [];
     if (primera || Date.now() - ultimoReparto > CADA_S_REPARTO * 1000) {
-      D.existencias = await q("sicar_existencia", "select=suc,clave,descripcion,existencia,precio1,categoria,departamento&existencia=gt.0&order=clave,suc");
-      D.trasDet = traspasos.length ? await q("sicar_traspaso_detalle", "select=suc,tra_id,clave,cantidad,borrado&tra_id=in." + enLista([...new Set(traspasos.map(t => t.tra_id))]) + "&order=suc,tra_id,art_id") : [];
-      D.reparto = calcularReparto(); ultimoReparto = Date.now();
-      try { await cargarDemanda(); } catch (e) { D.avisoV5 = D.avisoV5 || ("Reparto por demanda sin datos: " + e.message); }
+      tareas.push((async () => {
+        const [ex, td] = await Promise.all([
+          q("sicar_existencia", "select=suc,clave,descripcion,existencia,precio1,categoria,departamento&existencia=gt.0&order=clave,suc"),
+          traspasos.length ? q("sicar_traspaso_detalle", "select=suc,tra_id,clave,cantidad,borrado&tra_id=in." + enLista([...new Set(traspasos.map(t => t.tra_id))]) + "&order=suc,tra_id,art_id") : []
+        ]);
+        D.existencias = ex; D.trasDet = td;
+        D.reparto = calcularReparto(); ultimoReparto = Date.now();
+        if (primera) { pintarReparto(); pintarCriticos().catch(() => {}); }
+      })());
+      tareas.push(cargarDemanda().then(() => { if (primera) pintarReparto(); }).catch(e => { D.avisoV5 = D.avisoV5 || ("Reparto por demanda sin datos: " + e.message); }));
     }
-    if (primera || Date.now() - D.dineroCargado > CADA_S_DINERO * 1000) { try { await cargarDinero(); } catch (e) { D.avisoV5 = D.avisoV5 || ("Pestaña Dinero sin datos (¿falta correr tablero_v5_bitacora.sql?): " + e.message); } }
+    if (primera || Date.now() - D.dineroCargado > CADA_S_DINERO * 1000) {
+      tareas.push(cargarDinero().then(() => { if (primera) pintarDinero(); }).catch(e => { D.avisoV5 = D.avisoV5 || ("Pestaña Dinero sin datos (¿falta correr tablero_v5_bitacora.sql?): " + e.message); }));
+    }
+    await Promise.all(tareas);
     pintarTodo();
     rCalcula();
   } catch (e) {
@@ -2376,13 +2400,7 @@ const rClase = v => rRojo(v) ? " roja" : "";
 const rEtiq = v => { const r = rRojo(v); return r ? '<span class="etq rojo" title="Cobrada por debajo del mínimo que permite el carrito de makmex.com">desc. de más ' + pesos(r.exceso) + '</span>' : ""; };
 
 async function rLee(tabla, parametros) {
-  const todo = [];
-  for (let desde = 0; desde < 100000; desde += 1000) {
-    const parte = await q(tabla, parametros + "&limit=1000&offset=" + desde);
-    todo.push(...parte);
-    if (parte.length < 1000) break;
-  }
-  return todo;
+  return q(tabla, parametros);   // q ya pagina solo (en olas): el limit/offset de antes duplicaba los viajes
 }
 function rConsultaVentas() {
   if (RANGO.a < hoyStr() && D.rangoCargado === rLlaveRango()) return Promise.resolve(D.ventasHoy);  // el pasado no cambia
