@@ -445,6 +445,21 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .visDia .bar{height:10px;border-radius:5px;background:var(--accent);min-width:2px}
 .visDia.cab{border-top:0;font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
 .visDia span.num{text-align:right}
+
+/* mercancía propia de HandyMan (solo lectura) */
+.cpTit{font-family:var(--display);font-weight:600;font-size:15px;margin:18px 2px 6px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.cpTit small{font-family:var(--body);font-weight:400;font-size:12px;color:var(--ink-3)}
+.cpfila{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:9px 12px;border-top:1px solid var(--line);align-items:center}
+.cpfila:first-child{border-top:0}
+.cpfila .c1{font-family:var(--display);font-weight:600;font-size:15px}
+.cpfila .c2{font-size:12px;color:var(--ink-3)}
+.cpfila .pz{font-family:var(--display);font-weight:700;font-size:18px;text-align:right;min-width:40px}
+.cpChip{display:inline-block;border-radius:7px;padding:2px 7px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.cpChip.mas{background:var(--ok-soft,rgba(60,160,90,.18));color:var(--ok,#3C8C50)}
+.cpChip.menos{background:var(--accent-soft);color:var(--accent)}
+.cpChip.aj{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
+.cpQuien{font-size:11px;color:var(--ink-3)}
+.cpVacio{padding:14px;color:var(--ink-3);font-size:13px}
 </style>
 </head>
 <body>
@@ -608,6 +623,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   <section class="panel" id="p-inventario">
     <h2>Hacer inventario <small id="invResumen"></small></h2>
     <div id="invCuerpo"></div>
+    <div id="hmpBloque"></div>
   </section>
 </main>
 
@@ -799,7 +815,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
+function pintarTodo() { visCargar(); hmpCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -1173,6 +1189,56 @@ function visDetalle() {
   if (typeof pdfCajon !== "undefined") { pdfCajon = null; $("#btnPdfCajon").classList.add("hidden"); }
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden) visCargar(); });
+
+/* ---------------- mercancía propia de HandyMan (solo lectura; 7_compra_handyman.sql) ---------------- */
+const HMP = {ex: null, mov: null, error: "", cuando: 0, cargando: false};
+const hmpQuien = c => esc((c || "").split("@")[0]);
+const hmpFecha = s => new Date(s).toLocaleString("es-MX", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"});
+async function hmpQ(tabla, params) {
+  const r = await fetch(URL_BASE + "/rest/v1/" + tabla + "?" + params, {headers: {apikey: LLAVE,
+    Authorization: "Bearer " + (sesion ? sesion.access_token : LLAVE), "Accept-Profile": "handyman"}});
+  if (r.status === 401 || r.status === 403) throw new Error("sesion");
+  if (!r.ok) throw new Error(tabla + ": HTTP " + r.status);
+  return r.json();
+}
+async function hmpCargar() {
+  if (HMP.cargando || Date.now() - HMP.cuando < 60000) return;
+  HMP.cargando = true;
+  try {
+    await czCatalogo().catch(() => {});   // para las fotos
+    const [ex, mov] = await Promise.all([
+      hmpQ("propio_existencia", "select=*&order=clave&limit=500"),
+      hmpQ("propio_mov", "select=*&order=id.desc&limit=30")
+    ]);
+    HMP.ex = ex; HMP.mov = mov; HMP.error = "";
+  } catch (e) { HMP.error = /404|PGRST/.test(e.message) ? "falta" : e.message; }
+  HMP.cuando = Date.now(); HMP.cargando = false; hmpPinta();
+}
+function hmpPinta() {
+  const el = $("#hmpBloque"); if (!el) return;
+  if (HMP.error === "falta") { el.innerHTML = '<div class="cpTit">Mercancía propia de HandyMan</div><div class="cpVacio">Falta correr <b>7_compra_handyman.sql</b> en Supabase.</div>'; return; }
+  if (HMP.error) { el.innerHTML = '<div class="cpTit">Mercancía propia de HandyMan</div><div class="cpVacio">' + esc(HMP.error) + '</div>'; return; }
+  if (!HMP.ex) { el.innerHTML = ""; return; }
+  const tot = HMP.ex.reduce((a, e) => a + e.piezas, 0);
+  const mes = new Date(); mes.setDate(1); mes.setHours(0, 0, 0, 0);
+  let vMes = 0, vPz = 0;
+  for (const m of HMP.mov) if (m.tipo === "venta" && new Date(m.fecha) >= mes) { vMes += Number(m.precio || 0) * (-m.piezas); vPz += -m.piezas; }
+  el.innerHTML = '<div class="cpTit">Mercancía propia de HandyMan (Monterrey) <small>solo lectura — se captura en el tablero HandyMan · ' +
+    (HMP.ex.length ? HMP.ex.length + ' claves · ' + tot + ' piezas' : 'sin existencia') +
+    (vPz ? ' · vendido este mes ' + pesos(vMes) : '') + '</small></div>' +
+    '<div class="lista">' + (HMP.ex.length ? HMP.ex.map(e => '<div class="cpfila">' + czFoto(e.clave) +
+      '<div><div class="c1">' + esc(e.clave) + '</div><div class="c2">' + esc(e.descripcion || e.modelo) + '</div></div>' +
+      '<div class="pz num">' + e.piezas + '</div></div>').join("")
+      : '<div class="cpVacio">HandyMan no ha registrado mercancía propia.</div>') + '</div>' +
+    (HMP.mov.length ? '<div class="cpTit">Últimos movimientos de HandyMan</div><div class="lista">' + HMP.mov.map(m => {
+      const chip = m.tipo === "compra" ? '<span class="cpChip mas">+' + m.piezas + '</span>'
+        : m.tipo === "venta" ? '<span class="cpChip menos">−' + (-m.piezas) + ' · ' + pesos(m.precio || 0) + '</span>'
+        : '<span class="cpChip aj">ajuste ' + (m.piezas > 0 ? "+" : "") + m.piezas + '</span>';
+      return '<div class="cpfila"><div>' + chip + '</div><div><div class="c1">' + esc(m.clave) + '</div><div class="c2">' +
+        esc(m.nota || m.descripcion || "") + '</div></div><div class="cpQuien">' + hmpFecha(m.fecha) + '<br>' + hmpQuien(m.correo) + '</div></div>';
+    }).join("") + '</div>' : "");
+}
+document.querySelector('#nav [data-p="inventario"]').addEventListener("click", () => { hmpCargar(); });
 
 /* ---------------- traspasos en curso ---------------- */
 function pintarTraspasos() {
