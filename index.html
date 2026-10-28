@@ -431,6 +431,20 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .vtRes.ok{background:var(--ok-soft);color:var(--ok)}.vtRes.mal{background:var(--bad-soft);color:var(--bad)}
 .vtQuien{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
 .vtQuien input{font:inherit;padding:8px 10px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);flex:1 1 200px}
+
+/* visitas a la página */
+.visBloque{margin:-4px 0 14px}
+.visBloque .cab{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px;color:var(--ink-2);margin:0 2px 6px}
+.visBloque .cab small{color:var(--ink-3);font-size:11.5px}
+.visTiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.visTiles .tile{cursor:pointer;padding:10px 10px 8px}
+.visTiles .tile .t{font-size:26px}
+.visTiles .tile:hover{border-color:var(--line-2)}
+.visNota{font-size:12.5px;color:var(--ink-3);padding:8px 2px}
+.visDia{display:grid;grid-template-columns:96px minmax(0,1fr) 70px 70px;gap:8px;align-items:center;padding:5px 2px;border-top:1px solid var(--line);font-size:13px}
+.visDia .bar{height:10px;border-radius:5px;background:var(--accent);min-width:2px}
+.visDia.cab{border-top:0;font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.4px}
+.visDia span.num{text-align:right}
 </style>
 </head>
 <body>
@@ -468,6 +482,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   <section class="panel activo" id="p-ventas">
     <h2><span id="ventasTit">Ventas de hoy</span> <small id="fechaHoy"></small></h2>
     <div class="marcador" id="marcador"></div>
+    <div class="visBloque" id="visBloque"></div>
     <div class="barra rango" id="rangoBar">
       <button type="button" class="rgChip sel" data-r="hoy">Hoy</button>
       <button type="button" class="rgChip" data-r="ayer">Ayer</button>
@@ -784,7 +799,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
+function pintarTodo() { visCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -1120,6 +1135,44 @@ async function pintarCriticos() {
 }
 $("#crFiltro").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (!b) return; CR.filtro = b.dataset.f;
   document.querySelectorAll("#crFiltro .rgChip").forEach(x => x.classList.toggle("sel", x === b)); pintarCriticos(); });
+
+/* ---------------- visitas a la página (6_visitas_paginas.sql) ---------------- */
+const VIS = {datos: null, error: "", cuando: 0, cargando: false};
+const visNum = n => Number(n || 0).toLocaleString("es-MX");
+const visFecha = s => { const m = /^(\d{4})-(\d\d)-(\d\d)/.exec(s || ""); return m ? Number(m[3]) + " " + ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][Number(m[2]) - 1] + (m[1] !== String(new Date().getFullYear()) ? " " + m[1] : "") : ""; };
+async function visCargar(forzar) {
+  // cada minuto; si el SQL todavía no está en Supabase, reintenta cada 10 min (para no llenar la consola de 404)
+  if (VIS.cargando || (!forzar && Date.now() - VIS.cuando < (VIS.error === "falta" ? 600000 : 60000)) || document.hidden) return;
+  VIS.cargando = true;
+  try { VIS.datos = await rpc("visitas_resumen", {p_sitio: "makmex"}); VIS.error = ""; }
+  catch (e) {
+    VIS.error = /Could not find|PGRST202|schema cache|404/i.test(e.message) ? "falta" : e.message === "sesion" ? "" : e.message;
+  }
+  VIS.cuando = Date.now(); VIS.cargando = false; visPintar();
+}
+function visPintar() {
+  const el = $("#visBloque"); if (!el) return;
+  if (VIS.error === "falta") { el.innerHTML = '<div class="visNota">Visitas a makmex.com: falta correr <b>6_visitas_paginas.sql</b> en Supabase y publicar la página.</div>'; return; }
+  if (VIS.error) { el.innerHTML = '<div class="visNota">Visitas a makmex.com: no se pudieron leer (' + esc(VIS.error) + ').</div>'; return; }
+  const v = VIS.datos; if (!v) { el.innerHTML = ""; return; }
+  const per = n => visNum(n) + (Number(n) === 1 ? " persona" : " personas");
+  el.innerHTML = '<div class="cab"><span>Visitas a <b>makmex.com</b></span><small>páginas abiertas · personas distintas</small></div><div class="visTiles">' +
+    '<button type="button" class="tile num" data-vis="1"><div class="n"><span>Hoy</span></div><div class="t' + (v.dia.vistas ? "" : " cero") + '">' + visNum(v.dia.vistas) + '</div><div class="s">' + per(v.dia.personas) + ' · ayer ' + visNum(v.ayer.vistas) + '</div></button>' +
+    '<button type="button" class="tile num" data-vis="1"><div class="n"><span>Este mes</span></div><div class="t' + (v.mes.vistas ? "" : " cero") + '">' + visNum(v.mes.vistas) + '</div><div class="s">' + per(v.mes.personas) + '</div></button>' +
+    '<button type="button" class="tile num" data-vis="1"><div class="n"><span>Total</span></div><div class="t' + (v.total.vistas ? "" : " cero") + '">' + visNum(v.total.vistas) + '</div><div class="s">' + per(v.total.personas) + (v.total.desde ? " · desde el " + visFecha(v.total.desde) : " · empieza a contar al publicar") + '</div></button></div>';
+  el.querySelectorAll("[data-vis]").forEach(b => b.addEventListener("click", visDetalle));
+}
+function visDetalle() {
+  const v = VIS.datos; if (!v) return;
+  const dias = v.dias || [], max = Math.max(1, ...dias.map(d => Number(d.vistas) || 0));
+  abrirCajon("Visitas a makmex.com", "últimos 31 días · total " + visNum(v.total.vistas) + " páginas abiertas" + (v.total.desde ? " desde el " + visFecha(v.total.desde) : ""),
+    dias.length ? '<div class="visDia cab"><span>Día</span><span></span><span class="num">Páginas</span><span class="num">Personas</span></div>' +
+      dias.map(d => '<div class="visDia"><span>' + visFecha(d.dia) + '</span><span><div class="bar" style="width:' + Math.round(100 * (Number(d.vistas) || 0) / max) + '%"></div></span><span class="num">' + visNum(d.vistas) + '</span><span class="num">' + visNum(d.personas) + '</span></div>').join("") +
+      '<p class="visNota">«Páginas» = veces que se abrió una página del sitio (incluye recargas). «Personas» = navegadores distintos ese día (un mismo cliente en celular y computadora cuenta 2). No cuenta robots de Google, Meta ni WhatsApp. No va a coincidir exacto con Meta o Google: cada uno mide a su manera.</p>'
+      : '<div class="vacio">Todavía no hay visitas registradas. Empieza a contar cuando se publica la página con el contador.</div>');
+  if (typeof pdfCajon !== "undefined") { pdfCajon = null; $("#btnPdfCajon").classList.add("hidden"); }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) visCargar(); });
 
 /* ---------------- traspasos en curso ---------------- */
 function pintarTraspasos() {
@@ -1929,13 +1982,16 @@ const CZ_G = ["AA", "A", "B", "C", "D", "E", "F"];
    grados.json (los precios del maestro por calificación): toda calificación AA–F que no esté dada de alta
    sale como «sobre pedido» con su precio de lista, y cada modelo con kit ofrece el kit completo (batería +
    cargador, precio kp) y el kit sin cargador (herramienta + batería, precio kt) en las 7 calificaciones.
-   Si grados.json no carga, el cotizador sigue solo con lo del core (como antes). */
+   Además pedido.json (28 oct 2026): los modelos POR ENCARGO del maestro (hoja ANALISIS precios), que no están
+   dados de alta en la página, con sus 7 calificaciones y kits a precio de lista; se marcan «por encargo».
+   Si grados.json o pedido.json no cargan, el cotizador sigue con lo que sí cargó. */
 function czCatalogo() {
   if (CZCAT) return Promise.resolve(CZCAT);
   CZCARGANDO = CZCARGANDO || Promise.all([
     fetch("https://makmex.com/core.json", {cache: "no-cache"}).then(r => r.json()),
-    fetch("https://makmex.com/core.json".replace("core.json", "grados.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : {m: {}}).catch(() => ({m: {}}))
-  ]).then(([c, g]) => {
+    fetch("https://makmex.com/core.json".replace("core.json", "grados.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : {m: {}}).catch(() => ({m: {}})),
+    fetch("https://makmex.com/core.json".replace("core.json", "pedido.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : {rows: []}).catch(() => ({rows: []}))
+  ]).then(([c, g, e]) => {
     const ix = {}; ["sku", "model", "grade", "name", "brand", "p1", "st", "img", "kit", "bat", "car"].forEach(k => ix[k] = c.cols.indexOf(k));
     const v = (f, k) => ix[k] >= 0 ? f[ix[k]] : null;
     CZCAT = c.rows.map(f => {
@@ -1954,8 +2010,8 @@ function czCatalogo() {
     const base = {};   // nombre, marca y foto del modelo (de su fila suelta del core)
     for (const p of CZCAT) if (!p.kit && !base[p.model]) base[p.model] = p;
     for (const mod in (g.m || {})) {
-      const d = g.m[mod], b = base[mod];
-      if (!b || !d || !d.pp) continue;
+      const d = g.m[mod], b = base[mod] || {name: mod, brand: "", img: null};   // sin fila suelta en el core: nombre = modelo
+      if (!d || !d.pp) continue;
       const suf = d.ah ? "-KIT" + d.ah + "A" : null;
       for (let k = 0; k < 7; k++) {
         const pz = mod + "-" + CZ_G[k];
@@ -1965,6 +2021,25 @@ function czCatalogo() {
           CZCAT.push({sku: pz + suf, model: mod, grade: CZ_G[k], name: b.name + " · Kit: batería " + (d.bat || "") + " + cargador " + (d.car || ""), brand: b.brand, kit: 1, p1: d.kp[k], st: 0, img: b.img, pedido: 1}); }
         if (suf && d.kt && d.kt[k] > 0 && !ya.has(pz + "+BAT")) { ya.add(pz + "+BAT");
           CZCAT.push({sku: pz + "+BAT", model: mod, grade: CZ_G[k], name: b.name + " · Kit: herramienta + batería " + (d.bat || "") + " (sin cargador)", brand: b.brand, kit: 1, p1: d.kt[k], st: 0, img: b.img, pedido: 1}); }
+      }
+    }
+    // por encargo (pedido.json): mismas columnas que grados (pp/kp/kt/bat/car/ah) más nombre, marca y foto
+    const pc = (e && e.cols) || [], pi = {}; pc.forEach((k, i) => pi[k] = i);
+    for (const f of ((e && e.rows) || [])) {
+      const mod = String(f[pi.model] || ""), pp = f[pi.pp];
+      if (!mod || !Array.isArray(pp)) continue;
+      const name = String(f[pi.name] || mod), brand = String(f[pi.brand] || ""), img = f[pi.img] || null;
+      if (img && !FOTOS.modelo[mod]) FOTOS.modelo[mod] = img;        // la foto de fábrica del encargo
+      const ah = Number(f[pi.ah]) || 0, suf = ah ? "-KIT" + ah + "A" : null;
+      const kp = f[pi.kp], kt = f[pi.kt], bat = f[pi.bat] || "", car = f[pi.car] || "";
+      for (let k = 0; k < 7; k++) {
+        const pz = mod + "-" + CZ_G[k];
+        if (pp[k] > 0 && !ya.has(pz)) { ya.add(pz);
+          CZCAT.push({sku: pz, model: mod, grade: CZ_G[k], name, brand, kit: 0, p1: pp[k], st: 0, img, pedido: 1, encargo: 1}); }
+        if (suf && Array.isArray(kp) && kp[k] > 0 && !ya.has(pz + suf)) { ya.add(pz + suf);
+          CZCAT.push({sku: pz + suf, model: mod, grade: CZ_G[k], name: name + " · Kit: batería " + bat + " + cargador " + car, brand, kit: 1, p1: kp[k], st: 0, img, pedido: 1, encargo: 1}); }
+        if (suf && Array.isArray(kt) && kt[k] > 0 && !ya.has(pz + "+BAT")) { ya.add(pz + "+BAT");
+          CZCAT.push({sku: pz + "+BAT", model: mod, grade: CZ_G[k], name: name + " · Kit: herramienta + batería " + bat + " (sin cargador)", brand, kit: 1, p1: kt[k], st: 0, img, pedido: 1, encargo: 1}); }
       }
     }
     return CZCAT;
@@ -1991,7 +2066,7 @@ function czPintaSug(res) {
   if (!res.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
   el.innerHTML = res.map((p, i) => '<button type="button" class="czsug" data-cz="' + i + '">' + czFoto(p.sku) +
     '<div><div class="s1">' + esc(p.sku) + '</div><div class="s2">' + esc(p.name || p.model) + '</div></div>' +
-    '<div class="sp num">' + (p.p1 ? pesos(p.p1) : "—") + '<small>' + (p.st > 0 ? p.st + " en existencia" : p.pedido ? "sobre pedido" : "sin existencia") + '</small></div></button>').join("");
+    '<div class="sp num">' + (p.p1 ? pesos(p.p1) : "—") + '<small>' + (p.st > 0 ? p.st + " en existencia" : p.encargo ? "por encargo" : p.pedido ? "sobre pedido" : "sin existencia") + '</small></div></button>').join("");
   el.classList.remove("hidden");
   el.querySelectorAll("[data-cz]").forEach(b => b.addEventListener("click", () => czAgregar(res[+b.dataset.cz])));
 }
