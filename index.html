@@ -996,11 +996,20 @@ document.getElementById("btnPdf").addEventListener("click", pdfReparto);
 
 /* ---------------- críticos para kits (baterías y cargadores de grados.json) ---------------- */
 const CR = {filtro: "todo", tiendas: [1, 3, 2, 4]};    // mismo orden que la hoja: CEDIS, CDMX, Denmor, Monterrey
-function crLista() {                                   // {modelo: {tipo, kits}} desde la regla de kits del sitio
+// Críticos agregados a mano (además de los de la regla de kits). Pedido de Emilio 27 oct: cargadores DeWalt que el
+// carrito acepta como equivalentes en los kits (grupo del DCB115 en RKIT_CHG). Para agregar otro: su modelo aquí.
+const CR_EXTRA = ["DCB1104", "DCB112", "DCB107", "DCB1102"];
+function crLista() {                                   // {modelo: {tipo, kits, eq}} desde la regla de kits del sitio
   const L = {};
   for (const t of Object.values(R.grados || {})) {
     if (t.bat) { L[t.bat] = L[t.bat] || {tipo: "bat", kits: 0}; L[t.bat].kits++; }
     if (t.car) { L[t.car] = L[t.car] || {tipo: "car", kits: 0}; if (L[t.car].tipo === "car") L[t.car].kits++; }
+  }
+  for (const m of CR_EXTRA) {
+    if (L[m]) continue;
+    const grupo = RKIT_CHG.find(g => g.includes(m)) || [];
+    const base = grupo.filter(x => L[x] && L[x].tipo === "car" && !L[x].eq);
+    L[m] = {tipo: "car", kits: 0, eq: base, kitsEq: base.reduce((a, x) => a + L[x].kits, 0)};
   }
   return L;
 }
@@ -1036,9 +1045,9 @@ function crCalcula() {
     else if (faltan.length && ceros.length === CR.tiendas.length) { sug = "Agotado en las 4 tiendas: comprar"; mal = true; }
     else if (faltan.length) { sug = (cel[1].n === 1 ? "CEDIS solo tiene 1" : "CEDIS en cero") + ": comprar para " + faltan.map(s => SUCS[s]).join(", "); mal = true; }
     else if (cel[1].n <= 0) { sug = "CEDIS en cero: comprar"; mal = true; }
-    return {m, tipo: L[m].tipo, kits: L[m].kits, desc: desc[m] || "", cel, ceros: ceros.length, unas: unas.length, sug, mal};
+    return {m, tipo: L[m].tipo, kits: L[m].kits, eq: L[m].eq, kitsEq: L[m].kitsEq || 0, desc: desc[m] || "", cel, ceros: ceros.length, unas: unas.length, sug, mal};
   });
-  filas.sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === "bat" ? -1 : 1) || b.kits - a.kits || a.m.localeCompare(b.m));
+  filas.sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === "bat" ? -1 : 1) || (a.eq ? 1 : 0) - (b.eq ? 1 : 0) || b.kits - a.kits || a.m.localeCompare(b.m));
   return filas;
 }
 function crCelda(c) {
@@ -1063,7 +1072,7 @@ async function pintarCriticos() {
   for (const f of ver) {
     if (f.tipo !== grupo) { grupo = f.tipo; html += '<div class="crFila grupo">' + (grupo === "bat" ? "Baterías" : "Cargadores") + '</div>'; }
     html += '<div class="crFila"><div class="crMod"><span class="ft">' + fotoHtml(f.m + "-A") + '</span><div style="min-width:0"><div class="k">' + esc(f.m) +
-      ' <span class="kits">· ' + f.kits + (f.kits === 1 ? " kit" : " kits") + '</span></div><div class="d">' + esc(f.desc) + '</div>' +
+      ' <span class="kits">· ' + (f.eq ? "equivalente" + (f.eq.length ? " de " + f.eq.join("/") : "") + (f.kitsEq ? ", sirve en " + f.kitsEq + " kits" : "") : f.kits + (f.kits === 1 ? " kit" : " kits")) + '</span></div><div class="d">' + esc(f.desc) + '</div>' +
       (f.sug ? '<div class="sug' + (f.mal ? " mal" : "") + '">' + esc(f.sug) + '</div>' : '') + '</div></div>' +
       CR.tiendas.map(s => crCelda(f.cel[s])).join("") + '</div>';
   }
