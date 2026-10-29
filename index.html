@@ -368,6 +368,11 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .tras .est.e-1{background:var(--bad-soft);color:var(--bad)}
 .tras.cancel .ruta{text-decoration:line-through;text-decoration-color:var(--ink-3)}
 
+/* historial de entradas */
+.fila.cancel .a{text-decoration:line-through;text-decoration-color:var(--ink-3)}
+.fila .est{font-family:var(--body);font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:6px;background:var(--bad-soft);color:var(--bad)}
+.fila .h small{display:block;font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink-3)}
+
 /* críticos para kits */
 .crRes{font-size:13px;color:var(--ink-2);margin:-4px 0 10px}
 .crRes b.mal{color:var(--bad)}.crRes b.ojo{color:var(--warn)}
@@ -591,8 +596,26 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </section>
 
   <section class="panel" id="p-entradas">
-    <h2>Entradas de hoy en CEDIS <small id="entResumen"></small></h2>
+    <h2><span id="entTit">Entradas de hoy en CEDIS</span> <small id="entResumen"></small></h2>
+    <div class="thBarra" id="ehModo"><button type="button" class="rgChip sel" data-m="hoy">Hoy</button><button type="button" class="rgChip" data-m="hist">Historial</button></div>
     <div class="lista" id="entradas"></div>
+    <div id="ehVista" class="hidden">
+      <div class="thBarra" id="ehRango">
+        <button type="button" class="rgChip sel" data-r="7">7 días</button>
+        <button type="button" class="rgChip" data-r="mes">Este mes</button>
+        <button type="button" class="rgChip" data-r="30">30 días</button>
+        <button type="button" class="rgChip" data-r="90">90 días</button>
+        <span class="rgSep">o del</span><input type="date" id="ehDe" aria-label="Fecha inicial"><span class="rgSep">al</span><input type="date" id="ehA" aria-label="Fecha final">
+      </div>
+      <div class="thBarra" id="ehEstado">
+        <button type="button" class="rgChip sel" data-e="">Todas</button>
+        <button type="button" class="rgChip" data-e="1">Vigentes</button>
+        <button type="button" class="rgChip" data-e="0">Canceladas</button>
+      </div>
+      <div class="thBarra"><input type="search" id="ehBuscar" placeholder="Buscar folio o artículo (clave, p. ej. 2953-20)" autocomplete="off"></div>
+      <div class="thRes" id="ehRes"></div>
+      <div class="lista" id="ehLista"></div>
+    </div>
   </section>
 
   <section class="panel" id="p-cotizar">
@@ -1674,6 +1697,7 @@ document.getElementById("btnPdfCajon").addEventListener("click", () => { if (pdf
 
 /* ---------------- entradas (compras) de hoy en CEDIS ---------------- */
 function pintarEntradas() {
+  if (EH.modo === "hist" && EH.a >= hoyStr()) ehCargar(true);
   const C = D.compras.filter(c => c.status === 1 && !c.gasto);
   const pz = C.reduce((a, c) => a + Number(c.piezas || 0), 0);
   $("#entResumen").textContent = C.length ? C.length + (C.length === 1 ? " entrada · " : " entradas · ") + pz + " piezas" : "";
@@ -1685,6 +1709,97 @@ function pintarEntradas() {
       '<h4>Artículos</h4>' + det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '">' + fotoHtml(d.clave) + '<div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + Number(d.cantidad) + ' pz</div></div>').join(""));
   }));
 }
+
+/* ---------------- historial de entradas de CEDIS (vista «Historial» del panel Entradas) ---------------- */
+const EH = {modo: "hoy", de: "", a: "", estado: "", buscar: "", filas: [], llave: "", tok: 0, artTok: 0, art: null};
+const ehFolio = c => c.folio && c.folio !== "-" ? String(c.folio) : String(c.com_id);
+function ehRango(r) {
+  const h = hoyStr();
+  EH.a = h; EH.de = r === "mes" ? h.slice(0, 8) + "01" : thDias(Number(r) - 1);
+  $("#ehDe").value = EH.de; $("#ehA").value = EH.a;
+  document.querySelectorAll("#ehRango .rgChip").forEach(b => b.classList.toggle("sel", b.dataset.r === r));
+}
+function ehModo(m) {
+  EH.modo = m;
+  document.querySelectorAll("#ehModo .rgChip").forEach(b => b.classList.toggle("sel", b.dataset.m === m));
+  $("#entradas").classList.toggle("hidden", m === "hist"); $("#ehVista").classList.toggle("hidden", m !== "hist");
+  $("#entTit").textContent = m === "hist" ? "Historial de entradas de CEDIS" : "Entradas de hoy en CEDIS";
+  $("#entResumen").classList.toggle("hidden", m === "hist");
+  if (m === "hist") { if (!EH.de) ehRango("7"); ehCargar(false); } else pintarEntradas();
+}
+async function ehCargar(silencio) {
+  if (!EH.de || !EH.a || EH.de > EH.a) { $("#ehRes").textContent = "Elige una fecha inicial anterior o igual a la final."; $("#ehLista").innerHTML = ""; return; }
+  const tok = ++EH.tok, llave = EH.de + "|" + EH.a;
+  if (!silencio || EH.llave !== llave) { $("#ehRes").textContent = "Cargando entradas del " + thF(EH.de) + " al " + thF(EH.a) + "…"; if (EH.llave !== llave) $("#ehLista").innerHTML = ""; }
+  try {
+    const filas = await q("sicar_compra", "select=suc,com_id,fecha,folio,status,gasto,renglones,piezas&suc=eq.1&gasto=eq.0" +
+      "&fecha=gte." + EH.de + "T00:00:00&fecha=lte." + EH.a + "T23:59:59.999&order=fecha.desc,com_id.desc");
+    if (tok !== EH.tok) return;
+    EH.filas = filas; if (EH.llave !== llave) EH.art = null; EH.llave = llave;
+    if (EH.buscar) await ehBuscarArticulo();
+    if (tok !== EH.tok) return;
+    ehPintar();
+  } catch (e) {
+    if (tok !== EH.tok) return;
+    $("#ehRes").textContent = ""; $("#ehLista").innerHTML = '<div class="aviso bad">No se pudo leer el historial de entradas: ' + esc(e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message) + '</div>';
+  }
+}
+// artículo: qué entradas del rango traen una clave que contenga el texto (en cualquier calificación)
+async function ehBuscarArticulo() {
+  const txt = EH.buscar.replace(/[*,()"\\%]/g, "").trim(), tok = ++EH.artTok;
+  if (!txt) { EH.art = null; return; }
+  const ids = [...new Set(EH.filas.map(c => c.com_id))];
+  if (!ids.length) { EH.art = {txt, ids: new Set()}; return; }
+  const det = await q("sicar_compra_detalle", "select=com_id&suc=eq.1&borrado=eq.0&clave=ilike." + encodeURIComponent("*" + txt + "*") +
+    (ids.length <= 600 ? "&com_id=in." + enLista(ids) : "") + "&order=com_id,art_id");
+  if (tok !== EH.artTok) return;
+  EH.art = {txt, ids: new Set(det.map(d => d.com_id))};
+}
+function ehFiltrar() {
+  const b = EH.buscar;
+  return EH.filas.filter(c => (!EH.estado || (EH.estado === "1" ? Number(c.status) === 1 : Number(c.status) !== 1)) &&
+    (!b || ehFolio(c).includes(b) || (EH.art && EH.art.ids.has(c.com_id))));
+}
+function ehPintar() {
+  const L = ehFiltrar(), vig = L.filter(c => Number(c.status) === 1);
+  const pz = vig.reduce((a, c) => a + Number(c.piezas || 0), 0), dias = new Set(vig.map(c => (c.fecha || "").slice(0, 10))).size;
+  $("#ehRes").textContent = L.length + (L.length === 1 ? " entrada" : " entradas") + " del " + thF(EH.de) + " al " + thF(EH.a) +
+    (L.length ? " · " + vig.length + " vigentes · " + (L.length - vig.length) + " canceladas · " + pz + " piezas (sin canceladas) en " + dias + (dias === 1 ? " día" : " días") : "");
+  $("#ehLista").innerHTML = L.length ? L.map(c => { const can = Number(c.status) !== 1;
+    return '<button class="fila' + (can ? " cancel" : "") + '" data-id="' + c.com_id + '"><div class="h num">' + hora(c.fecha) + '<small>' + thF((c.fecha || "").slice(0, 10)).slice(0, 5) + '</small></div>' +
+      '<div class="q"><div class="a">Entrada ' + esc(ehFolio(c)) + (can ? '<span class="est">Cancelada</span>' : '') + '</div><div class="b">' + thF((c.fecha || "").slice(0, 10)) + ' · ' +
+      Number(c.renglones || 0) + (Number(c.renglones) === 1 ? " artículo" : " artículos") + '</div></div><div class="m num">' + Number(c.piezas || 0) + '<small>pzas</small></div></button>'; }).join("")
+    : '<div class="vacio">' + (EH.filas.length ? "Ninguna entrada coincide con los filtros." : "No entró mercancía a CEDIS en esas fechas.") + '</div>';
+  $("#ehLista").querySelectorAll(".fila").forEach(b => b.addEventListener("click", () => ehAbrir(+b.dataset.id)));
+}
+async function ehAbrir(id) {
+  const c = EH.filas.find(x => x.com_id === id); if (!c) return;
+  const tit = "Entrada " + ehFolio(c), sub = "CEDIS · " + thF(c.fecha) + " · " + Number(c.piezas || 0) + " piezas" + (Number(c.status) !== 1 ? " · CANCELADA" : "");
+  abrirCajon(tit, sub, '<div class="vacio">Cargando artículos…</div>');
+  try {
+    const det = await q("sicar_compra_detalle", "select=com_id,clave,descripcion,cantidad,borrado&suc=eq.1&com_id=eq." + id + "&order=com_id,orden,art_id");
+    if ($("#cajonTitulo").textContent !== tit) return;   // el usuario ya abrió otra cosa
+    $("#cajonCuerpo").innerHTML = '<h4>Artículos</h4>' + (det.length ? det.map(d => '<div class="art' + (d.borrado ? " borrado" : "") + '">' + fotoHtml(d.clave) +
+      '<div><div class="c">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion) + '</div></div><div class="i num">' + Number(d.cantidad) + ' pz</div></div>').join("")
+      : '<div class="vacio">Sin artículos registrados.</div>');
+  } catch (e) {
+    $("#cajonCuerpo").innerHTML = '<div class="aviso bad">No se pudieron leer los artículos: ' + esc(e.message) + '</div>';
+  }
+}
+(function ehIniciar() {
+  $("#ehModo").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (b) ehModo(b.dataset.m); });
+  $("#ehRango").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (!b) return; ehRango(b.dataset.r); ehCargar(false); });
+  const fechas = () => { EH.de = $("#ehDe").value; EH.a = $("#ehA").value; document.querySelectorAll("#ehRango .rgChip").forEach(b => b.classList.remove("sel")); ehCargar(false); };
+  $("#ehDe").addEventListener("change", fechas); $("#ehA").addEventListener("change", fechas);
+  $("#ehEstado").addEventListener("click", ev => { const b = ev.target.closest(".rgChip"); if (!b) return; EH.estado = b.dataset.e;
+    document.querySelectorAll("#ehEstado .rgChip").forEach(x => x.classList.toggle("sel", x === b)); ehPintar(); });
+  let espera = null;
+  $("#ehBuscar").addEventListener("input", () => { clearTimeout(espera); espera = setTimeout(async () => {
+    EH.buscar = $("#ehBuscar").value.trim(); EH.art = null;
+    if (EH.buscar) { $("#ehRes").textContent = "Buscando…"; try { await ehBuscarArticulo(); } catch (e) { EH.art = null; } }
+    ehPintar(); }, 350); });
+  const h = hoyStr(); $("#ehDe").max = h; $("#ehA").max = h;
+})();
 
 /* ---------------- cajón ---------------- */
 function abrirCajon(titulo, sub, cuerpo) {
