@@ -519,6 +519,39 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .vsBusca{margin:0 0 8px}
 .vsBusca input{width:100%;font:inherit;font-size:15px;padding:9px 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);box-sizing:border-box}
 .fila .vsHit{color:var(--accent);font-weight:600}
+
+/* panel de opciones (derecha) */
+.opBtn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 11px 4px 9px !important;color:var(--ink) !important;font-weight:600}
+.opBtn svg{width:16px;height:16px}
+.opBtn .cnt{background:var(--bad);color:#fff;font-size:10.5px;font-weight:700;border-radius:999px;padding:0 5px;min-width:16px;text-align:center}
+@media (max-width:460px){.opBtn .tx{display:none}.opBtn{padding:4px 8px !important}}
+#opVelo{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:17;opacity:0;transition:opacity .18s}
+#opVelo.abierto{opacity:1}
+#opPanel{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);background:var(--bg);border-left:1px solid var(--line);z-index:18;display:flex;flex-direction:column;transform:translateX(102%);transition:transform .2s ease,width .2s ease;box-shadow:-12px 0 30px rgba(0,0,0,.18)}
+#opPanel.abierto{transform:none}
+#opPanel.mod{width:min(1100px,100vw)}
+.opCab{display:flex;align-items:center;gap:10px;padding:12px var(--gutter);border-bottom:1px solid var(--line)}
+.opCab .t{flex:1;min-width:0;font-family:var(--display);font-weight:600;font-size:21px;line-height:1.15}
+.opCab .t small{display:block;font-family:var(--body);font-weight:400;font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opCab button{color:var(--ink-2);padding:6px 9px;border-radius:8px;font-size:15px}
+.opCab button:hover{background:var(--surface-2)}
+#opAtras{border:1px solid var(--line);font-size:14px !important}
+.opScroll{flex:1;overflow:auto;overscroll-behavior:contain;padding:12px var(--gutter) calc(24px + env(safe-area-inset-bottom))}
+#opMenu{display:grid;gap:8px}
+#opMenu button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--ink)}
+#opMenu button:hover{border-color:var(--ink-3)}
+#opMenu button .tx{flex:1;min-width:0}
+#opMenu button b{display:block;font-family:var(--display);font-weight:600;font-size:18px}
+#opMenu button small{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+#opMenu button small.mal{color:var(--bad);font-weight:600}
+#opMenu button .fl{color:var(--ink-3);font-size:20px}
+.opMod{display:none}
+.opMod.activo{display:block}
+#opPanel .panel{display:block}
+#opPanel .opOculto{display:none !important}
+#opPanel details.sec{margin-top:0}
+#opPanel details.sec>summary{display:none}
+#opPanel .lista{max-height:none}
 </style>
 </head>
 <body>
@@ -545,6 +578,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
       <button id="btnTema" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
       <button id="quien" class="quien hidden" title="Quién está usando el tablero"></button>
       <button id="btnSalir">Salir</button>
+      <button id="btnOpc" class="opBtn" type="button" title="Críticos para kits, Sin venta, Liquidación, Compras sin venta, Bitácora, Personas y PIN" aria-haspopup="dialog" aria-controls="opPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span class="tx">Opciones</span><span class="cnt hidden" id="cntOpc"></span></button>
     </div>
   </div>
   <div class="tiendas" id="tiendas"></div>
@@ -737,6 +771,18 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </div>
 </div>
 <div id="toast" class="toast" aria-live="polite"></div>
+<div id="opVelo" class="hidden"></div>
+<aside id="opPanel" role="dialog" aria-modal="true" aria-labelledby="opTit" aria-hidden="true">
+  <div class="opCab">
+    <button type="button" id="opAtras" class="hidden">‹ Opciones</button>
+    <div class="t" id="opTit">Opciones<small>módulos fuera del tablero principal</small></div>
+    <button type="button" id="opCerrar" aria-label="Cerrar opciones">✕</button>
+  </div>
+  <div class="opScroll" id="opScroll">
+    <div id="opMenu"></div>
+    <div id="opCuerpo"></div>
+  </div>
+</aside>
 <div id="velo" class="hidden"></div>
 <div id="envCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Modificar envío"><div class="envIn" id="envIn"></div></div>
 <div id="vtCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificación de traspasos"><div class="vtIn" id="vtIn"></div></div>
@@ -889,7 +935,7 @@ async function refrescar(primera) {
         ]);
         D.existencias = ex; D.trasDet = td;
         D.reparto = calcularReparto(); ultimoReparto = Date.now();
-        if (primera) { pintarReparto(); pintarCriticos().catch(() => {}); }
+        if (primera) { pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); }
       })());
       tareas.push(cargarDemanda().then(() => { if (primera) pintarReparto(); }).catch(e => { D.avisoV5 = D.avisoV5 || ("Reparto por demanda sin datos: " + e.message); }));
     }
@@ -918,12 +964,12 @@ $("#nav").addEventListener("click", ev => { const b = ev.target.closest("button"
 function mostrarPanel(p) {
   UI.panel = p;
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("sel", b.dataset.p === p));
-  document.querySelectorAll("main .panel").forEach(s => s.classList.toggle("activo", s.id === "p-" + p || s.id === "avisos" || (p === "enviar" && s.id === "p-criticos")));
+  document.querySelectorAll("main .panel").forEach(s => s.classList.toggle("activo", s.id === "p-" + p || s.id === "avisos"));
   window.scrollTo({top: 0});
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -1905,6 +1951,68 @@ function vsDespues(lista) {
   $("#vsBuscar").addEventListener("input", () => { clearTimeout(espera); espera = setTimeout(() => {
     const t = vsNorm($("#vsBuscar").value); VS.txt = t.length >= 2 ? t : ""; VS.res = null; VS.llave = ""; VS.tok++; pintarVentas(); }, 350); });
 })();
+
+/* ---------------- panel de opciones (derecha) ---------------- */
+const OP = {abierto: false, actual: "", mods: [
+  {id: "criticos", t: "Críticos para kits", nodos: ["#p-criticos"], ocultar: ["#p-criticos > h2"],
+   sub: () => { const s = ($("#crRes") || {}).textContent || ""; const h = s.match(/(\d+) huecos?/), u = s.match(/(\d+) con la última pieza/);
+     return h || u ? [h ? h[0] + " (tienda en cero)" : "", u ? u[0] : ""].filter(Boolean).join(" · ") : "baterías y cargadores que siempre deben estar en cada tienda"; },
+   mal: () => /[1-9]\d* huecos?/.test(($("#crRes") || {}).textContent || "")},
+  {id: "sinventa", t: "Sin venta", nodos: ["h3:has(#dineroCuenta)", "#fSuc", "#fDias", "#fTipo", ".busca:has(#dBusca)", "#dormido", "#dormidoPie"], ocultar: ["h3:has(#dineroCuenta)"],
+   sub: () => ($("#dineroCuenta") || {}).textContent || ""},
+  {id: "liq", t: "En liquidación", nodos: ["#secLiq"], sub: () => ($("#liqCuenta") || {}).textContent || ""},
+  {id: "compras", t: "Compras de 90 días sin venta", nodos: ["#secCompras"], sub: () => ($("#comprasCuenta") || {}).textContent || ""},
+  {id: "bit", t: "Bitácora", nodos: ["#secBit"], sub: () => ($("#bitCuenta") || {}).textContent || ""},
+  {id: "personas", t: "Personas y PIN", nodos: ["#secPersonas"], sub: () => "solo el dueño", ver: () => !$("#secPersonas").classList.contains("hidden")}
+]};
+(function opMover() {
+  const cuerpo = $("#opCuerpo");
+  for (const m of OP.mods) {
+    const caja = document.createElement("div"); caja.className = "opMod"; caja.dataset.op = m.id;
+    for (const sel of m.nodos) { const n = document.querySelector("main " + sel); if (n) caja.appendChild(n); else console.warn("opciones: falta " + sel); }
+    for (const sel of m.ocultar || []) { const n = caja.querySelector(sel); if (n) n.classList.add("opOculto"); }
+    cuerpo.appendChild(caja);
+  }
+})();
+function opVisible(m) { return !m.ver || m.ver(); }
+function opPintarMenu() {
+  const huecos = (($("#crRes") || {}).textContent || "").match(/(\d+) huecos?/);
+  $("#cntOpc").textContent = huecos ? huecos[1] : ""; $("#cntOpc").classList.toggle("hidden", !huecos || huecos[1] === "0");
+  $("#cntOpc").title = huecos ? huecos[0] + " en Críticos para kits" : "";
+  if (!OP.abierto || OP.actual) return;
+  $("#opMenu").innerHTML = OP.mods.filter(opVisible).map(m => { const s = m.sub();
+    return '<button type="button" data-op="' + m.id + '"><span class="tx"><b>' + esc(m.t) + '</b><small' + (m.mal && m.mal() ? ' class="mal"' : '') + '>' + esc(s || "—") + '</small></span><span class="fl">›</span></button>'; }).join("");
+}
+function opVer(id) {
+  const m = OP.mods.find(x => x.id === id && opVisible(x)); OP.actual = m ? id : "";
+  $("#opPanel").classList.toggle("mod", !!m);
+  $("#opMenu").classList.toggle("hidden", !!m); $("#opAtras").classList.toggle("hidden", !m);
+  document.querySelectorAll("#opCuerpo .opMod").forEach(c => c.classList.toggle("activo", !!m && c.dataset.op === id));
+  if (m) { $("#opCuerpo").querySelectorAll('.opMod[data-op="' + id + '"] details.sec').forEach(d => { d.open = true; }); }
+  $("#opTit").innerHTML = m ? esc(m.t) + '<small>' + esc(m.sub() || "") + '</small>' : 'Opciones<small>módulos fuera del tablero principal</small>';
+  $("#opScroll").scrollTop = 0;
+  opPintarMenu();
+}
+function opAbrir(id) {
+  OP.abierto = true; document.body.style.overflow = "hidden";
+  $("#opVelo").classList.remove("hidden"); $("#opPanel").setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => { $("#opVelo").classList.add("abierto"); $("#opPanel").classList.add("abierto"); });
+  opVer(id || "");
+}
+function opCerrar() {
+  OP.abierto = false; document.body.style.overflow = "";
+  $("#opVelo").classList.remove("abierto"); $("#opPanel").classList.remove("abierto"); $("#opPanel").setAttribute("aria-hidden", "true");
+  setTimeout(() => { if (!OP.abierto) $("#opVelo").classList.add("hidden"); }, 200);
+}
+$("#btnOpc").addEventListener("click", () => OP.abierto ? opCerrar() : opAbrir(""));
+$("#opCerrar").addEventListener("click", opCerrar); $("#opVelo").addEventListener("click", opCerrar);
+$("#opAtras").addEventListener("click", () => opVer(""));
+$("#opMenu").addEventListener("click", ev => { const b = ev.target.closest("button[data-op]"); if (b) opVer(b.dataset.op); });
+document.addEventListener("keydown", ev => {
+  if (ev.key !== "Escape" || !OP.abierto) return;
+  if ($("#cajon").classList.contains("abierto") || !$("#pinVelo").classList.contains("hidden") || !$("#envCapa").classList.contains("hidden")) return;
+  if (OP.actual) opVer(""); else opCerrar();
+}, true);
 
 /* ---------------- cajón ---------------- */
 function abrirCajon(titulo, sub, cuerpo) {
