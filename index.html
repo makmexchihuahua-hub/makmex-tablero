@@ -465,6 +465,36 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .cpChip.aj{background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line-2)}
 .cpQuien{font-size:11px;color:var(--ink-3)}
 .cpVacio{padding:14px;color:var(--ink-3);font-size:13px}
+
+/* inventario compartido */
+.icCard{border:1.5px solid var(--accent);border-radius:12px;padding:12px 14px;margin:0 0 16px;background:var(--surface)}
+.icT{font-family:var(--display);font-weight:700;font-size:17px;margin-bottom:4px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.icT small{font-family:var(--body);font-weight:400;font-size:12.5px;color:var(--ink-3)}
+.icCard p{color:var(--ink-2);font-size:13.5px;margin:4px 0 10px}
+.icFila{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.icFila input,.icFila select{font:inherit;font-size:15px;padding:8px 10px;border-radius:9px;border:1px solid var(--line-2);background:transparent;color:inherit;min-width:0}
+#icClave{font-size:18px;font-family:var(--display);letter-spacing:.5px;text-transform:uppercase;flex:1 1 240px}
+.icBarra{height:12px;border-radius:6px;background:var(--surface-2);overflow:hidden;margin:6px 0 2px}
+.icBarra div{height:100%;background:var(--accent)}
+.icGrid{display:grid;grid-template-columns:minmax(0,1fr) auto 90px;gap:4px 10px;align-items:center;font-size:13px;margin:6px 0}
+.icGrid .b{height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}.icGrid .b div{height:100%;background:var(--ok)}
+.icZonas{display:flex;flex-direction:column;gap:4px;margin:6px 0}
+.icZonas .z{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.icZonas .z b{font-family:var(--display);font-size:14px}
+.icZonas .z .ok{color:var(--ok);font-weight:700}.icZonas .z .va{color:var(--warn);font-weight:700}
+.icMi{border:1px dashed var(--line-2);border-radius:10px;padding:10px;margin:10px 0}
+.icItems{display:flex;flex-direction:column;gap:2px;margin-top:6px;max-height:260px;overflow:auto}
+.icItems .i{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;font-size:13px;padding:3px 4px;border-bottom:1px solid var(--line)}
+.icItems .i b{font-family:var(--display);font-size:14px}.icItems .i .d{color:var(--ink-3);font-size:11.5px}
+.icItems button,.icRc button{border:1px solid var(--line-2);background:var(--surface-2);color:inherit;border-radius:7px;padding:2px 9px;cursor:pointer}
+.icAviso{font-size:13px;color:var(--warn);margin:4px 0;min-height:16px}
+.icSub{font-size:11.5px;color:var(--ink-3)}
+.icRc{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 6px;border-top:1px solid var(--line);font-size:13px}
+.icRc:first-child{border-top:0}
+.icRc .k{font-family:var(--display);font-weight:700;font-size:15px}.icRc .d{color:var(--ink-3);font-size:12px}
+.icRc input{width:74px;font:inherit;font-size:16px;padding:5px 7px;border-radius:8px;border:1px solid var(--line-2);background:transparent;color:inherit;text-align:center}
+.icRc .est{font-size:12px;font-weight:700}.icRc .est.ok{color:var(--ok)}.icRc .est.mal{color:var(--bad)}
+.icRc.listo{opacity:.75}
 </style>
 </head>
 <body>
@@ -648,6 +678,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </section>
   <section class="panel" id="p-inventario">
     <h2>Hacer inventario <small id="invResumen"></small></h2>
+    <div id="icBloque"></div>
     <div id="invCuerpo"></div>
     <div id="hmpBloque"></div>
   </section>
@@ -865,7 +896,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); hmpCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -3165,6 +3196,338 @@ function pdfInventario() {
 // al abrir: si en este navegador había un conteo a medias, se sigue ahí mismo
 (function () { const l = invLocal(); if (l && l.items && l.suc) { if (!l.id) { l.id = invNuevoId(); l.nube = false; } INV = l; invGuardarLocal(); invSistema(l.suc).then(s => { INV_SIS = s; pintarInventario(); }).catch(() => {}); } })();
 pintarInventario();
+
+/* =============== inventario compartido: varias personas, una tienda, zonas + reconteo (8_inventario_compartido.sql) =============== */
+const IC = {lista: null, sel: null, comp: null, foto: null, partes: [], parte: null, rc: {}, rcPend: {}, resultado: null,
+            error: "", aviso: "", sub: "", cargando: false, ult: 0, subiendo: false, otra: false, timer: null, rcTimer: null};
+const icNorm = s => String(s || "").trim().toUpperCase().replace(/'/g, "-");
+const icNuevoId = () => "ic" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const icPz = items => Object.values(items || {}).reduce((a, n) => a + Number(n || 0), 0);
+const icNum = n => Number(n || 0).toLocaleString("es-MX");
+function icLocal(compId) { try { const x = JSON.parse(localStorage.getItem("icParte:" + compId) || "null"); return x && x.items ? x : null; } catch (e) { return null; } }
+function icGuardarLocal() { try { if (IC.comp && IC.parte) localStorage.setItem("icParte:" + IC.comp.id, JSON.stringify(IC.parte)); } catch (e) {} }
+function icBorrarLocal(compId) { try { localStorage.removeItem("icParte:" + compId); } catch (e) {} }
+function icDesc(c) { const f = IC.foto && IC.foto.m[c]; return (f && f.d) || ""; }
+
+async function icCargar(forzar) {
+  if (IC.cargando || (!forzar && Date.now() - IC.ult < 4000)) return;
+  IC.cargando = true;
+  try {
+    const L = await q("inv_comp", "select=id,suc,nombre,estado,inicio,foto_claves,foto_pz,usuario,difs,reconteo,actualizado&estado=in.(abierto,reconteo)&order=suc");
+    IC.lista = L; IC.error = "";
+    if (IC.sel && !L.some(c => c.id === IC.sel)) {
+      if (!IC.resultado) IC.aviso = "El inventario compartido se guardó o se descartó desde otro dispositivo.";
+      if (IC.comp) icBorrarLocal(IC.comp.id);
+      IC.sel = null; IC.comp = null; IC.foto = null; IC.parte = null; IC.rc = {}; IC.rcPend = {};
+    }
+    if (!IC.sel && L.length) IC.sel = (L.find(c => icLocal(c.id)) || L.find(c => !CUENTA || CUENTA.rol !== "tienda" || c.suc === CUENTA.suc) || L[0]).id;
+    IC.comp = L.find(c => c.id === IC.sel) || null;
+    if (IC.comp) {
+      if (!IC.foto || IC.foto.id !== IC.comp.id) {
+        const f = await q("inv_comp", "select=id,foto&id=eq." + IC.comp.id);
+        IC.foto = {id: IC.comp.id, m: (f[0] && f[0].foto) || {}};
+      }
+      IC.partes = await q("inv_comp_parte", "select=parte,zona,disp,items,claves,piezas,terminada,usuario,actualizado,creado&comp_id=eq." + IC.comp.id + "&order=creado,parte");
+      if (IC.comp.estado === "abierto" && !IC.parte) { const l = icLocal(IC.comp.id); if (l) { IC.parte = l; icProgramar(true); } }
+      if (IC.comp.estado !== "abierto" && IC.parte) { icBorrarLocal(IC.comp.id); IC.parte = null; }
+    }
+  } catch (e) {
+    IC.error = /404|PGRST|does not exist|schema cache|inv_comp/.test(e.message) ? "falta" : e.message === "sesion" ? "" : e.message;
+  }
+  IC.ult = Date.now(); IC.cargando = false; icPintar(true);
+}
+
+/* ---- pintar ---- */
+function icPintar(desdeSondeo) {
+  const el = $("#icBloque"); if (!el) return;
+  const act = document.activeElement;
+  if (desdeSondeo && act && el.contains(act) && act.id !== "icClave" && /INPUT|SELECT/.test(act.tagName)) return;   // no pisar lo que se está escribiendo
+  const clave = $("#icClave"), teniaFoco = act && act.id === "icClave", valor = clave ? clave.value : "";
+  if (IC.error === "falta") { el.innerHTML = '<div class="icCard"><div class="icT">Inventario compartido</div><p>Falta correr <b>8_inventario_compartido.sql</b> en Supabase para contar entre varias personas.</p></div>'; return; }
+  if (IC.resultado) { el.innerHTML = icHtmlResultado(); icAmarrar(); return; }
+  if (!IC.lista) { el.innerHTML = '<div class="icCard"><div class="icT">Inventario compartido</div><div class="vacio">Cargando…</div></div>'; return; }
+  const chips = IC.lista.length > 1 ? '<div class="barra" style="margin:0 0 8px">' + IC.lista.map(c => '<button class="rgChip' + (c.id === IC.sel ? ' sel' : '') + '" data-icsel="' + c.id + '">' + esc(SUCS[c.suc] || c.suc) + '</button>').join("") + '</div>' : '';
+  el.innerHTML = (IC.aviso ? '<div class="aviso">' + esc(IC.aviso) + '</div>' : '') + (IC.error ? '<div class="aviso bad">Inventario compartido: ' + esc(IC.error) + '</div>' : '') +
+    (!IC.comp ? icHtmlInicio() : '<div class="icCard">' + chips + (IC.comp.estado === "abierto" ? icHtmlConteo() : icHtmlReconteo()) + '</div>');
+  icAmarrar();
+  const c2 = $("#icClave"); if (c2) { c2.value = valor; if (teniaFoco) c2.focus(); }
+}
+function icHtmlInicio() {
+  if (!CUENTA) return '';
+  const sucs = CUENTA.rol === "tienda" ? [CUENTA.suc] : [1, 3, 2, 4];
+  return '<div class="icCard"><div class="icT">Inventario compartido <small>varias personas a la vez, cada una con su escáner</small></div>' +
+    '<p>Para contar una tienda completa entre 2 o más personas: cada quien escanea una <b>zona</b> (pasillo o anaquel) desde su dispositivo y la base junta todo. ' +
+    'Se toma una foto del sistema al empezar y lo que se venda o traspase mientras cuentan no sale como diferencia, así que <b>no hay que parar la tienda</b>. Al final se recuentan solo las diferencias.</p>' +
+    '<div class="icFila">' + (sucs.length > 1 ? '<select id="icSuc">' + sucs.map(s => '<option value="' + s + '">' + esc(SUCS[s] || s) + '</option>').join("") + '</select>' : '<b>' + esc(SUCS[sucs[0]] || "") + '</b>') +
+    '<input id="icNombre" placeholder="Nombre (opcional, ej. Inventario de octubre)" maxlength="80" style="flex:1 1 220px">' +
+    '<button class="invbtn lleno" id="icAbrir">Abrir inventario compartido</button></div></div>';
+}
+function icTodasLasPartes() {
+  const L = IC.partes.map(p => (IC.parte && p.parte === IC.parte.id) ? Object.assign({}, p, {items: IC.parte.items, piezas: icPz(IC.parte.items), zona: IC.parte.zona, mia: true}) : p);
+  if (IC.parte && !L.some(p => p.parte === IC.parte.id)) L.push({parte: IC.parte.id, zona: IC.parte.zona, items: IC.parte.items, piezas: icPz(IC.parte.items), terminada: false, usuario: "tú", mia: true});
+  return L;
+}
+function icHtmlConteo() {
+  const c = IC.comp, P = icTodasLasPartes(), tot = P.reduce((a, p) => a + Number(p.piezas || 0), 0), esp = Number(c.foto_pz || 0);
+  const pct = esp ? Math.min(100, Math.round(100 * tot / esp)) : 0;
+  // avance por departamento (piezas contadas de claves de ese departamento contra las de la foto)
+  const dep = {}; const m = (IC.foto && IC.foto.m) || {};
+  for (const k in m) { const d = m[k].dep || "Sin departamento"; (dep[d] = dep[d] || {e: 0, n: 0}).e += Number(m[k].e || 0); }
+  for (const p of P) for (const k in (p.items || {})) { const f = m[k]; const d = f ? (f.dep || "Sin departamento") : "No está en el sistema"; (dep[d] = dep[d] || {e: 0, n: 0}).n += Number(p.items[k] || 0); }
+  const deps = Object.entries(dep).sort((a, b) => b[1].e - a[1].e);
+  const sinTerminar = P.filter(p => !p.terminada && p.piezas > 0).length;
+  const ajenas = P.filter(p => !p.mia && !p.terminada && p.disp && p.disp !== invDisp);
+  const mi = IC.parte;
+  return '<div class="icT">Inventario compartido · ' + esc(SUCS[c.suc] || c.suc) + (c.nombre ? ' · ' + esc(c.nombre) : '') +
+      ' <small>abierto por ' + esc(c.usuario || "") + ' el ' + invFecha(c.inicio) + '</small></div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:13.5px"><span><b class="num">' + icNum(tot) + '</b> de ' + icNum(esp) + ' piezas que marca el sistema</span><b class="num">' + pct + '%</b></div>' +
+    '<div class="icBarra"><div style="width:' + pct + '%"></div></div>' +
+    '<details style="margin:4px 0 8px"><summary style="cursor:pointer;font-size:13px;color:var(--ink-2)">Avance por departamento</summary><div class="icGrid">' +
+      deps.map(([d, x]) => { const p2 = x.e ? Math.min(100, Math.round(100 * x.n / x.e)) : 100;
+        return '<span>' + esc(d) + '</span><span class="num">' + icNum(x.n) + ' / ' + icNum(x.e) + '</span><div class="b"><div style="width:' + p2 + '%"></div></div>'; }).join("") + '</div></details>' +
+    '<div style="font-size:13px;font-weight:600;margin-top:6px">Zonas (' + P.length + ')</div><div class="icZonas">' +
+      (P.length ? P.map(p => '<div class="z"><b>' + esc(p.zona || "(sin nombre)") + '</b><span>' + esc(p.mia ? "tú (este dispositivo)" : (p.usuario || "")) + '</span><span class="num">' + icNum(p.piezas) + ' pz</span>' +
+        (p.terminada ? '<span class="ok">terminada</span>' : '<span class="va">contando…</span>') +
+        (!p.mia && !p.terminada && !mi && p.disp !== invDisp ? '<button class="invbtn" style="padding:3px 10px" data-ictomar="' + esc(p.parte) + '">Seguir aquí</button>' : '') + '</div>').join("")
+        : '<div class="vacio" style="padding:8px">Nadie ha empezado una zona todavía.</div>') + '</div>' +
+    (mi ? '<div class="icMi"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b>Tu zona: ' + esc(mi.zona) + '</b><span class="num">' + icNum(icPz(mi.items)) + ' piezas · ' + Object.keys(mi.items).length + ' claves</span></div>' +
+        '<div class="icFila"><input id="icClave" placeholder="Escanea aquí…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>' +
+        '<div class="icAviso" id="icAviso"></div><div class="icSub" id="icSub">' + esc(IC.sub) + '</div>' +
+        '<div class="icItems">' + mi.orden.slice(0, 40).filter(k => mi.items[k]).map(k => '<div class="i"><div><b>' + esc(k) + '</b><div class="d">' + esc(icDesc(k) || "no está en el sistema de esta tienda") + '</div></div><b class="num">' + mi.items[k] + '</b><button data-icmenos="' + esc(k) + '" title="Quitar una">−1</button></div>').join("") + '</div>' +
+        '<div class="icFila"><button class="invbtn lleno" id="icTerminarZona">Terminar esta zona</button></div></div>'
+      : '<div class="icMi"><b>Empezar a contar una zona</b><div class="icFila"><input id="icZona" placeholder="Nombre de la zona (ej. Pasillo 1, Anaquel A)" maxlength="60" style="flex:1 1 220px"><button class="invbtn lleno" id="icEmpezarZona">Empezar esta zona</button></div>' +
+        (ajenas.length ? '<div class="icSub">Si un dispositivo se quedó sin batería, en la lista de zonas usa «Seguir aquí».</div>' : '') + '</div>') +
+    '<div class="icFila" style="margin-top:12px"><button class="invbtn" id="icCerrar">Cerrar conteo y ver diferencias</button><button class="invbtn rojo" id="icDescartar">Descartar</button>' +
+      (sinTerminar ? '<span class="icSub">' + sinTerminar + (sinTerminar === 1 ? ' zona sigue' : ' zonas siguen') + ' contando</span>' : '') + '</div>';
+}
+function icFilasDif() {
+  const d = IC.comp.difs || {}; const srv = IC.comp.reconteo || {};
+  return [...(d.faltantes || []), ...(d.sobrantes || [])].map(x => {
+    const rc = IC.rc[x.c] !== undefined ? IC.rc[x.c] : (srv[x.c] !== undefined ? srv[x.c] : null);
+    const lo = x.lo !== undefined ? x.lo : x.e, hi = x.hi !== undefined ? x.hi : x.e;
+    const cuadra = rc !== null && rc >= lo && rc <= hi;
+    return Object.assign({}, x, {rcv: rc, lo, hi, cuadra});
+  });
+}
+function icHtmlReconteo() {
+  const c = IC.comp, d = c.difs || {}, F = icFilasDif(), hechos = F.filter(x => x.rcv !== null).length;
+  return '<div class="icT">Reconteo de diferencias · ' + esc(SUCS[c.suc] || c.suc) + (c.nombre ? ' · ' + esc(c.nombre) : '') + ' <small>' + hechos + ' de ' + F.length + ' recontadas</small></div>' +
+    '<p>Faltan <b>' + icNum(d.faltan_pz) + ' pz</b> en ' + icNum(d.faltan_claves) + ' claves y sobran <b>' + icNum(d.sobran_pz) + ' pz</b> en ' + icNum(d.sobran_claves) + ' claves. ' +
+      (d.movidas_cuadradas ? icNum(d.movidas_cuadradas) + ' claves se movieron durante el conteo y cuadraron (no hay que recontarlas). ' : '') +
+      'Vuelve a contar <b>solo estas claves en toda la tienda</b>: escanea cada pieza o escribe el número (0 = no hay). Entre varios dispositivos se combina.</p>' +
+    '<div class="icFila"><input id="icClave" placeholder="Escanea para recontar…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>' +
+    '<div class="icAviso" id="icAviso"></div><div class="icSub" id="icSub">' + esc(IC.sub) + '</div>' +
+    (F.length ? '<div class="lista">' + F.map(x => '<div class="icRc' + (x.rcv !== null ? ' listo' : '') + '">' + fotoHtml(x.c) +
+      '<div><div class="k">' + esc(x.c) + '</div><div class="d">' + esc(x.d || "") + '</div>' +
+        '<div class="d">sistema ' + (x.mov ? x.lo + '–' + x.hi + ' (se movió)' : x.e) + ' · contado ' + x.n + (x.z && x.z.length ? ' · zonas: ' + esc(x.z.join(", ")) : ' · no se escaneó') + '</div>' +
+        (x.rcv !== null ? '<div class="est ' + (x.cuadra ? 'ok">ya cuadra' : 'mal">sigue con diferencia') + '</div>' : '') + '</div>' +
+      '<div style="display:flex;gap:6px;align-items:center"><input type="number" min="0" max="99999" inputmode="numeric" data-icrc="' + esc(x.c) + '" value="' + (x.rcv !== null ? x.rcv : '') + '" placeholder="—"><button data-iccero="' + esc(x.c) + '">0</button></div></div>').join("") + '</div>'
+      : '<div class="vacio">¡No hay diferencias! Ya puedes guardar el inventario.</div>') +
+    '<div class="icFila" style="margin-top:12px"><button class="invbtn lleno" id="icGuardar">Guardar inventario</button><button class="invbtn" id="icReabrir">Volver a contar por zonas</button><button class="invbtn rojo" id="icDescartar">Descartar</button></div>';
+}
+function icHtmlResultado() {
+  const r = IC.resultado, F = [...(r.faltantes || []), ...(r.sobrantes || [])];
+  return '<div class="icCard"><div class="icT">Inventario guardado #' + r.id + ' · ' + esc(SUCS[r.suc] || "") + ' <small>' + icNum(r.piezas) + ' piezas contadas · ' + icNum(r.claves) + ' claves</small></div>' +
+    '<p>' + (F.length ? 'Quedaron <b>' + F.length + ' diferencias</b>: faltan ' + icNum(r.faltan_pz) + ' pz y sobran ' + icNum(r.sobran_pz) + ' pz. Descarga la hoja de ajuste para capturarlo en SICAR.'
+                      : '<b>Todo cuadró.</b>') + ' Queda guardado en «Inventarios terminados».</p>' +
+    '<div class="icFila"><button class="invbtn lleno" id="icPdf"' + (F.length ? '' : ' disabled') + '>Hoja de ajuste (PDF)</button><button class="invbtn" id="icCsv"' + (F.length ? '' : ' disabled') + '>CSV para SICAR</button><button class="invbtn" id="icListo">Listo</button></div></div>';
+}
+
+/* ---- eventos ---- */
+function icAmarrar() {
+  const on = (id, fn) => { const e = $("#" + id); if (e) e.addEventListener("click", fn); };
+  document.querySelectorAll("[data-icsel]").forEach(b => b.addEventListener("click", () => { IC.sel = +b.dataset.icsel; IC.foto = null; IC.parte = null; IC.rc = {}; icCargar(true); }));
+  on("icAbrir", icAbrir); on("icEmpezarZona", icEmpezarZona); on("icTerminarZona", icTerminarZona); on("icCerrar", icCerrar);
+  on("icDescartar", icDescartar); on("icReabrir", icReabrir); on("icGuardar", icGuardar);
+  on("icPdf", () => icPdf(IC.resultado)); on("icCsv", () => icCsv(IC.resultado));
+  on("icListo", () => { IC.resultado = null; try { localStorage.removeItem("icResultado"); } catch (e) {} if (typeof INV_LISTA !== "undefined") { INV_LISTA = null; pintarInventario(); } icCargar(true); });
+  const z = $("#icZona"); if (z) z.addEventListener("keydown", ev => { if (ev.key === "Enter") icEmpezarZona(); });
+  const cl = $("#icClave");
+  if (cl) cl.addEventListener("keydown", ev => { if (ev.key === "Enter") { ev.preventDefault(); const v = cl.value; cl.value = ""; icEscanear(v); } });
+  document.querySelectorAll("[data-icmenos]").forEach(b => b.addEventListener("click", () => icSumar(b.dataset.icmenos, -1)));
+  document.querySelectorAll("[data-ictomar]").forEach(b => b.addEventListener("click", () => icTomar(b.dataset.ictomar)));
+  // «change» llega al salir del campo (blur): repintar en ese mismo instante rompe el DOM → se difiere un ciclo
+  document.querySelectorAll("[data-icrc]").forEach(i => i.addEventListener("change", () => { const v = i.value.trim(); if (v === "") return;
+    const n = Math.max(0, Math.min(99999, Math.round(Number(v) || 0))); setTimeout(() => icRc(i.dataset.icrc, n), 0); }));
+  document.querySelectorAll("[data-iccero]").forEach(b => b.addEventListener("click", () => icRc(b.dataset.iccero, 0)));
+}
+function icAvisar(t) { const a = $("#icAviso"); if (a) a.textContent = t || ""; }
+async function icLlamar(fn, args, reintento) {
+  try { return await rpc(fn, Object.assign({p_token: invToken()}, args)); }
+  catch (e) { if (invErrorPin(e, reintento)) return null; toast(e.message === "sesion" ? "La sesión caducó; vuelve a entrar" : e.message, true); return null; }
+}
+async function icAbrir() {
+  if (!invConPin(icAbrir)) return;
+  const s = $("#icSuc") ? +$("#icSuc").value : CUENTA.suc, nom = ($("#icNombre") ? $("#icNombre").value : "").trim();
+  const r = await icLlamar("invc_crear", {p_suc: s, p_nombre: nom}, icAbrir); if (!r) return;
+  if (!r.ok && r.error === "ya_hay") { IC.sel = r.id; toast("Ya hay un inventario compartido abierto en " + (SUCS[s] || s) + ": te uniste a ese"); }
+  else if (!r.ok) { toast(r.error, true); return; }
+  else { IC.sel = r.id; toast("Inventario compartido abierto: ahora cada persona empieza su zona"); }
+  IC.aviso = ""; IC.foto = null; icCargar(true);
+}
+function icEmpezarZona() {
+  if (!invConPin(icEmpezarZona)) return;
+  const z = ($("#icZona") ? $("#icZona").value : "").trim();
+  if (!z) { toast("Ponle nombre a la zona (ej. Pasillo 1)", true); return; }
+  if (IC.partes.some(p => (p.zona || "").toLowerCase() === z.toLowerCase())) { if (!confirm("Ya hay una zona llamada «" + z + "». Si es otro anaquel, ponle otro nombre para no contar dos veces lo mismo. ¿Usarla de todos modos?")) return; }
+  IC.parte = {id: icNuevoId(), zona: z, items: {}, orden: [], terminada: false};
+  icGuardarLocal(); icProgramar(true); icPintar(); const c = $("#icClave"); if (c) c.focus();
+}
+function icTomar(parteId) {
+  if (!invConPin(() => icTomar(parteId))) return;
+  const p = IC.partes.find(x => x.parte === parteId); if (!p) return;
+  if (!confirm("¿Seguir la zona «" + p.zona + "» en este dispositivo? El otro dispositivo ya no podrá agregarle.")) return;
+  IC.parte = {id: p.parte, zona: p.zona, items: Object.assign({}, p.items), orden: Object.keys(p.items || {}), terminada: false, tomar: true};
+  icGuardarLocal(); icProgramar(true); icPintar(); const c = $("#icClave"); if (c) c.focus();
+}
+function icEscanear(v) {
+  const c = icNorm(v); if (!c) return;
+  if (IC.comp && IC.comp.estado === "reconteo") {
+    const F = icFilasDif();
+    if (!F.some(x => x.c === c)) { invBip(false); icAvisar(c + " no está en la lista de diferencias: esa clave ya cuadró, no hace falta recontarla."); return; }
+    const actual = IC.rc[c] !== undefined ? IC.rc[c] : 0;
+    icRc(c, actual + 1, true); invBip(true); return;
+  }
+  icSumar(c, 1, true);
+}
+function icSumar(c, delta, esEscaneo) {
+  const p = IC.parte; if (!p) return;
+  if (delta > 0) { p.items[c] = (p.items[c] || 0) + delta; p.orden = [c, ...p.orden.filter(x => x !== c)]; }
+  else if (p.items[c]) { p.items[c] += delta; if (p.items[c] <= 0) { delete p.items[c]; p.orden = p.orden.filter(x => x !== c); } }
+  icGuardarLocal(); icProgramar();
+  const enSistema = IC.foto && IC.foto.m[c];
+  if (esEscaneo) invBip(!!enSistema);
+  icPintar();
+  if (esEscaneo && !enSistema) icAvisar(c + ": no está en el sistema de esta tienda; se contó y saldrá como sobrante. Revisa que el escaneo haya salido bien.");
+  const cl = $("#icClave"); if (cl && esEscaneo) cl.focus();
+}
+/* ---- subir mi zona (agrupa escaneos: una subida cada ~1.2 s) ---- */
+function icProgramar(ya) { clearTimeout(IC.timer); IC.timer = setTimeout(icSubir, ya ? 0 : 1200); }
+async function icSubir() {
+  if (!IC.parte || !IC.comp) return true;
+  if (IC.subiendo) { IC.otra = true; return false; }
+  IC.subiendo = true; let ok = false;
+  const p = IC.parte;
+  try {
+    const r = await rpc("invc_parte_guardar", {p_token: invToken(), p_comp: IC.comp.id, p_parte: p.id, p_zona: p.zona, p_disp: invDisp, p_items: p.items, p_terminada: !!p.terminada, p_tomar: !!p.tomar});
+    if (r && r.ok) { p.tomar = false; icGuardarLocal(); IC.sub = "Guardado en la nube · " + new Date().toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit", second: "2-digit"}); ok = true; }
+    else if (r && r.error === "estado") { IC.aviso = r.estado === "reconteo" ? "Se cerró el conteo: tu zona ya no recibe piezas. Sigue con el reconteo." : "El inventario compartido ya se " + (r.estado === "cerrado" ? "guardó" : "descartó") + "."; icCargar(true); }
+    else if (r && r.error === "otro_dispositivo") { IC.sub = "Esta zona la sigue ahora " + (r.usuario || "otro dispositivo") + ". Empieza otra zona."; icBorrarLocal(IC.comp.id); IC.parte = null; icPintar(); }
+    else IC.sub = "No se guardó: " + ((r && r.error) || "error");
+  } catch (e) {
+    if (!invErrorPin(e, () => icProgramar(true))) { IC.sub = "Sin conexión: se guarda en este dispositivo y se sube solo al volver."; clearTimeout(IC.timer); IC.timer = setTimeout(icSubir, 5000); }
+  } finally {
+    IC.subiendo = false; const s = $("#icSub"); if (s) s.textContent = IC.sub;
+    if (IC.otra) { IC.otra = false; icProgramar(true); }
+  }
+  return ok;
+}
+async function icTerminarZona() {
+  if (!IC.parte) return;
+  if (!icPz(IC.parte.items) && !confirm("Esta zona no tiene piezas. ¿Terminarla así?")) return;
+  IC.parte.terminada = true; clearTimeout(IC.timer);
+  const ok = await icSubir();
+  if (!ok) { IC.parte.terminada = false; toast("No se pudo terminar la zona; revisa la conexión e intenta otra vez", true); return; }
+  toast("Zona «" + IC.parte.zona + "» terminada"); icBorrarLocal(IC.comp.id); IC.parte = null; icCargar(true);
+}
+async function icCerrar() {
+  if (!invConPin(icCerrar)) return;
+  if (IC.parte) { clearTimeout(IC.timer); await icSubir(); }
+  await icCargar(true);
+  const P = icTodasLasPartes(), sin = P.filter(p => !p.terminada && p.piezas > 0);
+  if (!confirm((sin.length ? "Hay " + sin.length + (sin.length === 1 ? " zona que sigue" : " zonas que siguen") + " contando (" + sin.map(p => p.zona).join(", ") + "). " : "") +
+               "¿Cerrar el conteo? Ya no se podrán agregar piezas a las zonas y empieza el reconteo de diferencias.")) return;
+  const r = await icLlamar("invc_cerrar", {p_comp: IC.comp.id}, icCerrar); if (!r) return;
+  if (!r.ok) { toast(r.error === "estado" ? "Ese inventario ya no está abierto" : r.error, true); icCargar(true); return; }
+  if (IC.parte) { icBorrarLocal(IC.comp.id); IC.parte = null; }
+  IC.rc = {}; toast("Conteo cerrado: recuenta solo la lista de diferencias"); icCargar(true);
+}
+function icRc(c, n, esEscaneo) {
+  IC.rc[c] = n; IC.rcPend[c] = n;
+  clearTimeout(IC.rcTimer); IC.rcTimer = setTimeout(icSubirRc, esEscaneo ? 1200 : 300);
+  icPintar(); const cl = $("#icClave"); if (cl && esEscaneo) cl.focus();
+}
+async function icSubirRc() {
+  const pend = IC.rcPend; if (!IC.comp || !Object.keys(pend).length) return true;
+  IC.rcPend = {};
+  try {
+    const r = await rpc("invc_reconteo_guardar", {p_token: invToken(), p_comp: IC.comp.id, p_items: pend});
+    if (r && r.ok) { IC.comp.reconteo = Object.assign({}, IC.comp.reconteo || {}, pend); IC.sub = "Reconteo guardado · " + r.recontadas + " claves"; return true; }
+    IC.rcPend = Object.assign({}, pend, IC.rcPend);
+    IC.sub = r && r.error === "estado" ? "Este inventario ya no está en reconteo." : "No se guardó el reconteo: " + ((r && r.error) || "error");
+    if (r && r.error === "estado") icCargar(true);
+  } catch (e) {
+    IC.rcPend = Object.assign({}, pend, IC.rcPend);
+    if (!invErrorPin(e, icSubirRc)) { IC.sub = "Sin conexión: el reconteo se sube solo al volver."; clearTimeout(IC.rcTimer); IC.rcTimer = setTimeout(icSubirRc, 5000); }
+  } finally { const s = $("#icSub"); if (s) s.textContent = IC.sub; }
+  return false;
+}
+async function icReabrir() {
+  if (!invConPin(icReabrir)) return;
+  if (!confirm("¿Volver al conteo por zonas? Las zonas se pueden seguir contando y lo recontado se conserva.")) return;
+  await icSubirRc();
+  const r = await icLlamar("invc_reabrir", {p_comp: IC.comp.id}, icReabrir); if (!r) return;
+  if (!r.ok) toast("No se pudo: el inventario ya no está en reconteo", true);
+  icCargar(true);
+}
+async function icGuardar() {
+  if (!invConPin(icGuardar)) return;
+  clearTimeout(IC.rcTimer);
+  if (!(await icSubirRc())) { toast("Primero tiene que subirse el reconteo; revisa la conexión", true); return; }
+  const F = icFilasDif(), pend = F.filter(x => x.rcv === null).length;
+  if (!confirm((pend ? "Faltan " + pend + " claves por recontar (se guardan con lo contado en las zonas). " : "") + "¿Guardar el inventario? Queda guardado para siempre y ya no se modifica.")) return;
+  const suc = IC.comp.suc;
+  const r = await icLlamar("invc_terminar", {p_comp: IC.comp.id}, icGuardar); if (!r) return;
+  if (!r.ok) { toast(r.error === "estado" ? "Ese inventario ya se había guardado" : r.error, true); icCargar(true); return; }
+  IC.resultado = Object.assign({suc}, r); try { localStorage.setItem("icResultado", JSON.stringify(IC.resultado)); } catch (e) {}
+  IC.sel = null; IC.comp = null; IC.foto = null; IC.rc = {};
+  toast("Inventario #" + r.id + " guardado"); icPintar();
+}
+async function icDescartar() {
+  if (!invConPin(icDescartar)) return;
+  if (!confirm("¿Descartar TODO el inventario compartido (todas las zonas de todos)? No se guarda nada.")) return;
+  const r = await icLlamar("invc_descartar", {p_comp: IC.comp.id}, icDescartar); if (!r) return;
+  if (IC.parte) icBorrarLocal(IC.comp.id);
+  IC.sel = null; IC.comp = null; IC.parte = null; IC.foto = null; IC.aviso = ""; toast("Inventario compartido descartado"); icCargar(true);
+}
+/* ---- hoja de ajuste ---- */
+function icFilasAjuste(r) { return [...(r.faltantes || []), ...(r.sobrantes || [])].sort((a, b) => a.c.localeCompare(b.c)); }
+function icPdf(r) {
+  const F = icFilasAjuste(r); if (!F.length) return;
+  const f = new Date();
+  abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Ajuste de inventario #' + r.id + ' ' + esc(SUCS[r.suc] || "") + '</title><style>' +
+    "body{font:13px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}h1{font-size:21px;margin:0}h1 small{display:block;font-weight:400;font-size:12.5px;color:#666;margin-top:2px}" +
+    ".enc{border-bottom:2.5px solid #1c1917;padding-bottom:8px;margin-bottom:8px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #ddd;padding:5px 6px;text-align:left;vertical-align:middle}" +
+    "th{font-size:11px;text-transform:uppercase;color:#666}.n{text-align:right;font-variant-numeric:tabular-nums}.k{font-weight:700}.d{font-size:11.5px;color:#555}.mal{color:#c9302c;font-weight:700}.bien{color:#1e8f4e;font-weight:700}" +
+    ".chk{display:inline-block;width:16px;height:16px;border:2px solid #444;border-radius:3px}.pie{display:flex;gap:40px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;color:#555}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}@media print{.boton{display:none}body{margin:0}}tr{break-inside:avoid}" +
+    '</style></head><body><button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>Ajuste de inventario · ' + esc(SUCS[r.suc] || "") + ' · #' + r.id + '<small>Inventario compartido guardado · ' + esc(f.toLocaleString("es-MX")) + ' · ' + icNum(r.piezas) + ' piezas contadas · faltan ' + icNum(r.faltan_pz) + ' pz · sobran ' + icNum(r.sobran_pz) + ' pz</small></h1></div>' +
+    '<p>Capturar en SICAR (Ajuste de inventario) la diferencia de cada clave y marcar la casilla. «Sistema» es lo que marcaba SICAR; si la clave se movió durante el conteo, se toma el valor más cercano a lo contado.</p>' +
+    '<table><tr><th></th><th>Clave</th><th class="n">Sistema</th><th class="n">Contado</th><th class="n">Diferencia</th><th>Capturado</th></tr>' +
+    F.map(x => '<tr><td>' + fotoHtml(x.c).replace('class="mini"', 'style="width:36px;height:36px;object-fit:contain"') + '</td><td><div class="k">' + esc(x.c) + '</div><div class="d">' + esc(x.d || "") + (x.mov ? ' · se movió durante el conteo' : '') + '</div></td>' +
+      '<td class="n">' + x.e + '</td><td class="n">' + x.n + '</td><td class="n ' + (x.dif < 0 ? 'mal' : 'bien') + '">' + (x.dif > 0 ? '+' : '') + x.dif + '</td><td><span class="chk"></span></td></tr>').join("") + '</table>' +
+    '<div class="pie"><div>Contaron (nombres y firmas)</div><div>Capturó el ajuste en SICAR</div><div>Autorizó</div></div></body></html>');
+}
+function icCsv(r) {
+  const F = icFilasAjuste(r); if (!F.length) return;
+  const q2 = s => '"' + String(s == null ? "" : s).replace(/"/g, '""') + '"';
+  const txt = "﻿" + ["clave,descripcion,sistema,contado,diferencia,se_movio"].concat(F.map(x => [q2(x.c), q2(x.d || ""), x.e, x.n, x.dif, x.mov ? "si" : "no"].join(","))).join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([txt], {type: "text/csv;charset=utf-8"}));
+  a.download = "ajuste-inventario-" + String(SUCS[r.suc] || r.suc).replace(/\W+/g, "-") + "-" + r.id + ".csv";
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+/* ---- arranque y sondeo (cada 5 s con una sesión abierta; cada 10 s si no hay) ---- */
+(function icIniciar() {
+  try { const r = JSON.parse(localStorage.getItem("icResultado") || "null"); if (r && r.id) IC.resultado = r; } catch (e) {}
+  setInterval(() => {
+    if (document.hidden || !sesion || !CUENTA || IC.error === "falta") return;
+    const visible = UI.panel === "inventario" || window.innerWidth >= 1000;
+    if (!visible) return;
+    if (IC.comp || Date.now() - IC.ult > 10000) icCargar(false);
+  }, 5000);
+  document.querySelector('#nav [data-p="inventario"]').addEventListener("click", () => { icCargar(true); setTimeout(() => { const c = $("#icClave"); if (c) c.focus(); }, 120); });
+})();
 
 iniciar();
 </script>
