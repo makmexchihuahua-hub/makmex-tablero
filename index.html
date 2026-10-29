@@ -514,6 +514,11 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .envAviso{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin:0 0 10px;font-size:13.5px}
 .envAviso .b{display:flex;gap:6px;flex-wrap:wrap}
 #btnEnvMod{margin-left:8px}
+
+/* buscador de SKU en ventas */
+.vsBusca{margin:0 0 8px}
+.vsBusca input{width:100%;font:inherit;font-size:15px;padding:9px 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);box-sizing:border-box}
+.fila .vsHit{color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -560,6 +565,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
       <span class="rgSep">o del</span><input type="date" id="rgDe"><span class="rgSep">al</span><input type="date" id="rgA">
     </div>
     <div class="barra" id="filtroVentas"></div>
+    <div class="vsBusca"><input type="search" id="vsBuscar" placeholder="Buscar SKU en estas ventas (ej. 2953-20 o 48-11-1850)" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false"></div>
     <div class="lista" id="ventas"></div>
     <div class="sub" id="ventasPie"></div>
   </section>
@@ -952,7 +958,7 @@ function pintarVentas() {
   }
   $("#marcador").innerHTML = tiles.join("");
   $("#marcador").querySelectorAll(".tile").forEach(b => b.addEventListener("click", () => { UI.filtroSuc = UI.filtroSuc === +b.dataset.suc ? 0 : +b.dataset.suc; pintarVentas(); }));
-  const lista = D.ventasHoy.filter(v => !UI.filtroSuc || v.suc === UI.filtroSuc);
+  const lista = vsFiltrar(D.ventasHoy.filter(v => !UI.filtroSuc || v.suc === UI.filtroSuc));
   $("#ventas").innerHTML = lista.length ? lista.map(v => {
     const cli = v.cli_id != null ? D.clientes[v.suc + ":" + v.cli_id] : null;
     return '<button class="fila' + rClase(v) + '" data-suc="' + v.suc + '" data-id="' + v.ven_id + '"><div class="h num">' + hora(v.fecha) + '</div><div class="q"><div class="a">' + esc(nombreCliente(cli)) +
@@ -963,6 +969,7 @@ function pintarVentas() {
   $("#ventas").querySelectorAll(".fila").forEach(b => b.addEventListener("click", () => abrirVenta(+b.dataset.suc, +b.dataset.id)));
   const tot = vig.filter(v => !UI.filtroSuc || v.suc === UI.filtroSuc).reduce((a, v) => a + Number(v.total), 0);
   $("#ventasPie").textContent = lista.length ? "Total vigente: " + pesos(tot) + rPie() : "";
+  vsDespues(lista);
 }
 
 async function abrirVenta(suc, id) {
@@ -1855,6 +1862,48 @@ async function ehAbrir(id) {
     if (EH.buscar) { $("#ehRes").textContent = "Buscando…"; try { await ehBuscarArticulo(); } catch (e) { EH.art = null; } }
     ehPintar(); }, 350); });
   const h = hoyStr(); $("#ehDe").max = h; $("#ehA").max = h;
+})();
+
+/* ---------------- buscador de SKU en Ventas ---------------- */
+const VS = {txt: "", llave: "", res: null, tok: 0, error: ""};
+const vsNorm = s => String(s || "").trim().toUpperCase().replace(/'/g, "-").replace(/[*,()"\\%]/g, "");
+function vsLlave() { return VS.txt + "|" + (typeof rLlaveRango === "function" ? rLlaveRango() : "") + "|" + D.ventasHoy.length + "|" + (D.ventasHoy[0] ? D.ventasHoy[0].ven_id : ""); }
+async function vsBuscar() {
+  const tok = ++VS.tok, llave = vsLlave(); VS.llave = llave; VS.res = null; VS.error = "";
+  const ids = [...new Set(D.ventasHoy.map(v => v.ven_id))], res = new Map();
+  try {
+    for (let i = 0; i < ids.length; i += 300) {
+      const det = await q("sicar_venta_detalle", "select=suc,ven_id,clave,cantidad,importe&borrado=eq.0&clave=ilike." + encodeURIComponent("*" + VS.txt + "*") +
+        "&ven_id=in." + enLista(ids.slice(i, i + 300)) + "&order=suc,ven_id,art_id");
+      if (tok !== VS.tok) return;
+      for (const d of det) { const k = d.suc + ":" + d.ven_id; const r = res.get(k) || {pz: 0, imp: 0, claves: []};
+        r.pz += Number(d.cantidad || 0); r.imp += Number(d.importe || 0); r.claves.push(d.clave + (Number(d.cantidad) !== 1 ? " ×" + Number(d.cantidad) : "")); res.set(k, r); }
+    }
+    VS.res = res;
+  } catch (e) { if (tok !== VS.tok) return; VS.error = e.message === "sesion" ? "la sesión caducó" : e.message; VS.res = new Map(); }
+  pintarVentas();
+}
+function vsFiltrar(lista) {
+  if (!VS.txt) return lista;
+  if (VS.llave !== vsLlave()) { vsBuscar(); return []; }
+  return VS.res ? lista.filter(v => VS.res.has(v.suc + ":" + v.ven_id)) : [];
+}
+function vsDespues(lista) {
+  if (!VS.txt) return;
+  if (!VS.res) { $("#ventas").innerHTML = '<div class="vacio">Buscando «' + esc(VS.txt) + '» en las ventas…</div>'; $("#ventasPie").textContent = ""; return; }
+  if (VS.error) { $("#ventas").innerHTML = '<div class="aviso bad">No se pudo buscar: ' + esc(VS.error) + '</div>'; return; }
+  if (!lista.length) { $("#ventas").innerHTML = '<div class="vacio">Ninguna venta de este periodo lleva «' + esc(VS.txt) + '».</div>'; $("#ventasPie").textContent = ""; return; }
+  $("#ventas").querySelectorAll(".fila").forEach(b => { const r = VS.res.get(b.dataset.suc + ":" + b.dataset.id); const qd = b.querySelector(".q");
+    if (r && qd) qd.insertAdjacentHTML("beforeend", '<div class="b vsHit">' + esc(r.claves.join(" + ")) + ' · ' + pesos(r.imp) + '</div>'); });
+  const vig = lista.filter(v => v.status === 1);
+  let pz = 0, imp = 0; for (const v of vig) { const r = VS.res.get(v.suc + ":" + v.ven_id); if (r) { pz += r.pz; imp += r.imp; } }
+  $("#ventasPie").textContent = vig.length + (vig.length === 1 ? " venta vigente" : " ventas vigentes") + " con «" + VS.txt + "» · " + pz + (pz === 1 ? " pieza" : " piezas") + " · " + pesos(imp) + " de esos artículos" +
+    (lista.length > vig.length ? " · " + (lista.length - vig.length) + " cancelada(s) aparte" : "");
+}
+(function vsIniciar() {
+  let espera = null;
+  $("#vsBuscar").addEventListener("input", () => { clearTimeout(espera); espera = setTimeout(() => {
+    const t = vsNorm($("#vsBuscar").value); VS.txt = t.length >= 2 ? t : ""; VS.res = null; VS.llave = ""; VS.tok++; pintarVentas(); }, 350); });
 })();
 
 /* ---------------- cajón ---------------- */
