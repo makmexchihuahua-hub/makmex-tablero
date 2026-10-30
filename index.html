@@ -515,6 +515,19 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .envAviso .b{display:flex;gap:6px;flex-wrap:wrap}
 #btnEnvMod{margin-left:8px}
 
+/* verificar pedido (surtido) */
+#spCapa{position:fixed;inset:0;background:var(--bg);z-index:60;overflow:auto;padding:14px var(--gutter) 40px}
+#spCapa .vtIn{max-width:880px;margin:0 auto}
+#spCapa h3{font-family:var(--display);font-size:24px;margin:0;line-height:1.1}
+#spCapa .vtSub{font-size:13px;color:var(--ink-3);margin:2px 0 12px}
+#spCapa form input{width:100%;font:inherit;font-size:20px;padding:14px 16px;border-radius:12px;border:2px solid var(--accent);background:var(--surface);color:var(--ink);box-sizing:border-box}
+#spCapa .spPaso{border:1.5px dashed var(--accent);border-radius:12px;padding:12px 14px;margin:10px 0;font-size:14.5px}
+#spCapa .spPaso b{color:var(--accent)}
+#spCapa .spCmp{margin-top:10px}
+#spCapa .spChips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.spGr{font-size:11.5px;font-weight:600;color:var(--accent)}
+#btnSurtir{margin-left:8px}
+
 /* buscador de SKU en ventas */
 .vsBusca{margin:0 0 8px}
 .vsBusca input{width:100%;font:inherit;font-size:15px;padding:9px 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);box-sizing:border-box}
@@ -627,11 +640,12 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </section>
 
   <section class="panel" id="p-enviar">
-    <h2>Qué mandar <small id="reglaOrden"></small><button class="pdfbtn" id="btnPdf" type="button" title="Imprimir o guardar en PDF la lista del destino elegido, para que el almacén prepare el envío"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button><button class="pdfbtn" id="btnEnvMod" type="button" title="Quitar, cambiar cantidades o agregar productos de CEDIS antes de imprimir la hoja para el almacén"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Modificar envío</button></h2>
+    <h2>Qué mandar <small id="reglaOrden"></small><button class="pdfbtn" id="btnPdf" type="button" title="Imprimir o guardar en PDF la lista del destino elegido, para que el almacén prepare el envío"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button><button class="pdfbtn" id="btnEnvMod" type="button" title="Quitar, cambiar cantidades o agregar productos de CEDIS antes de imprimir la hoja para el almacén"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Modificar envío</button><button class="pdfbtn" id="btnSurtir" type="button" title="Escanear lo que se va agarrando del pedido para corroborar que coincide con la hoja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>Verificar pedido</button></h2>
     <div class="destinos" id="destinos"></div>
     <div id="demanda"></div>
     <div class="barra" id="filtroEnviar"></div>
     <div id="envAviso"></div>
+    <div id="spAviso"></div>
     <div class="lista" id="reparto"></div>
     <div class="sub" id="repartoPie"></div>
   </section>
@@ -795,6 +809,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </div>
 </aside>
 <div id="velo" class="hidden"></div>
+<div id="spCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificar pedido"><div class="vtIn" id="spIn"></div></div>
 <div id="envCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Modificar envío"><div class="envIn" id="envIn"></div></div>
 <div id="vtCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificación de traspasos"><div class="vtIn" id="vtIn"></div></div>
 <aside id="cajon" aria-hidden="true">
@@ -1162,7 +1177,7 @@ function pintarReparto() {
   $("#reparto").innerHTML = lista.length ? lista.map(e => UI.destino === -2 ? repRenglon(e, venDen) : '<div class="renglon">' + fotoHtml(e.clave) + '<div><div class="k">' + esc(e.clave) + (e.grado ? "" : "") + '</div><div class="d">' + esc(e.desc || "") + '</div></div><div class="p num">' +
     (UI.destino === 0 ? '<b>' + e.piezas + (e.piezas === 1 ? " pza" : " pzas") + '</b>en Denmor' : '<b>' + (e.precio ? pesos(e.precio) : "—") + '</b>CEDIS tiene ' + e.cedis + " de " + e.total) + '</div></div>').join("")
     : '<div class="vacio">' + (UI.destino === -2 ? 'Denmor no tiene modelos repetidos.' : 'Nada que mandar aquí por ahora.') + '</div>';
-  envPintarAviso();
+  envPintarAviso(); spPintarAviso();
   $("#repartoPie").textContent = "Calculado a las " + R.hora.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + " con las existencias de las 4 tiendas y lo que va en camino · " + R.modelos + " modelos · se recalcula cada " + (CADA_S_REPARTO / 60) + " min";
 }
 
@@ -3924,6 +3939,253 @@ function envPdf(E) {
 document.getElementById("btnEnvMod").addEventListener("click", envAbrir);
 document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#envCapa").classList.contains("hidden")) envCerrar(); });
 document.addEventListener("click", ev => { if (!ev.target.closest("#envBusca")) envPintaSug([]); });
+
+/* ---------------- verificar pedido (surtido con escáner) ---------------- */
+let SP = null;   // verificación abierta en pantalla: {des, inicio, fin, quien, cuenta, fuente, hora, items: [{c, d, n, o}], esc: {clave: n}, hist: [], ult, cmp}
+const spLlave = des => "spPed:" + des;
+const spNorm = s => vtNorm(s).replace(/'/g, "-");
+function spLeer(des) { try { const x = JSON.parse(localStorage.getItem(spLlave(des)) || "null"); return x && Array.isArray(x.items) ? x : null; } catch (e) { return null; } }
+function spGuardar(S) { S = S || SP; if (!S) return; try { localStorage.setItem(spLlave(S.des), JSON.stringify(S)); } catch (e) {} }
+function spBorrar(des) { try { localStorage.removeItem(spLlave(des)); } catch (e) {} }
+// la lista de la hoja impresa: envío modificado de este dispositivo, si no lo sugerido
+function spListaHoja(des) {
+  const mod = envLeer(des), E = mod || (D.reparto ? envSugerido(des) : null);
+  if (!E) return null;
+  return {fuente: mod ? "modificado" : "sugerido", hora: E.hora, items: E.items.filter(x => Number(x.n) > 0).map(x => ({c: spNorm(x.c), d: x.d || "", n: Number(x.n), o: x.o}))};
+}
+const spFirma = items => items.map(x => x.o + ":" + x.c + ":" + x.n).sort().join("|");
+// reparte lo escaneado: primero renglones exactos, luego demanda del mismo modelo, lo demás «no va»
+function spCalc(S) {
+  const exact = {}, dem = {};
+  for (const x of S.items) {
+    if (x.o === "dem") { const k = x.c; (dem[k] = dem[k] || {c: k, d: x.d, n: 0, got: 0, gr: {}}).n += x.n; }
+    else { (exact[x.c] = exact[x.c] || {c: x.c, d: x.d, n: 0, got: 0, o: x.o}).n += x.n; }
+  }
+  const extras = {};
+  for (const [c, k] of Object.entries(S.esc)) {
+    let rest = k;
+    if (exact[c]) { const t = Math.min(rest, exact[c].n - exact[c].got); exact[c].got += t; rest -= t; }
+    const m = vtModelo(c);
+    if (rest > 0 && dem[m]) { const t = Math.min(rest, dem[m].n - dem[m].got); if (t > 0) { dem[m].got += t; dem[m].gr[c] = (dem[m].gr[c] || 0) + t; rest -= t; } }
+    if (rest > 0) extras[c] = rest;
+  }
+  const filas = [...Object.values(dem).map(f => Object.assign(f, {o: "dem"})), ...Object.values(exact)];
+  let esp = 0, got = 0; for (const f of filas) { esp += f.n; got += f.got; }
+  const sobran = Object.values(extras).reduce((a, b) => a + b, 0);
+  let esc = 0; for (const k of Object.values(S.esc)) esc += k;
+  return {filas, extras, esp, got, esc, faltan: esp - got, sobran};
+}
+function spDesc(c) {
+  const e = (D.existencias || []).find(x => x.suc === 1 && vtNorm(x.clave) === c) || (D.existencias || []).find(x => vtNorm(x.clave) === c);
+  return e ? e.descripcion || "" : "";
+}
+function spCuenta() { try { return (sesion && sesion.user && sesion.user.email) || ""; } catch (e) { return ""; } }
+function spEmpezar() {
+  const des = UI.destino;
+  if (![2, 3, 4].includes(des)) { toast("Elige primero un destino: CDMX, Monterrey o Denmor", true); return; }
+  const ya = spLeer(des);
+  if (ya && !ya.fin) { SP = ya; spAbrir(); return; }
+  if (ya && ya.fin && !confirm("Ya hay un surtido terminado para " + SUCS[des] + " (" + vtFechaHora(ya.fin) + "). ¿Empezar una verificación nueva? El reporte anterior se reemplaza.")) return;
+  const L = spListaHoja(des);
+  if (!L) { toast("Todavía no hay reparto calculado; espera unos segundos", true); return; }
+  if (!L.items.length) { toast("El pedido a " + SUCS[des] + " está vacío", true); return; }
+  let quien = ""; try { quien = localStorage.getItem("spQuien") || localStorage.getItem("vtQuien") || ""; } catch (e) {}
+  SP = {des, inicio: Date.now(), fin: null, quien, cuenta: spCuenta(), fuente: L.fuente, hora: L.hora, items: L.items, esc: {}, desc: {}, hist: [], ult: null, cmp: null};
+  spGuardar(); spAbrir();
+}
+function spAbrir() { $("#spCapa").classList.remove("hidden"); document.body.style.overflow = "hidden"; spPintar(); }
+function spCerrar() { if (SP) spGuardar(); $("#spCapa").classList.add("hidden"); document.body.style.overflow = ""; SP = null; spPintarAviso(); }
+function spFoco() { setTimeout(() => { const i = $("#spClave"); if (i) i.focus(); }, 60); }
+function spSumar(c, delta, esEscaneo) {
+  c = spNorm(c); if (!c || !SP || SP.fin) return;
+  const K0 = spCalc(SP), antesX = K0.extras[c] || 0, m0 = vtModelo(c);
+  const fd0 = K0.filas.find(f => f.o === "dem" && f.c === m0), demAntes = fd0 ? fd0.got : 0;
+  const antes = SP.esc[c] || 0, ahora = Math.max(0, antes + delta);
+  if (ahora === antes) return;
+  if (ahora) SP.esc[c] = ahora; else delete SP.esc[c];
+  if (ahora && !SP.desc[c]) SP.desc[c] = spDesc(c);
+  if (delta > 0) SP.hist.push(c); else { const i = SP.hist.lastIndexOf(c); if (i >= 0) SP.hist.splice(i, 1); }
+  const K = spCalc(SP), despuesX = K.extras[c] || 0, m = vtModelo(c);
+  const fe = K.filas.find(f => f.o !== "dem" && f.c === c), fd = K.filas.find(f => f.o === "dem" && f.c === m);
+  let tipo = "bien", txt;
+  if (delta < 0) { tipo = ""; txt = "Quitaste una pieza de " + c + " (" + ahora + ")"; }
+  else if (despuesX > antesX) {
+    const primo = K.filas.find(f => f.o !== "dem" && vtModelo(f.c) === m && f.c !== c);
+    if (fe || fd) { tipo = "ojo"; txt = "⚠ " + c + ": ese renglón ya estaba completo — llevas " + ahora + " y el pedido pide " + ((fe && fe.n) || (fd && fd.n)); }
+    else { tipo = "mal"; txt = "✗ " + c + " no va en el pedido" + (primo ? " — el pedido pide " + primo.c + ": ¿calificación distinta?" : "") + (ahora > 1 ? " (llevas " + ahora + ")" : ""); }
+  } else if (fd && fd.got > demAntes) txt = "✓ " + c + " para la demanda de " + m + ": " + fd.got + " de " + fd.n + (fd.got === fd.n ? " — completo" : "");
+  else if (fe) txt = "✓ " + c + ": " + fe.got + " de " + fe.n + (fe.got === fe.n ? " — completo" : "");
+  else txt = "✓ " + c;
+  SP.ult = {c, tipo, txt};
+  spGuardar();
+  if (esEscaneo) invBip(tipo === "bien");
+  spPintar(c);
+  if (esEscaneo) spFoco();
+}
+function spFila(f, nueva) {
+  const cls = f.got >= f.n ? "ok" : "";
+  const gr = f.o === "dem" ? Object.entries(f.gr).map(([c, k]) => c + (k > 1 ? " ×" + k : "")).join(", ") : "";
+  const tag = f.o === "dem" ? '<span class="envTag dem">demanda · cualquier calificación</span>' : f.o === "extra" ? '<span class="envTag extra">agregado</span>' : "";
+  const llave = f.o === "dem" ? (Object.keys(f.gr)[0] || "") : f.c;
+  return '<div class="vtFila ' + cls + (nueva && (f.c === nueva || f.c === vtModelo(nueva) && f.o === "dem") ? " nueva" : "") + '">' + fotoHtml(f.c) +
+    '<div style="min-width:0"><div class="k">' + esc(f.c) + tag + '</div><div class="d">' + esc(f.d || spDesc(f.c)) + '</div>' + (gr ? '<div class="spGr">agarrado: ' + esc(gr) + '</div>' : '') + '</div>' +
+    '<div class="ops">' + (llave ? '<button type="button" data-spm="' + esc(llave) + '" aria-label="Quitar una pieza">−</button>' : '<span style="width:32px"></span>') +
+    '<div class="cnt num">' + f.got + '<small>de ' + f.n + '</small></div>' +
+    (f.o === "dem" ? '<span style="width:32px"></span>' : '<button type="button" data-spp="' + esc(f.c) + '" aria-label="Sumar una pieza">+</button>') + '</div></div>';
+}
+function spFilaExtra(c, k, nueva) {
+  return '<div class="vtFila extra' + (c === nueva ? " nueva" : "") + '">' + fotoHtml(c) + '<div style="min-width:0"><div class="k">' + esc(c) + '</div><div class="d">' + esc(SP.desc[c] || spDesc(c) || "no va en el pedido") + '</div></div>' +
+    '<div class="ops"><button type="button" data-spm="' + esc(c) + '" aria-label="Quitar una pieza">−</button><div class="cnt num">' + k + '<small>no va</small></div><span style="width:32px"></span></div></div>';
+}
+function spPintar(nueva) {
+  const x = $("#spIn"); if (!SP) { spCerrar(); return; }
+  const K = spCalc(SP), dest = SUCS[SP.des];
+  const cab = '<h3>Verificar pedido · envío a ' + esc(dest) + '</h3><div class="vtSub">Lista ' + (SP.fuente === "modificado" ? "del envío MODIFICADO" : "sugerida") + ' de las ' +
+    new Date(SP.hora).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) + ' · ' + K.esp + ' piezas · empezada el ' + vtFechaHora(SP.inicio) + '</div>';
+  if (SP.fin) { spResultado(x, cab, K); return; }
+  const Lh = spListaHoja(SP.des), cambio = Lh && spFirma(Lh.items) !== spFirma(SP.items);
+  const pend = K.filas.filter(f => f.got < f.n), comp = K.filas.filter(f => f.got >= f.n);
+  const ord = f => { const i = Math.max(SP.hist.lastIndexOf(f.c), ...Object.keys(f.gr || {}).map(c => SP.hist.lastIndexOf(c))); return i; };
+  pend.sort((a, b) => ord(b) - ord(a) || a.c.localeCompare(b.c)); comp.sort((a, b) => ord(b) - ord(a));
+  const extras = Object.entries(K.extras);
+  x.innerHTML = cab +
+    (cambio ? '<div class="vtUlt ojo">⚠ La hoja de ' + esc(dest) + ' cambió después de empezar (reparto o envío modificado). Esta verificación sigue con la lista del inicio; si imprimiste la nueva, descarta y vuelve a empezar.</div>' : '') +
+    '<div class="vtQuien"><label for="spQuienIn" style="font-size:13px;color:var(--ink-3)">Surte:</label><input id="spQuienIn" placeholder="Nombre de quien surte el pedido" value="' + esc(SP.quien || "") + '"></div>' +
+    '<form id="spForm" autocomplete="off"><input id="spClave" placeholder="Escanea cada producto que agarras…" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" enterkeyhint="done" aria-label="Clave escaneada"></form>' +
+    '<div class="vtUlt ' + (SP.ult ? SP.ult.tipo : "") + '" id="spUlt" role="status">' + esc(SP.ult ? SP.ult.txt : "Palomea en la hoja y escanea cada pieza al agarrarla. Si el escáner falla, escribe la clave y da Enter.") + '</div>' +
+    '<div class="vtProg"><div><b class="num">' + K.got + '</b><span>surtidas de ' + K.esp + '</span></div><div><b class="num"' + (K.faltan ? ' style="color:var(--warn)"' : '') + '>' + K.faltan + '</b><span>faltan por agarrar</span></div>' +
+      '<div><b class="num"' + (K.sobran ? ' style="color:var(--bad)"' : '') + '>' + K.sobran + '</b><span>no van / de más</span></div></div>' +
+    (extras.length ? '<div class="vtTit">No van en el pedido — regrésalas</div><div class="lista">' + extras.map(([c, k]) => spFilaExtra(c, k, nueva)).join("") + '</div>' : '') +
+    '<div class="vtTit">Por surtir (' + pend.length + ')</div><div class="lista">' + (pend.length ? pend.map(f => spFila(f, nueva)).join("") : '<div class="vacio">Ya se agarró todo el pedido.</div>') + '</div>' +
+    (comp.length ? '<div class="vtTit">Completos (' + comp.length + ')</div><div class="lista">' + comp.map(f => spFila(f, nueva)).join("") + '</div>' : '') +
+    '<div class="vtBtns"><button type="button" class="invbtn lleno" id="spTerminar">Terminar surtido</button><button type="button" class="invbtn" id="spDeshacer"' + (SP.hist.length ? "" : " disabled") + '>Deshacer último escaneo</button>' +
+      '<button type="button" class="invbtn" id="spPausar">Pausar (queda guardado)</button><button type="button" class="invbtn rojo" id="spDescartar">Descartar</button></div>';
+  $("#spForm").addEventListener("submit", ev => { ev.preventDefault(); const v = $("#spClave").value; $("#spClave").value = ""; spSumar(v, 1, true); });
+  $("#spQuienIn").addEventListener("change", ev => { SP.quien = ev.target.value.trim(); try { localStorage.setItem("spQuien", SP.quien); } catch (e) {} spGuardar(); });
+  x.querySelectorAll("[data-spp]").forEach(b => b.addEventListener("click", () => spSumar(b.dataset.spp, 1, false)));
+  x.querySelectorAll("[data-spm]").forEach(b => b.addEventListener("click", () => spSumar(b.dataset.spm, -1, false)));
+  $("#spDeshacer").addEventListener("click", () => { const c = SP.hist[SP.hist.length - 1]; if (c) spSumar(c, -1, false); spFoco(); });
+  $("#spPausar").addEventListener("click", spCerrar);
+  $("#spDescartar").addEventListener("click", () => { if (!confirm("¿Descartar esta verificación? Se borra lo escaneado (" + K.esc + " piezas).")) return; spBorrar(SP.des); SP = null; spCerrar(); });
+  $("#spTerminar").addEventListener("click", () => {
+    const q2 = $("#spQuienIn").value.trim(); if (!q2) { alert("Escribe el nombre de quien surte el pedido."); $("#spQuienIn").focus(); return; }
+    SP.quien = q2; try { localStorage.setItem("spQuien", q2); } catch (e) {}
+    if (!K.esc) { alert("Todavía no se escanea nada."); spFoco(); return; }
+    if ((K.faltan || K.sobran) && !confirm("Hay diferencias: faltan " + K.faltan + " y sobran " + K.sobran + ". ¿Terminar así?")) { spFoco(); return; }
+    SP.fin = Date.now(); spGuardar(); spPintar();
+  });
+  if (!nueva) spFoco();
+}
+function spResultado(x, cab, K) {
+  const bien = !K.faltan && !K.sobran, C = SP.cmp;
+  x.innerHTML = cab + '<div class="vtRes ' + (bien ? "ok" : "mal") + '"><b>' + (bien ? "✓ Pedido surtido completo." : "Surtido con diferencias.") + '</b> ' + K.got + " de " + K.esp + " piezas" +
+      (K.faltan ? " · faltan " + K.faltan : "") + (K.sobran ? " · no van / de más " + K.sobran : "") + ". Surtió " + esc(SP.quien) + " · terminado el " + vtFechaHora(SP.fin) + "</div>" +
+    '<div class="spPaso"><b>Siguiente paso:</b> en la mesa de empaque, crea en SICAR el traspaso de CEDIS a ' + esc(SUCS[SP.des]) + ' escaneando otra vez cada pieza. Cuando el traspaso aparezca en el tablero (unos minutos), toca «Comparar con el traspaso de SICAR» para confirmar que el segundo escaneo coincide con este surtido.</div>' +
+    '<div class="vtBtns"><button type="button" class="invbtn lleno" id="spCmpB">Comparar con el traspaso de SICAR</button><button type="button" class="invbtn" id="spPdfB">Reporte PDF del surtido</button>' +
+      '<button type="button" class="invbtn" id="spCerrarB">Cerrar (queda guardado)</button><button type="button" class="invbtn rojo" id="spBorrarB">Borrar este surtido</button></div>' +
+    '<div class="spCmp" id="spCmp">' + (C ? spCmpHtml(C) : '') + '</div>';
+  $("#spCmpB").addEventListener("click", spComparar);
+  $("#spPdfB").addEventListener("click", () => spPdf(SP));
+  $("#spCerrarB").addEventListener("click", spCerrar);
+  $("#spBorrarB").addEventListener("click", () => { if (!confirm("¿Borrar este surtido terminado? Se pierde el reporte de este dispositivo.")) return; spBorrar(SP.des); SP = null; spCerrar(); });
+}
+/* ---- comparación contra el traspaso que se creó en SICAR ---- */
+async function spComparar(ev, folioElegido) {
+  const S = SP; if (!S) return;
+  const el = $("#spCmp"); el.innerHTML = '<div class="vacio">Buscando el traspaso de CEDIS a ' + esc(SUCS[S.des]) + ' en la base…</div>';
+  try {
+    const d0 = new Date(S.inicio); const dia = d0.getFullYear() + "-" + String(d0.getMonth() + 1).padStart(2, "0") + "-" + String(d0.getDate()).padStart(2, "0");
+    const tras = await q("sicar_traspaso_global", "select=suc,tra_id,folio,suc_ori,suc_des,fecha,status,piezas&suc_ori=eq.1&suc_des=eq." + S.des + "&fecha=gte." + dia + "&status=neq.-1&order=folio.desc");
+    if (!tras.length) { el.innerHTML = '<div class="vtUlt ojo">Todavía no aparece un traspaso de CEDIS a ' + esc(SUCS[S.des]) + ' desde el ' + esc(dia) + '. Si ya lo creaste en SICAR, espera unos minutos (el lector lo sube) y vuelve a tocar «Comparar».</div>'; return; }
+    const t = (folioElegido && tras.find(z => String(z.folio) === String(folioElegido))) || tras[0];
+    const det = await q("sicar_traspaso_detalle", "select=clave,descripcion,cantidad,borrado&suc=eq." + t.suc + "&tra_id=eq." + t.tra_id + "&order=orden,art_id");
+    const sic = {}, des = {};
+    for (const r of det) { if (r.borrado) continue; const c = spNorm(r.clave), n = Number(r.cantidad) || 0; if (!c || n <= 0) continue; sic[c] = (sic[c] || 0) + n; des[c] = des[c] || r.descripcion || ""; }
+    S.cmp = {folio: t.folio, tra_id: t.tra_id, suc: t.suc, fecha: t.fecha, sic, des, ts: Date.now(), otros: tras.map(z => z.folio)};
+    spGuardar(S);
+    el.innerHTML = spCmpHtml(S.cmp);
+    el.querySelectorAll("[data-spfolio]").forEach(b => b.addEventListener("click", () => spComparar(null, b.dataset.spfolio)));
+  } catch (e) {
+    el.innerHTML = '<div class="vtUlt mal">No se pudo leer el traspaso: ' + esc(e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message) + '</div>';
+  }
+}
+function spCmpFilas(S, C) {
+  const todas = new Set([...Object.keys(S.esc), ...Object.keys(C.sic)]), filas = [];
+  for (const c of todas) { const a = S.esc[c] || 0, b = C.sic[c] || 0; filas.push({c, d: C.des[c] || S.desc[c] || spDesc(c), surt: a, sicar: b, dif: b - a}); }
+  filas.sort((x, y) => x.c.localeCompare(y.c));
+  return {filas, malas: filas.filter(f => f.dif !== 0), ok: filas.filter(f => f.dif === 0)};
+}
+function spCmpHtml(C) {
+  const S = SP, R = spCmpFilas(S, C);
+  const chips = C.otros && C.otros.length > 1 ? '<div class="spChips">Traspasos de hoy a ' + esc(SUCS[S.des]) + ': ' + C.otros.map(f => '<button type="button" class="rgChip' + (String(f) === String(C.folio) ? " sel" : "") + '" data-spfolio="' + f + '">folio ' + f + '</button>').join("") + '</div>' : '';
+  const fila = f => '<div class="vtFila ' + (f.dif === 0 ? "ok" : f.dif > 0 ? "mas" : "extra") + '">' + fotoHtml(f.c) + '<div style="min-width:0"><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d) +
+    (f.dif ? (f.surt && f.sicar ? ' · cantidad distinta' : f.sicar ? ' · está en SICAR y NO se surtió' : ' · se surtió y NO está en SICAR') : '') + '</div></div><div class="ops"><div class="cnt num">' + f.sicar + '<small>SICAR · surtido ' + f.surt + '</small></div></div></div>';
+  return chips + '<div class="vtRes ' + (R.malas.length ? "mal" : "ok") + '"><b>' + (R.malas.length ? "El traspaso folio " + C.folio + " NO coincide con el surtido: " + R.malas.length + (R.malas.length === 1 ? " clave distinta." : " claves distintas.") : "✓ El traspaso folio " + C.folio + " de SICAR coincide con el surtido.") +
+    '</b> Comparado el ' + vtFechaHora(C.ts) + '</div>' + (R.malas.length ? '<div class="vtTit">Diferencias (corrige el traspaso en SICAR o el paquete)</div><div class="lista">' + R.malas.map(fila).join("") + '</div>' : '') +
+    (R.ok.length ? '<div class="vtTit">Coinciden (' + R.ok.length + ')</div><div class="lista">' + R.ok.map(fila).join("") + '</div>' : '');
+}
+/* ---- reporte PDF del surtido ---- */
+function spPdf(S) {
+  const K = spCalc(S), bien = !K.faltan && !K.sobran, dest = SUCS[S.des];
+  const foto = clave => { const m = /^(.*)-(AA|A|B|C|D|E|F)$/i.exec(clave || ""); const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
+    return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
+  const filaP = (f, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(f.c) + '</td><td><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d || spDesc(f.c)) +
+    (f.o === "dem" ? ' · demanda (cualquier calificación)' + (Object.keys(f.gr).length ? ' · agarrado: <b>' + esc(Object.entries(f.gr).map(([c, k]) => c + (k > 1 ? " ×" + k : "")).join(", ")) + '</b>' : '') : '') +
+    '</div></td><td class="c num">' + f.n + '</td><td class="c num b">' + f.got + '</td><td class="c num ' + (f.got < f.n ? "mal" : "") + '">' + (f.got < f.n ? f.got - f.n : "✓") + '</td></tr>';
+  const cabT = '<table><thead><tr><td></td><td></td><td>Clave</td><td class="c">Pedido</td><td class="c">Surtido</td><td class="c">Dif.</td></tr></thead>';
+  const falt = K.filas.filter(f => f.got < f.n), comp = K.filas.filter(f => f.got >= f.n), extras = Object.entries(K.extras);
+  let cmp = "";
+  if (S.cmp) { const R = spCmpFilas(S, S.cmp);
+    cmp = '<h2>Comparación con el traspaso de SICAR · folio ' + esc(S.cmp.folio) + ' (' + esc(S.cmp.fecha || "") + ')</h2>' + (R.malas.length ? '<div class="res mal"><b>NO coincide: ' + R.malas.length + ' claves distintas.</b></div><table><thead><tr><td></td><td>Clave</td><td class="c">SICAR</td><td class="c">Surtido</td><td>Qué pasa</td></tr></thead>' +
+      R.malas.map(f => '<tr><td class="f">' + foto(f.c) + '</td><td><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d) + '</div></td><td class="c num b">' + f.sicar + '</td><td class="c num">' + f.surt + '</td><td class="pr">' +
+        (f.surt && f.sicar ? "cantidad distinta" : f.sicar ? "en SICAR y no se surtió" : "se surtió y no está en SICAR") + '</td></tr>').join("") + '</table>' : '<div class="res ok"><b>✓ Coincide con lo surtido (' + R.ok.length + ' claves).</b></div>'); }
+  const ff = vtFechaHora(S.fin || Date.now());
+  abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Surtido envio a ' + esc(dest) + ' ' + ff.replace(/[\/:,]/g, ".") + ' · MAKMEX</title><style>' +
+    "body{font:13.5px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}h1{font-size:21px;margin:0}h1 small{font-weight:400;font-size:12.5px;color:#666;display:block;margin-top:3px}" +
+    ".enc{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2.5px solid #1c1917;padding-bottom:10px;margin-bottom:10px}" +
+    ".logo{font-weight:800;font-size:17px;letter-spacing:1px;border:2.5px solid #e8650f;color:#e8650f;padding:3px 9px;border-radius:6px;white-space:nowrap}" +
+    ".res{border-radius:8px;padding:10px 12px;font-size:15px;margin:8px 0 6px}.res.ok{background:#e3f5ea;color:#1e6b3c}.res.mal{background:#fbe4e3;color:#9b1c1c}" +
+    ".kv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 4px}.kv div{border:1px solid #ddd;border-radius:6px;padding:6px 8px}.kv b{display:block;font-size:18px}.kv span{font-size:11px;color:#777}" +
+    "h2{font-size:15px;margin:16px 0 4px}table{width:100%;border-collapse:collapse}td{border-bottom:1px solid #ddd;padding:5px 7px;vertical-align:middle}thead td{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:#777;font-weight:700}" +
+    ".n{color:#999;width:22px;text-align:right}.f{width:44px}.f img{width:40px;height:40px;object-fit:contain;display:block}.k{font-weight:700}.d{font-size:12px;color:#555}.pr{font-size:12px;color:#a85a00;font-weight:600}" +
+    ".c{text-align:center;width:64px}.b{font-weight:700}.mal{color:#c9302c;font-weight:700}.num{font-variant-numeric:tabular-nums}.pie{display:flex;gap:30px;margin-top:34px}.pie div{flex:1;border-top:1.5px solid #444;padding-top:5px;font-size:12.5px;color:#555}" +
+    ".boton{position:fixed;right:16px;top:12px;background:#e8650f;color:#fff;border:0;border-radius:9px;padding:10px 16px;font:700 14px inherit;cursor:pointer}@media print{.boton{display:none}body{margin:0}}tr{break-inside:avoid}" +
+    '</style></head><body><button class="boton" onclick="print()">Imprimir / Guardar PDF</button>' +
+    '<div class="enc"><h1>Verificación de surtido · envío a ' + esc(dest) + '<small>Lista ' + (S.fuente === "modificado" ? "del envío modificado" : "sugerida") + ' de las ' + new Date(S.hora).toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}) +
+      '<br>Surtió: <b>' + esc(S.quien || "—") + '</b>' + (S.cuenta ? " (" + esc(S.cuenta) + ")" : "") + ' · empezó ' + vtFechaHora(S.inicio) + ' · terminó ' + ff + '</small></h1><span class="logo">MAKMEX</span></div>' +
+    '<div class="res ' + (bien ? "ok" : "mal") + '"><b>' + (bien ? "COMPLETO: se agarró todo el pedido." : "CON DIFERENCIAS: revisar antes de crear el traspaso en SICAR.") + '</b></div>' +
+    '<div class="kv"><div><b class="num">' + K.esp + '</b><span>piezas en el pedido</span></div><div><b class="num">' + K.got + '</b><span>surtidas (escaneadas)</span></div>' +
+      '<div><b class="num" style="color:' + (K.faltan ? "#c9302c" : "#1c1917") + '">' + K.faltan + '</b><span>faltan</span></div><div><b class="num" style="color:' + (K.sobran ? "#a85a00" : "#1c1917") + '">' + K.sobran + '</b><span>no van / de más</span></div></div>' +
+    (falt.length ? '<h2>Faltantes (' + falt.length + ')</h2>' + cabT + falt.map(filaP).join("") + '</table>' : '') +
+    (extras.length ? '<h2>Escaneadas que no van en el pedido (' + extras.length + ')</h2><table>' + extras.map(([c, k], i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(c) + '</td><td><div class="k">' + esc(c) + '</div><div class="d">' + esc(S.desc[c] || spDesc(c)) + '</div></td><td class="c num mal">+' + k + '</td></tr>').join("") + '</table>' : '') +
+    (comp.length ? '<h2>Completos (' + comp.length + ')</h2>' + cabT + comp.map(filaP).join("") + '</table>' : '') + cmp +
+    '<div class="pie"><div>Surtió (nombre y firma)</div><div>Empacó / creó el traspaso en SICAR (folio ______)</div><div>Fecha y hora de salida</div></div>' +
+    '<p style="margin-top:12px;font-size:11px;color:#888">Surtido = etiquetas escaneadas en el tablero contra la hoja de surtido. El traspaso se crea en SICAR con un segundo escaneo en la mesa de empaque.</p></body></html>');
+}
+/* ---- aviso en Qué mandar ---- */
+function spPintarAviso() {
+  const el = $("#spAviso"), btn = $("#btnSurtir"); if (!el) return;
+  const ok = [2, 3, 4].includes(UI.destino); if (btn) btn.classList.toggle("hidden", !ok);
+  const S = ok ? spLeer(UI.destino) : null;
+  if (!S) { el.innerHTML = ""; return; }
+  const K = spCalc(S), dest = SUCS[S.des];
+  const txt = S.fin
+    ? '<b>Pedido a ' + esc(dest) + ' surtido</b> · ' + (K.faltan || K.sobran ? "con diferencias" : "completo") + ' · ' + K.got + ' de ' + K.esp + ' piezas · ' + vtFechaHora(S.fin) +
+      (S.cmp ? ' · traspaso folio ' + esc(S.cmp.folio) + ': ' + (spCmpFilas(S, S.cmp).malas.length ? '<b style="color:var(--bad)">no coincide</b>' : '<b style="color:var(--ok)">coincide</b>') : ' · falta comparar con el traspaso de SICAR')
+    : '<b>Verificación de pedido a ' + esc(dest) + ' en curso</b> · ' + K.got + ' de ' + K.esp + ' piezas surtidas' + (K.sobran ? ' · ' + K.sobran + ' no van' : '');
+  const bot = S.fin
+    ? '<button class="invbtn lleno" data-spav="abrir">' + (S.cmp ? "Ver" : "Comparar con SICAR") + '</button><button class="invbtn" data-spav="pdf">Reporte</button><button class="invbtn rojo" data-spav="borrar">Cerrar surtido</button>'
+    : '<button class="invbtn lleno" data-spav="abrir">Continuar</button><button class="invbtn rojo" data-spav="borrar">Descartar</button>';
+  el.innerHTML = '<div class="envAviso"><span>' + txt + '</span><span class="b">' + bot + '</span></div>';
+  el.querySelectorAll("[data-spav]").forEach(b => b.addEventListener("click", () => {
+    const a = b.dataset.spav;
+    if (a === "abrir") { SP = spLeer(UI.destino); spAbrir(); if (SP && SP.fin && !SP.cmp) spComparar(); }
+    else if (a === "pdf") spPdf(spLeer(UI.destino));
+    else if (confirm(S.fin ? "¿Cerrar el surtido terminado a " + dest + "? Se quita el aviso y el reporte de este dispositivo." : "¿Descartar la verificación en curso a " + dest + "?")) { spBorrar(UI.destino); spPintarAviso(); }
+  }));
+}
+document.getElementById("btnSurtir").addEventListener("click", spEmpezar);
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#spCapa").classList.contains("hidden")) spCerrar(); });
 
 iniciar();
 </script>
