@@ -552,6 +552,16 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 #opPanel details.sec{margin-top:0}
 #opPanel details.sec>summary{display:none}
 #opPanel .lista{max-height:none}
+
+/* actividad de cuentas */
+#actBloque{margin-top:18px}
+.actFila{display:flex;gap:10px;align-items:baseline;padding:7px 10px;border-bottom:1px solid var(--line);font-size:13.5px;flex-wrap:wrap}
+.actFila:last-child{border-bottom:0}
+.actFila .ce{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.actFila .cn{color:var(--ink-2)}
+.actFila .cn b.mal{color:#e03131}
+.actFila .cu{color:var(--ink-3);font-size:12px;margin-left:auto}
+.actProp{opacity:.75}
 </style>
 </head>
 <body>
@@ -741,6 +751,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div id="icBloque"></div>
     <div id="invCuerpo"></div>
     <div id="hmpBloque"></div>
+    <div id="actBloque"></div>
   </section>
 </main>
 
@@ -969,7 +980,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -988,6 +999,7 @@ function pintarEstado() {
   $("#tiendas").innerHTML = html.join("");
   if (sinCliente) avisos.push("La base central todavía no tiene la columna de cliente: pega el base_central.sql nuevo en Supabase.");
   if (D.avisoV5) avisos.push(esc(D.avisoV5));
+  actAviso(avisos);
   $("#avisos").innerHTML = avisos.map(a => '<div class="aviso">' + a + (/reportar|subido/.test(a) ? '. Revisa que su computadora esté prendida, con sesión abierta e internet.' : '') + '</div>').join("");
 }
 
@@ -1394,7 +1406,52 @@ function hmpPinta() {
         esc(m.nota || m.descripcion || "") + '</div></div><div class="cpQuien">' + hmpFecha(m.fecha) + '<br>' + hmpQuien(m.correo) + '</div></div>';
     }).join("") + '</div>' : "");
 }
-document.querySelector('#nav [data-p="inventario"]').addEventListener("click", () => { hmpCargar(); });
+document.querySelector('#nav [data-p="inventario"]').addEventListener("click", () => { hmpCargar(); actCargar(); });
+
+/* ---------------- actividad de las cuentas (registro de consultas) ---------------- */
+const ACT = {datos: null, cuando: 0, cargando: 0, error: ""};
+async function actCargar() {
+  if (ACT.cargando || Date.now() - ACT.cuando < 5 * 60 * 1000) return;
+  ACT.cargando = 1;
+  try { ACT.datos = await rpc("consultas_resumen", {}); ACT.error = ""; }
+  catch (e) { ACT.error = /Solo el dueño/i.test(e.message) ? "ajena" : (/404|PGRST2|schema cache/i.test(e.message) ? "falta" : e.message); }
+  ACT.cuando = Date.now(); ACT.cargando = 0; actPinta(); pintarEstado();
+}
+function actFecha(x) {
+  if (!x) return "nunca";
+  const d = new Date(x); if (isNaN(d)) return "";
+  return d.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + d.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
+}
+function actExternas() {
+  if (!ACT.datos || !ACT.datos.cuentas) return [];
+  return ACT.datos.cuentas.filter(c => !c.acceso_completo);
+}
+function actAviso(avisos) {
+  const lim = ACT.datos && ACT.datos.aviso || 30000;
+  for (const c of actExternas()) {
+    if (c.hoy >= lim) avisos.push("La cuenta <b>" + esc(c.correo) + "</b> lleva <b>" + c.hoy.toLocaleString("es-MX") +
+      " consultas</b> a la base hoy (su máximo reciente: " + (c.maximo_14d || 0).toLocaleString("es-MX") +
+      "). Puede ser una descarga masiva: revisa el tablero HandyMan o desconéctalo (3_desconectar_handyman.sql)");
+  }
+}
+function actPinta() {
+  const el = $("#actBloque"); if (!el) return;
+  if (ACT.error === "ajena") { el.innerHTML = ""; return; }
+  if (ACT.error === "falta") { el.innerHTML = '<div class="cpTit">Consultas a la base por cuenta</div><div class="cpVacio">Falta correr <b>9_registro_consultas.sql</b> en Supabase.</div>'; return; }
+  if (ACT.error) { el.innerHTML = '<div class="cpTit">Consultas a la base por cuenta</div><div class="cpVacio">' + esc(ACT.error) + '</div>'; return; }
+  if (!ACT.datos) { el.innerHTML = ""; return; }
+  const lim = ACT.datos.aviso || 30000;
+  const fila = c => '<div class="actFila' + (c.acceso_completo ? " actProp" : "") + '"><span class="ce">' + esc(c.correo) + '</span>' +
+    '<span class="cn">hoy <b class="num' + (!c.acceso_completo && c.hoy >= lim ? " mal" : "") + '">' + c.hoy.toLocaleString("es-MX") + '</b>' +
+    ' · ayer ' + (c.ayer || 0).toLocaleString("es-MX") + '</span>' +
+    '<span class="cu">última entrada ' + actFecha(c.ultima_entrada) + '</span></div>';
+  const ext = actExternas(), prop = (ACT.datos.cuentas || []).filter(c => c.acceso_completo);
+  el.innerHTML = '<div class="cpTit">Consultas a la base por cuenta <small>cada lectura del tablero cuenta; aviso desde ' +
+    lim.toLocaleString("es-MX") + ' al día · tope ' + (ACT.datos.tope || 0).toLocaleString("es-MX") + '</small></div>' +
+    '<div class="lista">' +
+    (ext.length ? ext.map(fila).join("") : '<div class="cpVacio">Las cuentas de fuera (tablero HandyMan) no han consultado en 14 días.</div>') +
+    prop.map(fila).join("") + '</div>';
+}
 
 /* ---------------- traspasos en curso ---------------- */
 function pintarTraspasos() {
