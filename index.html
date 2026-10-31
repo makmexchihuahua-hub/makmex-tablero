@@ -581,12 +581,13 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .piTabs .cnt2{display:inline-block;min-width:18px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:700;margin-left:4px}
 .piBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
 .piBarra input[type=search]{flex:1 1 220px;font:inherit;font-size:14px;padding:8px 10px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink)}
+.piBarra select{font:inherit;font-size:13.5px;padding:7px 8px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);max-width:220px}
 .piGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
 .piCard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;cursor:pointer;position:relative}
 .piCard:hover{border-color:var(--ink-3)}
 .piCard.aprobado{border-color:var(--ok)}.piCard.rechazado{opacity:.55}
-.piCard .ft{width:72px;height:72px;border-radius:8px;background:#fff;border:1px solid var(--line);object-fit:contain;display:block}
-.piCard .ft.vacia{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:11px}
+.piCard .ft,.piMini .ft{width:72px;height:72px;border-radius:8px;background:#fff;border:1px solid var(--line);object-fit:contain;display:block}
+.piCard .ft.vacia,.piMini .ft.vacia{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:11px}
 .piCard .k{font-weight:700;font-size:15px;line-height:1.1}
 .piCard .d{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .piCard .n{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-top:4px;font-size:12.5px}
@@ -597,10 +598,26 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .piChip{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .piChip.ok{background:var(--ok-soft);color:var(--ok)}.piChip.am{background:var(--warn-soft);color:var(--warn)}.piChip.ro{background:var(--bad-soft);color:var(--bad)}
 .piChip.pen{background:var(--surface-2);color:var(--ink-2)}.piChip.reg{background:var(--accent-soft);color:var(--accent)}
+.piMas{grid-column:1 / -1;text-align:center;padding:6px}
 #piCapa{position:fixed;inset:0;background:var(--bg);z-index:60;overflow:auto;padding:14px var(--gutter) 40px}
-#piCapa .piIn{max-width:980px;margin:0 auto}
+.piCuerpo{display:grid;grid-template-columns:minmax(260px,320px) minmax(0,980px);gap:18px;justify-content:center;align-items:start}
+#piLado{position:sticky;top:0;max-height:calc(100vh - 28px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px}
+@media (max-width:1180px){.piCuerpo{grid-template-columns:minmax(0,980px)}#piLado{position:static;max-height:none;order:2}}
+#piCapa .piIn{min-width:0}
 #piCapa h3{font-family:var(--display);font-size:24px;margin:0;line-height:1.1}
 #piCapa .vtSub{font-size:13px;color:var(--ink-3);margin:2px 0 12px}
+.piLadoCab h4{font-family:var(--display);font-size:17px;margin:0 0 6px}.piLadoCab h4 small{font-family:var(--body);font-size:12px;color:var(--ink-3);font-weight:400}
+.piProm{display:flex;gap:8px;align-items:center;justify-content:space-between;background:var(--surface-2);border-radius:10px;padding:8px 10px;margin:0 0 8px;font-size:12.5px}
+.piProm b{display:block;font-family:var(--display);font-size:15px}.piProm small{display:block;color:var(--ink-3);font-size:11.5px}
+.piProm .invbtn{padding:5px 9px;font-size:12px;white-space:nowrap}
+.piLadoLista{display:flex;flex-direction:column;gap:6px}
+.piMini{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px;cursor:pointer;background:var(--bg)}
+.piMini .ft{width:52px;height:52px}
+.piMini:hover{border-color:var(--ink-3)}.piMini.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.piMini.nuevo{border-style:dashed}
+.piMini .t{font-size:12.5px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.piMini .t b{font-size:13.5px}.piMini .t span{color:var(--ink-3)}
+.piMini .n{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;font-size:12px}.piMini .n b{font-family:var(--display);font-size:15px}
+.piMini .m{font-size:11.5px;color:var(--ink-3)}
 .piGal{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
 .piGal img{width:96px;height:96px;object-fit:contain;background:#fff;border:2px solid var(--line);border-radius:10px;cursor:pointer}
 .piGal img.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
@@ -613,8 +630,11 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .piFila:last-child{border-bottom:0}
 .piFila label{color:var(--ink-2)}
 .piFila input,.piFila select{font:inherit;font-size:14px;padding:5px 8px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);width:96px;text-align:right}
-.piFila input.anch{width:150px}
+.piFila input.anch{width:150px;text-align:left}
+.piFila input.corto{width:58px}
 .piFila .v{font-weight:700;font-family:var(--display);font-size:18px}
+.piNota{font-size:12px;color:var(--ink-3);margin:4px 0}
+.piLinks{font-size:12.5px;margin-top:8px;line-height:1.7}
 .piCal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin:6px 0}
 .piCal div{background:var(--surface-2);border-radius:8px;padding:6px 2px}
 .piCal b{display:block;font-family:var(--display);font-size:15px}.piCal small{font-size:11px;color:var(--ink-3)}
@@ -626,6 +646,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .piHist{font-size:12.5px;color:var(--ink-2);max-height:180px;overflow:auto}
 .piHist div{padding:3px 0;border-bottom:1px solid var(--line)}
 .piPaso{border:1.5px solid var(--ok);background:var(--ok-soft);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:13.5px}
+.piCarac{font-size:12.5px;color:var(--ink-2);margin:0 0 10px}.piCarac summary{cursor:pointer;color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -818,6 +839,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div class="piBarra" id="piBarra"></div>
     <div class="piGrid" id="piGrid"></div>
     <input type="file" id="piArchivo" accept=".json,application/json" class="hidden">
+    <input type="file" id="piArchivoCat" accept=".json,application/json" class="hidden">
   </section>
   <section class="panel" id="p-inventario">
     <h2>Hacer inventario <small id="invResumen"></small></h2>
@@ -868,7 +890,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </div>
 </aside>
 <div id="velo" class="hidden"></div>
-<div id="piCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Dashboard del producto"><div class="piIn" id="piIn"></div></div>
+<div id="piCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Dashboard del producto"><div class="piCuerpo"><aside id="piLado" aria-label="Productos de la misma categoría"></aside><div class="piIn" id="piIn"></div></div></div>
 <div id="spCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificar pedido"><div class="vtIn" id="spIn"></div></div>
 <div id="envCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Modificar envío"><div class="envIn" id="envIn"></div></div>
 <div id="vtCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificación de traspasos"><div class="vtIn" id="vtIn"></div></div>
@@ -4250,14 +4272,25 @@ document.getElementById("btnSurtir").addEventListener("click", spEmpezar);
 document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#spCapa").classList.contains("hidden")) spCerrar(); });
 
 /* ---------------- precio ideal (nuevos + catálogo) ---------------- */
-const PI = {lista: [], fotos: {}, hist: {}, cuando: 0, cargando: 0, error: "", tab: "nuevos", filtro: "todos", busca: "", abierto: null, ult: null};
-const piRed = x => Math.round((Number(x) || 0) / 10) * 10;
+const PI = {lista: [], fotos: {}, hist: {}, carac: {}, cuando: 0, cargando: 0, error: "", falta11: false, tab: "nuevos", filtro: "todos", busca: "", cat: "", ord: "vendidos",
+            pag: 1, abierto: null, pila: [], ladoOrd: "vendidos", ladoTodo: false, inv: {}, invRef: null};
+const PI_PAG = 120;
+const PI_COLS = "modelo,estado,decision,marca,categoria,tipo,plataforma,ah,bat_code,upc,descripcion,link_hd,precio_hd,dolar,tax,pct_hd,pct_fuente,clase,l2,l3,d_pct,e_pct,f_pct,orden,portada,fotos,notas,lote,creado,actualizado,aprobado_en,ingresado_en,precio_aa,ventas,existencia,existencia_cuu,existencia_cdmx,kit_bateria,kit_cargador,d_kit,d_combo,link_ebay,mercado";
+// MROUND(x,10) como lo calcula Excel en el maestro (misma corrección de mitades exactas que generar_altas.py)
+const piRed = x => Math.floor((Number(x) || 0) / 10 + 0.5 + 2.5e-15) * 10;
 const piBase = p => piRed(Number(p.precio_hd || 0) * Number(p.tax || 1.08) * Number(p.dolar || 0));
-const piAA = p => piRed(piBase(p) * Number(p.pct_hd || 0));
-function piVar(p) { const aa = piAA(p); return {AA: aa, A: piRed(aa * 0.95), B: piRed(aa * 0.90), C: piRed(aa * 0.80), D: piRed(aa * Number(p.d_pct)), E: piRed(aa * Number(p.e_pct)), F: piRed(aa * Number(p.f_pct))}; }
+const piConHd = p => Number(p.precio_hd) > 0 && Number(p.pct_hd) > 0 && Number(p.dolar) > 0;
+const piAI = p => piConHd(p) ? piBase(p) * Number(p.pct_hd) : Number(p.precio_aa || 0);   // precio AA sin redondear (col. AI del maestro); si no sale de HD, el precio directo
+const piAA = p => piRed(piAI(p));
+function piVar(p) { const ai = piAI(p); return {AA: piRed(ai), A: piRed(ai * 0.95), B: piRed(ai * 0.90), C: piRed(ai * 0.80), D: piRed(ai * Number(p.d_pct)), E: piRed(ai * Number(p.e_pct)), F: piRed(ai * Number(p.f_pct))}; }
 function piListas(p) { const aa = piAA(p); return {p2: piRed(aa * (1 - Number(p.l2))), p3: piRed(aa * (1 - Number(p.l3)))}; }
 function piSem(p) { const aa = piAA(p); if (!aa) return ["pen", "—"]; const r = piListas(p).p3 / aa; return r < 0.60 ? ["ro", "ROJO"] : r < 0.75 ? ["am", "AMARILLO"] : ["ok", "OK"]; }
+const piTipo = p => { const t = String(p.tipo || "").toUpperCase(); return t.startsWith("BATER") ? "BATERIAS" : t.startsWith("CARG") ? "CARGADORES" : t.startsWith("KIT") ? "KIT" : t.startsWith("COMBO") ? "COMBO" : t.startsWith("ESTUCH") ? "ESTUCHES" : "NA"; };
+// % HD de cualquier ficha medido al dólar que se indique (para comparar la categoría con la ficha abierta)
+function piPctA(p, dolar) { if (!(Number(p.precio_hd) > 0) || !(dolar > 0)) return null; const b = piRed(Number(p.precio_hd) * Number(p.tax || 1.08) * dolar); return b > 0 ? piAA(p) / b : null; }
+const piPct4 = v => Number(v) > 0 ? parseFloat(Number(v).toFixed(4)) : 0;   // el % como se muestra en el campo (hasta 4 decimales)
 const piNuevos = () => PI.lista.filter(p => p.estado === "nuevo");
+const piRegistrados = () => PI.lista.filter(p => p.estado === "registrado");
 const piPendientes = () => piNuevos().filter(p => p.decision === "pendiente").length;
 function piResumen() {
   if (PI.error === "falta") return "falta correr 10_precio_ideal.sql";
@@ -4265,15 +4298,19 @@ function piResumen() {
   return (n ? n + " nuevos" + (pend ? " · " + pend + " por aprobar" : " · todos decididos") : "sin nuevos") + " · " + reg + " en catálogo";
 }
 async function piCargar(forzar) {
-  if (!esDueno() || PI.cargando || (!forzar && Date.now() - PI.cuando < 120000)) return;
+  if (!esDueno() || PI.cargando || (!forzar && Date.now() - PI.cuando < 600000)) return;
   PI.cargando = 1;
-  try { PI.lista = await q("precio_producto", "select=*&order=estado,decision,modelo"); PI.error = ""; }
-  catch (e) { PI.error = /404|PGRST2|does not exist|schema cache/i.test(e.message) ? "falta" : e.message; }
+  try { PI.lista = await q("precio_producto", "select=" + PI_COLS + "&order=estado,decision,modelo"); PI.error = ""; PI.falta11 = false; }
+  catch (e) {
+    if (/column|does not exist|42703/i.test(e.message) && !/relation|schema cache|PGRST2/i.test(e.message)) {   // sin 11_precio_catalogo.sql todavía: columnas nuevas ausentes
+      try { PI.lista = await q("precio_producto", "select=*&order=estado,decision,modelo"); PI.error = ""; PI.falta11 = true; } catch (e2) { PI.error = e2.message; }
+    } else PI.error = /404|PGRST2|does not exist|schema cache/i.test(e.message) ? "falta" : e.message;
+  }
   PI.cuando = Date.now(); PI.cargando = 0; piPintar();
   if (typeof opPintarMenu === "function") opPintarMenu();
 }
 async function piFotosPortada(modelos) {   // miniaturas de portada de las fichas nuevas, en una sola consulta por número
-  const faltan = modelos.filter(m => { const p = PI.lista.find(x => x.modelo === m); return p && !(PI.fotos[m] && PI.fotos[m][p.portada]); });
+  const faltan = modelos.filter(m => { const p = PI.lista.find(x => x.modelo === m); return p && p.estado === "nuevo" && !(PI.fotos[m] && PI.fotos[m][p.portada]); });
   if (!faltan.length) return;
   const porN = {};
   for (const m of faltan) { const p = PI.lista.find(x => x.modelo === m); (porN[p.portada] = porN[p.portada] || []).push(m); }
@@ -4288,21 +4325,31 @@ async function piFotosDe(m) {
   const f = await q("precio_foto", "select=n,datos&modelo=eq." + encodeURIComponent(m) + "&order=n");
   PI.fotos[m] = {}; for (const x of f) PI.fotos[m][x.n] = x.datos;
 }
+async function piCaracDe(m) {
+  try { const f = await q("precio_producto", "select=caracteristicas&modelo=eq." + encodeURIComponent(m), {unaPagina: true}); PI.carac[m] = (f[0] && f[0].caracteristicas) || ""; } catch (e) { PI.carac[m] = ""; }
+}
 function piImg(p, cls) {
   if (p.estado === "nuevo") { const d = PI.fotos[p.modelo] && PI.fotos[p.modelo][p.portada]; return d ? '<img class="' + cls + '" alt="" src="' + d + '">' : '<span class="' + cls + ' vacia">sin foto</span>'; }
   const h = fotoHtml(p.modelo); return h.includes("<img") ? h.replace('class="mini"', 'class="' + cls + '"') : '<span class="' + cls + ' vacia">sin foto</span>';
 }
-/* ---- métricas vivas del catálogo (existencias + ventas por modelo, 4 tiendas) ---- */
+/* ---- métricas vivas (existencias + ventas por modelo, 4 tiendas); si el modelo no tiene datos vivos, lo que dice el maestro ---- */
+function piInv(m) {
+  if (PI.invRef !== D.invModelo) { PI.invRef = D.invModelo; PI.inv = {}; for (const x of D.invModelo || []) { const k = String(x.modelo).toUpperCase(); (PI.inv[k] = PI.inv[k] || []).push(x); } }
+  return PI.inv[m] || [];
+}
 function piMetricas(p) {
-  const filas = (D.invModelo || []).filter(x => String(x.modelo).toUpperCase() === p.modelo);
+  const filas = piInv(p.modelo);
   const piezas = filas.reduce((a, x) => a + Number(x.piezas || 0), 0), valor = filas.reduce((a, x) => a + Number(x.valor || 0), 0);
   const porSuc = {}; filas.forEach(x => porSuc[x.suc] = Number(x.piezas || 0));
   const g = filas[0] || {};
   const v180 = Number(g.pzas_180_global || 0), v90 = Number(g.pzas_90_global || 0), v365 = Number(g.pzas_365_global || 0);
   const dias = g.dias_sin_venta_global != null ? Number(g.dias_sin_venta_global) : null;
   const cobertura = piezas && v180 ? piezas / (v180 / 6) : (piezas ? Infinity : 0);
+  const vivo = filas.length > 0;
+  const vendidas = vivo ? v365 : Number(p.ventas || 0), existTot = vivo ? piezas : Number(p.existencia || 0);
   const sug = [];
-  if (!piezas) sug.push(v180 ? "Sin existencia y con ventas: candidato a recomprar." : "Sin existencia en las 4 tiendas.");
+  if (!vivo) sug.push("Sin datos vivos de las tiendas para este modelo" + (p.ventas ? "; el maestro registra " + p.ventas + " ventas y " + (p.existencia || 0) + " pz." : "."));
+  else if (!piezas) sug.push(v180 ? "Sin existencia y con ventas: candidato a recomprar." : "Sin existencia en las 4 tiendas.");
   else {
     if (cobertura < 1 && v180) sug.push("Rota rápido (cobertura < 1 mes): sugerir +5% y marcar recompra en eBay.");
     if (cobertura >= 4 && piezas >= 3) sug.push("Pico de inventario (" + (isFinite(cobertura) ? cobertura.toFixed(1) + " meses de cobertura" : "sin ventas") + ", " + piezas + " pz): sugerir −5% u oferta digital.");
@@ -4310,24 +4357,66 @@ function piMetricas(p) {
     else if (dias != null && dias >= 90) sug.push("Más de 90 días sin venta: sugerir −5%.");
     if (!sug.length) sug.push("Rotación dentro de la meta (4 meses).");
   }
-  return {piezas, valor, porSuc, v90, v180, v365, dias, cobertura, sug, precio1: Number(g.precio1 || 0)};
+  return {piezas, valor, porSuc, v90, v180, v365, dias, cobertura, sug, precio1: Number(g.precio1 || 0), vivo, vendidas, existTot, fuente: vivo ? "vivo" : "maestro"};
+}
+/* ---- kits: batería y cargador por código (hoja LISTAS de ALTAS-MAKMEX) y precios fijos por si la pieza no está en el catálogo ---- */
+const PI_KITS = {M185: ["48-11-1850", "48-59-1812"], M122: ["48-11-2420", "48-59-2401"], "18V2": ["PBP006", "PCG002"], M182: ["48-11-1820", "48-59-1812"], M124: ["48-11-2440", "48-59-2401"],
+                 "20V5": ["DCB205", "DCB115"], "18V4": ["PBP005", "PCG002"], "20V2": ["DCB203", "DCB115"], "40V4": ["OP4040A1", "OP404"], "60V6": ["DCB606", "DCB1106"],
+                 R18V2: ["AC8400802", "AC86093N"], R18V4: ["AC87004", "AC86093N"], "40V2": ["OP4020A", "OP404"]};
+const PI_PIEZAS = {"48-11-1850": [2070, 1570, 1240], "48-11-2420": [950, 780, 650], PBP006: [1020, 740, 610], "48-11-1820": [1230, 900, 740], "48-11-2440": [1450, 1160, 1040], DCB205: [2060, 1570, 1240],
+                   PBP005: [1460, 1110, 880], DCB203: [1250, 910, 750], OP4040A1: [2190, 1660, 1310], DCB606: [2530, 2150, 2020], AC8400802: [1090, 710, 650], AC87004: [1480, 960, 890], OP4020A: [1760, 1280, 1060],
+                   "48-59-1812": [1230, 800, 650], "48-59-2401": [780, 470, 410], DCB115: [1240, 810, 660], DCB1106: [1410, 920, 850], PCG002: [550, 360, 290], OP404: [940, 610, 500], AC86093N: [840, 590, 550]};
+function piDesc(p) { const t = piTipo(p); return {dk: p.d_kit != null && p.d_kit !== "" ? Number(p.d_kit) : (t === "CARGADORES" ? 0.35 : 0.24), dc: p.d_combo != null && p.d_combo !== "" ? Number(p.d_combo) : (t === "CARGADORES" ? 0.47 : 0.40)}; }
+function piPieza(modelo) {   // batería o cargador del kit: precio A, en kit y en combo (del catálogo; si no está, tabla fija de oct 2026)
+  const r = PI.lista.find(x => x.modelo === modelo && x.estado === "registrado");
+  if (r && piAA(r)) { const A = piVar(r).A, d = piDesc(r); return {modelo, A, kit: piRed(A * (1 - d.dk)), combo: piRed(A * (1 - d.dc)), fuente: "catálogo"}; }
+  const f = PI_PIEZAS[modelo]; return f ? {modelo, A: f[0], kit: f[1], combo: f[2], fuente: "tabla fija"} : null;
+}
+function piKit(p) {   // precios en kit de una herramienta de batería: las mismas fórmulas del maestro (BT/BK/BO) y de generar_altas.py
+  const bm = p.kit_bateria || (PI_KITS[p.bat_code] || [])[0], cm = p.kit_cargador || (PI_KITS[p.bat_code] || [])[1];
+  if (!bm) return null;
+  const bat = piPieza(bm), car = cm ? piPieza(cm) : null;
+  if (!bat) return {bm, cm, falta: bm};
+  const aa = piAA(p), p2 = piListas(p).p2;
+  const BT = piRed(p2 + bat.kit * 1.12), BK = Math.round(p2 + bat.kit + (car ? car.kit : 0));
+  const BO = Math.round(piRed(aa * (1 - (Number(p.l2) + 0.2))) + bat.combo + (car ? car.combo : 0));
+  return {bm, cm, bat, car, BT, BK, BO, sueltas: aa + bat.A + (car ? car.A : 0)};
+}
+/* ---- la categoría del producto abierto: % HD de todos sus productos al dólar de la ficha ---- */
+function piCategoria(p) {
+  const dol = Number(p.dolar) || 0, lista = PI.lista.filter(x => x.categoria && x.categoria === p.categoria).map(x => x.modelo === p.modelo ? p : x);   // la ficha abierta entra con lo que hay en sus campos
+  const filas = lista.map(x => { const M = piMetricas(x); return {p: x, M, pct: piPctA(x, dol), vend: M.vendidas, ex: M.existTot}; });
+  const vals = filas.map(f => f.pct).filter(v => v != null && isFinite(v));
+  const med = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), k = s.length >> 1; return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2; };
+  const rotan = filas.filter(f => f.pct != null && f.vend >= 3 && f.ex <= f.vend).map(f => f.pct);
+  return {n: lista.length, dol, promedio: vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null, mediana: med(vals), rotan: med(rotan), nRotan: rotan.length, nPct: vals.length, filas};
 }
 /* ---- fichas ---- */
+function piOrdenar(L) {
+  const o = PI.ord, M = p => piMetricas(p);
+  if (o === "orden") return L.sort((a, b) => (a.orden == null ? 1e9 : a.orden) - (b.orden == null ? 1e9 : b.orden) || a.modelo.localeCompare(b.modelo));
+  if (o === "pct") return L.sort((a, b) => Number(b.pct_hd || 0) - Number(a.pct_hd || 0));
+  if (o === "dias") return L.sort((a, b) => { const x = M(a).dias, y = M(b).dias; return (y == null ? -1 : y) - (x == null ? -1 : x); });
+  if (o === "precio") return L.sort((a, b) => piAA(b) - piAA(a));
+  return L.sort((a, b) => M(b).vendidas - M(a).vendidas || piAA(b) - piAA(a));
+}
 function piFiltrar() {
-  let L = PI.tab === "nuevos" ? piNuevos() : PI.lista.filter(p => p.estado === "registrado");
+  let L = PI.tab === "nuevos" ? piNuevos() : piRegistrados();
   if (PI.tab === "nuevos" && PI.filtro !== "todos") L = L.filter(p => p.decision === PI.filtro);
+  if (PI.tab === "catalogo" && PI.cat) L = L.filter(p => (p.categoria || "") === PI.cat);
   const b = PI.busca.trim().toUpperCase();
   if (b) L = L.filter(p => (p.modelo + " " + (p.descripcion || "") + " " + (p.marca || "") + " " + (p.categoria || "")).toUpperCase().includes(b));
-  return L;
+  return PI.tab === "catalogo" ? piOrdenar(L) : L;
 }
 function piFicha(p) {
   const v = piVar(p), s = piSem(p), nuevo = p.estado === "nuevo";
   const dec = nuevo ? '<span class="piChip ' + (p.decision === "aprobado" ? "ok" : p.decision === "rechazado" ? "ro" : "pen") + '">' + p.decision + '</span>' : '<span class="piChip reg">en catálogo</span>';
   let met = "";
-  if (!nuevo) { const M = piMetricas(p); met = '<span>' + M.piezas + ' pz' + (M.dias != null ? ' · ' + M.dias + ' d sin venta' : '') + (isFinite(M.cobertura) && M.piezas ? ' · ' + M.cobertura.toFixed(1) + ' m' : '') + '</span>'; }
+  if (!nuevo) { const M = piMetricas(p); met = '<span>' + M.vendidas + ' vend. ' + (M.vivo ? '365 d' : 'hist.') + ' · ' + M.existTot + ' pz' + (M.dias != null ? ' · ' + M.dias + ' d sin venta' : '') + (isFinite(M.cobertura) && M.piezas ? ' · ' + M.cobertura.toFixed(1) + ' m' : '') + '</span>'; }
+  const hd = Number(p.precio_hd) > 0 ? 'HD $' + Number(p.precio_hd).toLocaleString("en-US") : 'sin HD';
   return '<div class="piCard ' + (nuevo ? p.decision : "reg") + '" data-pim="' + esc(p.modelo) + '">' + piImg(p, "ft") +
     '<div style="min-width:0"><div class="k">' + esc(p.modelo) + '</div><div class="d">' + esc((p.marca || "") + " · " + (p.categoria || "")) + '</div><div class="d">' + esc(p.descripcion || "") + '</div>' +
-    '<div class="n"><span>HD $' + Number(p.precio_hd || 0).toLocaleString("en-US") + '</span><span>% <input class="pct" type="number" step="0.01" min="0.3" max="2" value="' + Number(p.pct_hd || 0).toFixed(2) + '" data-pipct="' + esc(p.modelo) + '" aria-label="% HD"></span>' +
+    '<div class="n"><span>' + hd + '</span><span>% <input class="pct" type="number" step="0.01" min="0.3" max="2" value="' + (Number(p.pct_hd) > 0 ? Number(p.pct_hd).toFixed(2) : "") + '" data-pipct="' + esc(p.modelo) + '" aria-label="% HD"' + (piConHd(p) || nuevo ? '' : ' title="precio directo: no sale de HD × %"') + '></span>' +
     '<b class="num">' + pesos(v.AA) + '</b><span class="piChip ' + s[0] + '">' + s[1] + '</span>' + dec + met + '</div></div>' +
     '<div class="acc">' + (nuevo ? '<button type="button" class="invbtn lleno" data-piok="' + esc(p.modelo) + '">Aprobar</button><button type="button" class="invbtn rojo" data-pino="' + esc(p.modelo) + '">Rechazar</button>' : '') +
     '<button type="button" class="invbtn" data-piver="' + esc(p.modelo) + '">Abrir dashboard</button></div></div>';
@@ -4339,23 +4428,37 @@ function piPintar() {
   document.querySelectorAll("#piTabs [data-pit]").forEach(b => b.classList.toggle("sel", b.dataset.pit === PI.tab));
   if (PI.error === "falta") { $("#piBarra").innerHTML = ""; g.innerHTML = '<div class="cpVacio" style="grid-column:1/-1">Falta correr <b>10_precio_ideal.sql</b> en Supabase.</div>'; return; }
   if (PI.error) { $("#piBarra").innerHTML = ""; g.innerHTML = '<div class="cpVacio" style="grid-column:1/-1">' + esc(PI.error) + '</div>'; return; }
-  const filtros = PI.tab === "nuevos" ? [["todos", "Todos"], ["pendiente", "Pendientes"], ["aprobado", "Aprobados"], ["rechazado", "Rechazados"]].map(([k, t]) =>
-    '<button type="button" class="rgChip' + (PI.filtro === k ? " sel" : "") + '" data-pif="' + k + '">' + t + '</button>').join("") : "";
-  $("#piBarra").innerHTML = filtros + '<input type="search" id="piBusca" placeholder="Buscar modelo, marca o categoría" value="' + esc(PI.busca) + '">' +
-    (PI.tab === "nuevos" ? '<button type="button" class="invbtn" id="piCargarB">Cargar propuesta (archivo)</button>' +
-      '<button type="button" class="invbtn lleno" id="piIngresarB"' + (nuevos.length && !pend ? "" : " disabled") + ' title="' + (pend ? pend + " fichas por decidir" : "Pasar los aprobados al catálogo") + '">Ingresar productos' + (nuevos.length && !pend ? " (" + nuevos.filter(p => p.decision === "aprobado").length + ")" : "") + '</button>' : "");
-  const L = piFiltrar();
-  g.innerHTML = L.length ? L.map(piFicha).join("") : '<div class="cpVacio" style="grid-column:1/-1">' + (PI.tab === "nuevos" ? "No hay productos nuevos. Toca «Cargar propuesta» y elige el archivo del chat." : "Todavía no hay productos en el catálogo de precio ideal.") + '</div>';
+  let barra = '<input type="search" id="piBusca" placeholder="Buscar modelo, marca o categoría" value="' + esc(PI.busca) + '">';
+  if (PI.tab === "nuevos") {
+    barra = [["todos", "Todos"], ["pendiente", "Pendientes"], ["aprobado", "Aprobados"], ["rechazado", "Rechazados"]].map(([k, t]) =>
+      '<button type="button" class="rgChip' + (PI.filtro === k ? " sel" : "") + '" data-pif="' + k + '">' + t + '</button>').join("") + barra +
+      '<button type="button" class="invbtn" id="piCargarB">Cargar propuesta (archivo)</button>' +
+      '<button type="button" class="invbtn lleno" id="piIngresarB"' + (nuevos.length && !pend ? "" : " disabled") + ' title="' + (pend ? pend + " fichas por decidir" : "Pasar los aprobados al catálogo") + '">Ingresar productos' + (nuevos.length && !pend ? " (" + nuevos.filter(p => p.decision === "aprobado").length + ")" : "") + '</button>';
+  } else {
+    const cats = {}; piRegistrados().forEach(p => { const c = p.categoria || "(sin categoría)"; cats[c] = (cats[c] || 0) + 1; });
+    barra += '<select id="piOrd" aria-label="Ordenar">' + [["vendidos", "Más vendidos primero"], ["orden", "Orden del catálogo"], ["pct", "% HD mayor primero"], ["dias", "Más días sin venta"], ["precio", "Precio mayor primero"]].map(([k, t]) => '<option value="' + k + '"' + (PI.ord === k ? " selected" : "") + '>' + t + '</option>').join("") + '</select>' +
+      '<select id="piCat" aria-label="Categoría"><option value="">Todas las categorías (' + reg + ')</option>' + Object.keys(cats).sort((a, b) => a.localeCompare(b)).map(c => '<option value="' + esc(c) + '"' + (PI.cat === c ? " selected" : "") + '>' + esc(c) + ' (' + cats[c] + ')</option>').join("") + '</select>' +
+      '<button type="button" class="invbtn" id="piCargarCatB"' + (PI.falta11 ? ' disabled title="Falta correr 11_precio_catalogo.sql"' : '') + '>Cargar catálogo (archivo)</button>' +
+      (PI.falta11 ? '<span class="piChip ro">falta correr 11_precio_catalogo.sql</span>' : '');
+  }
+  $("#piBarra").innerHTML = barra;
+  const L = piFiltrar(), tope = PI.pag * PI_PAG, V = L.slice(0, tope);
+  g.innerHTML = V.length ? V.map(piFicha).join("") + (L.length > tope ? '<div class="piMas"><button type="button" class="invbtn" id="piMas">Mostrar más (' + (L.length - tope) + ' restantes)</button></div>' : '') :
+    '<div class="cpVacio" style="grid-column:1/-1">' + (PI.tab === "nuevos" ? "No hay productos nuevos. Toca «Cargar propuesta» y elige el archivo del chat." : (piRegistrados().length ? "Nada con ese filtro." : "Todavía no hay productos en el catálogo: toca «Cargar catálogo» y elige MAKMEX-dashboard/precio-catalogo.json (lo genera exportar_catalogo_precio.py en la Mac).")) + '</div>';
   piAmarrar();
-  if (PI.tab === "nuevos") piFotosPortada(L.map(p => p.modelo)).then(() => { L.forEach(p => { const c = g.querySelector('[data-pim="' + CSS.escape(p.modelo) + '"] .ft'); if (c && c.tagName !== "IMG") { const d = PI.fotos[p.modelo] && PI.fotos[p.modelo][p.portada]; if (d) c.outerHTML = '<img class="ft" alt="" src="' + d + '">'; } }); }).catch(() => {});
+  if (PI.tab === "nuevos") piFotosPortada(V.map(p => p.modelo)).then(() => { V.forEach(p => { const c = g.querySelector('[data-pim="' + CSS.escape(p.modelo) + '"] .ft'); if (c && c.tagName !== "IMG") { const d = PI.fotos[p.modelo] && PI.fotos[p.modelo][p.portada]; if (d) c.outerHTML = '<img class="ft" alt="" src="' + d + '">'; } }); }).catch(() => {});
 }
 function piAmarrar() {
-  document.querySelectorAll("#piTabs [data-pit]").forEach(b => b.onclick = () => { PI.tab = b.dataset.pit; piPintar(); });
-  document.querySelectorAll("#piBarra [data-pif]").forEach(b => b.onclick = () => { PI.filtro = b.dataset.pif; piPintar(); });
-  const bu = $("#piBusca"); if (bu) { let t = null; bu.oninput = () => { clearTimeout(t); t = setTimeout(() => { PI.busca = bu.value; piPintar(); const b2 = $("#piBusca"); if (b2) { b2.focus(); b2.setSelectionRange(b2.value.length, b2.value.length); } }, 250); }; }
+  document.querySelectorAll("#piTabs [data-pit]").forEach(b => b.onclick = () => { PI.tab = b.dataset.pit; PI.pag = 1; piPintar(); });
+  document.querySelectorAll("#piBarra [data-pif]").forEach(b => b.onclick = () => { PI.filtro = b.dataset.pif; PI.pag = 1; piPintar(); });
+  const bu = $("#piBusca"); if (bu) { let t = null; bu.oninput = () => { clearTimeout(t); t = setTimeout(() => { PI.busca = bu.value; PI.pag = 1; piPintar(); const b2 = $("#piBusca"); if (b2) { b2.focus(); b2.setSelectionRange(b2.value.length, b2.value.length); } }, 250); }; }
+  const so = $("#piOrd"); if (so) so.onchange = () => { PI.ord = so.value; PI.pag = 1; piPintar(); };
+  const sc = $("#piCat"); if (sc) sc.onchange = () => { PI.cat = sc.value; PI.pag = 1; piPintar(); };
+  const ma = $("#piMas"); if (ma) ma.onclick = () => { PI.pag++; piPintar(); };
   const cb = $("#piCargarB"); if (cb) cb.onclick = () => $("#piArchivo").click();
+  const cc = $("#piCargarCatB"); if (cc) cc.onclick = () => $("#piArchivoCat").click();
   const ib = $("#piIngresarB"); if (ib) ib.onclick = piIngresar;
-  document.querySelectorAll("#piGrid [data-pipct]").forEach(i => { i.onclick = ev => ev.stopPropagation(); i.onchange = () => piGuardar(i.dataset.pipct, {pct_hd: i.value}); });
+  document.querySelectorAll("#piGrid [data-pipct]").forEach(i => { i.onclick = ev => ev.stopPropagation(); i.onchange = () => { if (i.value !== "") piGuardar(i.dataset.pipct, {pct_hd: i.value}); }; });
   document.querySelectorAll("#piGrid [data-piok]").forEach(b => b.onclick = ev => { ev.stopPropagation(); piDecidir(b.dataset.piok, "aprobado"); });
   document.querySelectorAll("#piGrid [data-pino]").forEach(b => b.onclick = ev => { ev.stopPropagation(); piDecidir(b.dataset.pino, "rechazado"); });
   document.querySelectorAll("#piGrid [data-piver]").forEach(b => b.onclick = ev => { ev.stopPropagation(); piAbrir(b.dataset.piver); });
@@ -4363,11 +4466,16 @@ function piAmarrar() {
 }
 async function piGuardar(m, cambios) {
   const p = PI.lista.find(x => x.modelo === m); if (!p) return;
-  const limpio = {}; for (const [k, v] of Object.entries(cambios)) { if (String(p[k] == null ? "" : p[k]) !== String(v)) limpio[k] = String(v); }
+  const limpio = {};
+  for (const [k, v] of Object.entries(cambios)) {
+    if (v == null) continue;
+    const actual = k === "mercado" ? JSON.stringify(p.mercado || {}) : String(p[k] == null ? "" : p[k]);
+    if (actual !== String(v)) limpio[k] = String(v);
+  }
   if (!Object.keys(limpio).length) return;
   try {
     await rpc("pi_ajustar", {p_modelo: m, p_cambios: limpio});
-    for (const [k, v] of Object.entries(limpio)) p[k] = ["notas", "clase"].includes(k) ? v : Number(v);
+    for (const [k, v] of Object.entries(limpio)) p[k] = k === "mercado" ? JSON.parse(v) : ["notas", "clase", "kit_bateria", "kit_cargador"].includes(k) ? v : Number(v);
     p.actualizado = new Date().toISOString(); delete PI.hist[m];
     toast("Guardado " + m + ": " + Object.keys(limpio).join(", "));
     if (PI.abierto === m) { piPintarCapa(); piHist(m); } else piPintar();
@@ -4388,10 +4496,14 @@ async function piIngresar() {
   } catch (e) { toast("No se pudo ingresar: " + e.message, true); }
 }
 /* ---- cargar propuesta (archivo JSON del chat: items + fotos en miniatura) ---- */
+async function piLeeArchivo(ev) {
+  const f = ev.target.files && ev.target.files[0]; ev.target.value = ""; if (!f) return null;
+  let j; try { j = JSON.parse(await f.text()); } catch (e) { toast("El archivo no es un JSON válido", true); return null; }
+  if (!j || !Array.isArray(j.items)) { toast("El archivo no trae la lista «items»", true); return null; }
+  return j;
+}
 $("#piArchivo").addEventListener("change", async ev => {
-  const f = ev.target.files && ev.target.files[0]; ev.target.value = ""; if (!f) return;
-  let j; try { j = JSON.parse(await f.text()); } catch (e) { toast("El archivo no es un JSON válido", true); return; }
-  if (!j || !Array.isArray(j.items)) { toast("El archivo no trae la lista «items»", true); return; }
+  const j = await piLeeArchivo(ev); if (!j) return;
   const b = $("#piCargarB"); if (b) { b.disabled = true; b.textContent = "Subiendo datos…"; }
   try {
     const res = await rpc("pi_cargar", {p_items: j.items});
@@ -4405,58 +4517,171 @@ $("#piArchivo").addEventListener("change", async ev => {
     await piCargar(true);
   } catch (e) { toast("No se pudo cargar: " + (e.message === "sesion" ? "la sesión caducó" : e.message), true); piPintar(); }
 });
+/* ---- cargar el catálogo completo del maestro (precio-catalogo.json de exportar_catalogo_precio.py), por tandas ---- */
+$("#piArchivoCat").addEventListener("change", async ev => {
+  const j = await piLeeArchivo(ev); if (!j) return;
+  const b = $("#piCargarCatB"); if (b) { b.disabled = true; b.textContent = "Subiendo catálogo…"; }
+  const tot = {nuevos: 0, actualizados: 0, saltados: 0};
+  try {
+    for (let i = 0; i < j.items.length; i += 250) {
+      const res = await rpc("pi_cargar_catalogo", {p_items: j.items.slice(i, i + 250), p_pisar: false});
+      for (const k of Object.keys(tot)) tot[k] += Number(res[k] || 0);
+      if (b) b.textContent = "Subiendo catálogo… " + Math.min(i + 250, j.items.length) + " de " + j.items.length;
+    }
+    toast("Catálogo cargado (" + esc(j.lote || "maestro") + "): " + tot.nuevos + " nuevos, " + tot.actualizados + " actualizados" + (tot.saltados ? ", " + tot.saltados + " sin tocar (en NUEVOS o calibrados a mano)" : ""));
+    PI.tab = "catalogo"; await piCargar(true);
+  } catch (e) { toast("No se pudo cargar el catálogo: " + (e.message === "sesion" ? "la sesión caducó" : e.message), true); piPintar(); }
+});
 /* ---- dashboard del producto (pantalla completa) ---- */
-async function piAbrir(m) {
+async function piAbrir(m, desde) {
   const p = PI.lista.find(x => x.modelo === m); if (!p) return;
-  PI.abierto = m; $("#piCapa").classList.remove("hidden"); document.body.style.overflow = "hidden"; piPintarCapa();
+  if (desde === "lado" && PI.abierto && PI.abierto !== m) PI.pila.push(PI.abierto);
+  if (!desde) PI.pila = [];
+  PI.abierto = m; PI.ladoTodo = false; $("#piCapa").classList.remove("hidden"); $("#piCapa").scrollTop = 0; document.body.style.overflow = "hidden"; piPintarCapa();
   const tareas = [];
   if (p.estado === "nuevo" && !(PI.fotos[m] && Object.keys(PI.fotos[m]).length >= (p.fotos || []).length)) tareas.push(piFotosDe(m));
   if (!PI.hist[m]) tareas.push(piHist(m));
+  if (PI.carac[m] === undefined) tareas.push(piCaracDe(m));
   if (tareas.length) { try { await Promise.all(tareas); } catch (e) {} if (PI.abierto === m) piPintarCapa(); }
 }
 async function piHist(m) { try { PI.hist[m] = await q("precio_cambio", "select=campo,antes,despues,correo,ts&modelo=eq." + encodeURIComponent(m) + "&order=ts.desc&limit=40"); } catch (e) { PI.hist[m] = []; } if (PI.abierto === m) piPintarCapa(); }
-function piCerrar() { $("#piCapa").classList.add("hidden"); document.body.style.overflow = ""; PI.abierto = null; piPintar(); }
+function piCerrar() { $("#piCapa").classList.add("hidden"); document.body.style.overflow = ""; PI.abierto = null; PI.pila = []; piPintar(); }
+function piVolver() { const m = PI.pila.pop(); if (m) piAbrir(m, "volver"); else piCerrar(); }
 function piLee() {   // lo que hay en los campos del dashboard, como objeto temporal para recalcular en vivo
   const p = Object.assign({}, PI.lista.find(x => x.modelo === PI.abierto));
   const g = id => { const e = $("#" + id); return e ? e.value : null; };
   if (g("piHd") !== null) p.precio_hd = Number(g("piHd"));
   if (g("piDol") !== null) p.dolar = Number(g("piDol"));
-  if (g("piPct") !== null) p.pct_hd = Number(g("piPct"));
+  if (g("piPct") !== null && Number(g("piPct")) !== piPct4(p.pct_hd)) p.pct_hd = Number(g("piPct"));   // sin tocar, se queda el % exacto del maestro
+  if (g("piAa") !== null) p.precio_aa = Number(g("piAa"));
   for (const k of ["d", "e", "f"]) if (g("pi_" + k) !== null) p[k + "_pct"] = Number(g("pi_" + k)) / 100;
   if (g("piL2") !== null) p.l2 = Number(g("piL2")) / 100;
   if (g("piL3") !== null) p.l3 = Number(g("piL3")) / 100;
+  if (g("piDkit") !== null) p.d_kit = Number(g("piDkit")) / 100;
+  if (g("piDcombo") !== null) p.d_combo = Number(g("piDcombo")) / 100;
   if (g("piOrden") !== null) p.orden = Number(g("piOrden"));
   if (g("piNotas") !== null) p.notas = g("piNotas");
   return p;
 }
+const PI_MERC = [["ebay_nuevo", "eBay nuevo más barato (USD, con envío, antes de tax)"], ["ebay_vendido", "eBay vendidos (USD)"], ["amazon_usa", "Amazon USA (USD, antes de tax)"],
+                 ["ml", "Mercado Libre México, mejor precio nuevo (MXN)"], ["amazon_mx", "Amazon México (MXN)"], ["competidor", "Competidor mexicano (MXN)"], ["hd_kit", "Home Depot: el KIT (USD, antes de tax)"]];
+function piMercadoLee() { const o = {}; for (const [k] of PI_MERC) { const e = $("#piM_" + k); if (e && e.value !== "" && Number(e.value) > 0) o[k] = Number(e.value); } const n = $("#piM_nombre"); if (n && n.value.trim()) o.competidor_nombre = n.value.trim(); return o; }
+function piMercadoCambios(p) {   // lo que hay en los campos de mercado, listo para guardar (con fecha de captura si cambió)
+  const antes = p.mercado || {}, ahora = piMercadoLee(), a = Object.assign({}, antes), b = Object.assign({}, ahora); delete a.fecha; delete b.fecha;
+  if (JSON.stringify(a) === JSON.stringify(b)) return null;
+  if (Object.keys(ahora).length) ahora.fecha = new Date().toISOString().slice(0, 10);
+  return JSON.stringify(ahora);
+}
+function piLinks(p) {
+  const qq = encodeURIComponent(((p.marca || "") + " " + p.modelo).trim()), m = encodeURIComponent(p.modelo);
+  const L = [["eBay nuevos (más barato primero)", "https://www.ebay.com/sch/i.html?_nkw=" + qq + "&LH_ItemCondition=1000&LH_BIN=1&_sop=15"], ["eBay vendidos", "https://www.ebay.com/sch/i.html?_nkw=" + qq + "&LH_Sold=1&LH_Complete=1"],
+             ["Amazon USA", "https://www.amazon.com/s?k=" + qq], ["Mercado Libre", "https://listado.mercadolibre.com.mx/" + m], ["Amazon México", "https://www.amazon.com.mx/s?k=" + qq], ["Google Shopping MX", "https://www.google.com/search?tbm=shop&gl=mx&hl=es&q=" + qq]];
+  if (p.link_ebay) L.unshift(["eBay (link del maestro)", p.link_ebay]);
+  if (p.link_hd) L.unshift(["Home Depot", p.link_hd]);
+  return L.map(([t, u]) => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + t + '</a>').join(" · ");
+}
+function piMercadoHtml(p) {
+  const m = p.mercado || {};
+  return '<div class="piBloque" id="piMercado"><h4>Mercado · cómo anda este producto</h4>' +
+    PI_MERC.map(([k, t]) => '<div class="piFila"><label>' + t + '</label><input id="piM_' + k + '" type="number" step="0.01" min="0" value="' + (m[k] != null ? m[k] : "") + '" placeholder="—"></div>').join("") +
+    '<div class="piFila"><label>Nombre del competidor</label><input id="piM_nombre" class="anch" type="text" value="' + esc(m.competidor_nombre || "") + '" placeholder="Casa Myers, Atlas, Ferrepat…"></div>' +
+    '<div id="piMercV">' + piMercadoV(p, m) + '</div>' +
+    '<div class="piLinks">Buscar: ' + piLinks(p) + '</div>' + (m.fecha ? '<div class="piNota">Mercado capturado el ' + esc(m.fecha) + '. Se guarda con «Guardar cambios».</div>' : '<div class="piNota">Captura lo que veas en los links y toca «Guardar cambios»; queda con fecha.</div>') + '</div>';
+}
+function piMercadoV(t, m) {   // lectura automática de los indicadores de mercado (m = lo capturado o lo que hay en los campos)
+  const aa = piAA(t), dol = Number(t.dolar) || 0, L = [];
+  const dif = (a, b) => b ? Math.round((a / b - 1) * 100) : 0, signo = n => (n > 0 ? "+" : "") + n + "%";
+  const chip = (cls, txt) => '<span class="piChip ' + cls + '">' + txt + '</span>';
+  if (!aa) return '<div class="piNota">Sin precio AA todavía.</div>';
+  if (m.ebay_nuevo && dol) { const mx = piRed(m.ebay_nuevo * dol); L.push(["eBay nuevo", pesos(mx) + " MXN (" + signo(dif(mx, aa)) + " vs AA)", mx <= aa * 0.75 ? chip("ok", "compra OK: ≤75% del P1") : chip("ro", "caro para recomprar: >75% del P1")]); }
+  if (m.ebay_vendido && dol) { const mx = piRed(m.ebay_vendido * dol); L.push(["eBay vendidos", pesos(mx) + " MXN (" + signo(dif(mx, aa)) + " vs AA)", aa > mx * 1.10 ? chip("am", "AA más de 10% arriba de lo vendido en eBay") : chip("ok", "AA en línea con eBay")]); }
+  if (m.amazon_usa && dol) { const mx = piRed(m.amazon_usa * 1.08 * dol); L.push(["Amazon USA (con tax)", pesos(mx) + " MXN (" + signo(dif(mx, aa)) + " vs AA)", ""]); }
+  const mlN = piRed(aa * 1.13 + 150);
+  L.push(["Nuestro precio en ML (AA + 13% + $150 envío)", pesos(mlN), m.ml ? (mlN > m.ml * 1.02 ? chip("ro", "arriba del mejor de ML (" + signo(dif(mlN, m.ml)) + ")") : mlN >= m.ml * 0.95 ? chip("am", "parejo con ML (" + signo(dif(mlN, m.ml)) + ")") : chip("ok", "debajo de ML (" + signo(dif(mlN, m.ml)) + ")")) : chip("pen", "sin dato de ML")]);
+  if (m.amazon_mx) L.push(["Amazon México", pesos(m.amazon_mx), aa > m.amazon_mx ? chip("ro", "AA arriba de Amazon MX (" + signo(dif(aa, m.amazon_mx)) + ")") : chip("ok", "AA debajo de Amazon MX (" + signo(dif(aa, m.amazon_mx)) + ")")]);
+  if (m.competidor) L.push([esc(m.competidor_nombre || "Competidor MX"), pesos(m.competidor), aa <= m.competidor * 0.95 ? chip("ok", "AA 5% o más debajo (" + signo(dif(aa, m.competidor)) + ")") : aa <= m.competidor ? chip("am", "AA casi igual (" + signo(dif(aa, m.competidor)) + "); meta −5%") : chip("ro", "AA ARRIBA del competidor (" + signo(dif(aa, m.competidor)) + ")")]);
+  const refs = [m.ml, m.amazon_mx, m.competidor].filter(v => v > 0);
+  if (refs.length) { const min = Math.min(...refs); L.push(["<b>Posición en México</b>", "lo más barato del mercado MX: " + pesos(min), aa > min ? chip("ro", "AA arriba del mercado (" + signo(dif(aa, min)) + ")") : aa > min * 0.95 ? chip("am", "AA parejo con el mercado") : chip("ok", "AA debajo del mercado (" + signo(dif(aa, min)) + ")")]); }
+  else if (!m.ebay_nuevo && !m.ebay_vendido && !m.amazon_usa) L.push(["", '<span class="piNota">Sin precios de mercado capturados: usa los links de abajo y anota lo que veas.</span>', ""]);
+  return L.map(([a, b, c]) => '<div class="piFila"><label>' + a + '</label><span>' + b + ' ' + c + '</span></div>').join("");
+}
+function piKitHtml(t) {
+  const tipo = piTipo(t);
+  if (tipo === "BATERIAS" || tipo === "CARGADORES") {
+    const v = piVar(t), d = piDesc(t);
+    return '<div class="piBloque" id="piKit"><h4>Precios dentro de los kits (esta pieza entra en calificación A)</h4>' +
+      '<div class="piFila"><label>Precio A (el que entra al kit)</label><span class="v num" id="piKitA">' + pesos(v.A) + '</span></div>' +
+      '<div class="piFila"><label>Descuento en kit (precio 2 de SICAR)</label><span><input id="piDkit" class="corto" type="number" step="1" min="0" max="95" value="' + Math.round(d.dk * 100) + '">% → <b class="num" id="piKitV">' + pesos(piRed(v.A * (1 - d.dk))) + '</b></span></div>' +
+      '<div class="piFila"><label>Descuento en combo (precio 3 de SICAR)</label><span><input id="piDcombo" class="corto" type="number" step="1" min="0" max="95" value="' + Math.round(d.dc * 100) + '">% → <b class="num" id="piComboV">' + pesos(piRed(v.A * (1 - d.dc))) + '</b></span></div>' +
+      '<div class="piNota">Estos dos precios entran en los kits de todas las herramientas de su plataforma.</div></div>';
+  }
+  if (tipo !== "KIT") return "";
+  const K = piKit(t);
+  if (!K) return '<div class="piBloque" id="piKit"><h4>Precios en kit</h4><div class="piNota">Sin batería asignada (código de batería «' + esc(t.bat_code || "—") + '»).</div></div>';
+  if (K.falta) return '<div class="piBloque" id="piKit"><h4>Precios en kit</h4><div class="piNota">No encuentro la batería ' + esc(K.falta) + ' en el catálogo ni en la tabla fija.</div></div>';
+  const m = piMercadoLee(), dol = Number(t.dolar) || 0; let hdk;
+  if (m.hd_kit && dol) { const mx = piRed(m.hd_kit * 1.08 * dol), r = K.BK / mx; hdk = '<div class="piFila" id="piHdkV"><label>El kit en Home Depot: $' + m.hd_kit + ' USD → ' + pesos(mx) + ' MXN al dólar de la ficha</label><span>% HD del kit <b class="num">' + r.toFixed(2) + '</b> ' + (r > 1.05 ? '<span class="piChip ro">kit ARRIBA de HD</span>' : r >= 0.90 ? '<span class="piChip am">kit parejo con HD</span>' : '<span class="piChip ok">kit debajo de HD</span>') + '</span></div>'; }
+  else hdk = '<div class="piNota" id="piHdkV">Captura «Home Depot: el KIT» en Mercado para comparar el kit completo contra HD.</div>';
+  const ahorro = Math.round((1 - K.BK / K.sueltas) * 100);
+  return '<div class="piBloque" id="piKit"><h4>Precios en kit · batería ' + esc(K.bm) + (K.cm ? ' + cargador ' + esc(K.cm) : '') + '</h4>' +
+    '<div class="piNota">Batería ' + esc(K.bm) + ': A ' + pesos(K.bat.A) + ' · en kit ' + pesos(K.bat.kit) + ' · en combo ' + pesos(K.bat.combo) + (K.bat.fuente === "tabla fija" ? ' (tabla fija, no está en el catálogo)' : '') +
+    (K.car ? ' &nbsp;·&nbsp; Cargador ' + esc(K.cm) + ': A ' + pesos(K.car.A) + ' · en kit ' + pesos(K.car.kit) + ' · en combo ' + pesos(K.car.combo) + (K.car.fuente === "tabla fija" ? ' (tabla fija)' : '') : '') + '</div>' +
+    '<div class="piFila"><label>Herramienta + batería (BT · precio 2 de SICAR)</label><span class="v num" id="piBT">' + pesos(K.BT) + '</span></div>' +
+    '<div class="piFila"><label>Kit completo: herramienta + batería + cargador (BK · precio 3 de SICAR · el kit de la página)</label><span class="v num" id="piBK">' + pesos(K.BK) + '</span></div>' +
+    '<div class="piFila"><label>Kit a lista 3 (BO · distribuidor)</label><span class="v num" id="piBO">' + pesos(K.BO) + '</span></div>' +
+    '<div class="piFila"><label>Las piezas sueltas (AA + batería A + cargador A)</label><span id="piSueltas">' + pesos(K.sueltas) + ' · el kit ahorra ' + ahorro + '% ' + (K.BK < K.sueltas ? '<span class="piChip ok">kit más barato que las piezas ✓</span>' : '<span class="piChip ro">el kit NO sale más barato</span>') + '</span></div>' + hdk + '</div>';
+}
+function piLadoHtml(p, C) {
+  const ord = PI.ladoOrd, F = [...C.filas];
+  if (ord === "pct") F.sort((a, b) => (b.pct || 0) - (a.pct || 0)); else if (ord === "precio") F.sort((a, b) => piAA(b.p) - piAA(a.p)); else F.sort((a, b) => (b.vend - a.vend) || (piAA(b.p) - piAA(a.p)));
+  const tope = PI.ladoTodo ? F.length : 60, f2 = v => v == null ? "—" : v.toFixed(2);
+  return '<div class="piLadoCab"><h4>' + esc(p.categoria || "Sin categoría") + ' <small>' + C.n + ' producto' + (C.n === 1 ? '' : 's') + ' en el módulo</small></h4>' +
+    '<div class="piProm" id="piProm"><div><small>% HD de la categoría al dólar ' + C.dol + ' (' + C.nPct + ' con HD)</small><b>promedio ' + f2(C.promedio) + ' · mediana ' + f2(C.mediana) + '</b><small>los que rotan (' + C.nRotan + '): ' + f2(C.rotan) + '</small></div>' +
+      (C.mediana != null && $("#piPct") ? '<button type="button" class="invbtn" id="piUsarMed" title="Poner la mediana de la categoría como % HD de esta ficha">Usar mediana</button>' : '') + '</div>' +
+    '<div class="piTabs" style="margin-bottom:8px">' + [["vendidos", "Más vendidos"], ["pct", "% HD"], ["precio", "Precio"]].map(([k, t]) => '<button type="button" class="rgChip' + (ord === k ? " sel" : "") + '" data-pilo="' + k + '">' + t + '</button>').join("") + '</div></div>' +
+    '<div class="piLadoLista">' + (F.length ? F.slice(0, tope).map(f => piMini(f, p)).join("") : '<div class="cpVacio">Nada en esta categoría.</div>') + '</div>' +
+    (F.length <= 1 ? '<div class="piNota">Nadie más de esta categoría en el módulo todavía (carga el catálogo del maestro en la pestaña Catálogo).</div>' : '') +
+    (F.length > tope ? '<div class="piMas"><button type="button" class="invbtn" id="piLadoMas">Ver los ' + F.length + '</button></div>' : '');
+}
+function piMini(f, abierto) {
+  const x = f.p, s = piSem(x), yo = x.modelo === abierto.modelo;
+  return '<div class="piMini' + (yo ? " sel" : "") + (x.estado === "nuevo" ? " nuevo" : "") + '" data-pimini="' + esc(x.modelo) + '" role="button" tabindex="0" title="' + esc(x.descripcion || x.modelo) + '">' + piImg(x, "ft") +
+    '<div style="min-width:0"><div class="t"><b>' + esc(x.modelo) + '</b> <span>' + esc(x.marca || "") + (x.estado === "nuevo" ? ' · nuevo' : '') + (yo ? ' · esta ficha' : '') + '</span></div>' +
+    '<div class="n"><b class="num">' + pesos(piAA(x)) + '</b><span>% ' + (f.pct == null ? "—" : f.pct.toFixed(2)) + '</span><span class="piChip ' + s[0] + '">' + s[1] + '</span></div>' +
+    '<div class="m">' + f.vend + ' vend. ' + (f.M.vivo ? "365 d" : "hist.") + ' · ' + f.ex + ' pz' + (f.M.dias != null ? ' · ' + f.M.dias + ' d sin venta' : '') + '</div></div></div>';
+}
 function piPintarCapa() {
   const p0 = PI.lista.find(x => x.modelo === PI.abierto); const x = $("#piIn"); if (!p0) { piCerrar(); return; }
-  const p = p0, v = piVar(p), L = piListas(p), s = piSem(p), nuevo = p.estado === "nuevo";
-  const fuera = p.pct_hd < 0.65 || p.pct_hd > 1.20;
+  const p = p0, v = piVar(p), L = piListas(p), s = piSem(p), nuevo = p.estado === "nuevo", conHd = piConHd(p);
+  const fuera = conHd && (p.pct_hd < 0.65 || p.pct_hd > 1.20);
   const fotos = nuevo ? Object.entries(PI.fotos[p.modelo] || {}).sort((a, b) => a[0] - b[0]) : [];
   const gal = nuevo ? '<div class="piGal">' + (fotos.length ? fotos.map(([n, d]) => '<div><img src="' + d + '" alt="" class="' + (Number(n) === Number(p.portada) ? "sel" : "") + '" data-piport="' + n + '"><div class="num">' + n + (Number(n) === Number(p.portada) ? " · portada" : "") + '</div></div>').join("") : '<div class="cpVacio">Sin fotos cargadas para este modelo.</div>') + '</div>'
     : '<div class="piGal"><div>' + piImg(p, "") + '</div></div>';
+  const C = piCategoria(p), f2 = n => n == null ? "—" : n.toFixed(2);
   let metHtml = "";
   if (!nuevo) { const M = piMetricas(p);
-    metHtml = '<div class="piBloque"><h4>Métricas del producto (4 tiendas)</h4><div class="piMet">' +
-      '<div><b class="num">' + M.piezas + '</b><small>piezas en total</small></div><div><b class="num">' + pesos(M.valor) + '</b><small>valor a lista</small></div>' +
-      '<div><b class="num">' + M.v90 + ' / ' + M.v180 + ' / ' + M.v365 + '</b><small>vendidas 90 / 180 / 365 d</small></div>' +
+    metHtml = '<div class="piBloque" style="margin-top:12px"><h4>Métricas del producto (4 tiendas' + (M.vivo ? '' : ' · sin datos vivos, lo que dice el maestro') + ')</h4><div class="piMet">' +
+      '<div><b class="num">' + M.existTot + '</b><small>piezas en total</small></div><div><b class="num">' + pesos(M.valor) + '</b><small>valor a lista</small></div>' +
+      (M.vivo ? '<div><b class="num">' + M.v90 + ' / ' + M.v180 + ' / ' + M.v365 + '</b><small>vendidas 90 / 180 / 365 d</small></div>' : '<div><b class="num">' + Number(p.ventas || 0) + '</b><small>ventas según el maestro</small></div>') +
       '<div><b class="num">' + (M.dias == null ? "—" : M.dias) + '</b><small>días sin venta</small></div>' +
       '<div><b class="num">' + (M.piezas ? (isFinite(M.cobertura) ? M.cobertura.toFixed(1) : "∞") : "0") + '</b><small>meses de cobertura (meta 4)</small></div>' +
       '<div><b class="num">' + (M.precio1 ? pesos(M.precio1) : "—") + '</b><small>precio 1 en SICAR</small></div></div>' +
-      '<div class="piMet" style="margin-top:6px">' + [1, 3, 2, 4].map(s2 => '<div><b class="num">' + (M.porSuc[s2] || 0) + '</b><small>' + esc(SUCS[s2]) + '</small></div>').join("") + '</div>' +
+      (M.vivo ? '<div class="piMet" style="margin-top:6px">' + [1, 3, 2, 4].map(s2 => '<div><b class="num">' + (M.porSuc[s2] || 0) + '</b><small>' + esc(SUCS[s2]) + '</small></div>').join("") + '</div>' : '') +
       '<div class="piSug"><b>Sugerencia de las reglas:</b> ' + M.sug.map(esc).join(" ") + '</div></div>'; }
-  const hist = PI.hist[p.modelo];
-  x.innerHTML = '<h3>' + esc(p.modelo) + ' <small style="font-family:var(--body);font-weight:400;font-size:14px;color:var(--ink-3)">' + esc((p.marca || "") + " · " + (p.categoria || "") + (p.tipo ? " · " + p.tipo : "") + (p.plataforma ? " · " + p.plataforma : "")) + '</small></h3>' +
+  const hist = PI.hist[p.modelo], carac = PI.carac[p.modelo];
+  x.innerHTML = (PI.pila.length ? '<div style="margin:0 0 8px"><button type="button" class="invbtn" id="piVolverB">← Volver a ' + esc(PI.pila[PI.pila.length - 1]) + '</button></div>' : '') +
+    '<h3>' + esc(p.modelo) + ' <small style="font-family:var(--body);font-weight:400;font-size:14px;color:var(--ink-3)">' + esc((p.marca || "") + " · " + (p.categoria || "") + (p.tipo ? " · " + p.tipo : "") + (p.plataforma ? " · " + p.plataforma : "")) + '</small></h3>' +
     '<div class="vtSub">' + esc(p.descripcion || "") + ' · ' + (nuevo ? '<span class="piChip ' + (p.decision === "aprobado" ? "ok" : p.decision === "rechazado" ? "ro" : "pen") + '">' + p.decision + '</span>' : '<span class="piChip reg">en catálogo' + (p.ingresado_en ? " desde " + new Date(p.ingresado_en).toLocaleDateString("es-MX") : "") + '</span>') +
       (p.link_hd ? ' · <a href="' + esc(p.link_hd) + '" target="_blank" rel="noopener">ver en Home Depot</a>' : '') + '</div>' +
-    gal +
+    gal + (carac ? '<details class="piCarac"><summary>Características</summary>' + esc(carac) + '</details>' : '') +
     '<div class="piDos"><div class="piBloque"><h4>Precio de mercado → precio AA</h4>' +
       '<div class="piFila"><label>Precio Home Depot USD (antes de tax)</label><input id="piHd" type="number" step="0.01" min="0" value="' + Number(p.precio_hd || 0) + '"></div>' +
       '<div class="piFila"><label>Dólar usado</label><input id="piDol" type="number" step="0.0001" min="1" value="' + Number(p.dolar || 0) + '"></div>' +
       '<div class="piFila"><label>Base MXN = HD × ' + Number(p.tax || 1.08) + ' × dólar</label><span class="v num" id="piBaseV">' + pesos(piBase(p)) + '</span></div>' +
-      '<div class="piFila"><label>% HD propuesto' + (fuera ? ' <span class="piChip ro">fuera de banda 0.65–1.20</span>' : '') + '</label><input id="piPct" type="number" step="0.01" min="0.3" max="2" value="' + Number(p.pct_hd || 0).toFixed(2) + '"></div>' +
+      '<div class="piFila"><label>% HD propuesto' + (fuera ? ' <span class="piChip ro">fuera de banda 0.65–1.20</span>' : '') + '</label><input id="piPct" type="number" step="0.01" min="0.3" max="2" value="' + (Number(p.pct_hd) > 0 ? piPct4(p.pct_hd) : "") + '"></div>' +
+      '<div class="piFila"><label>% HD de la categoría (' + esc(p.categoria || "—") + ', al dólar ' + C.dol + ')</label><span id="piCatV">promedio <b class="num">' + f2(C.promedio) + '</b> · mediana <b class="num">' + f2(C.mediana) + '</b> · rotan <b class="num">' + f2(C.rotan) + '</b></span></div>' +
       '<div style="font-size:12px;color:var(--ink-3);margin:2px 0 6px">' + esc(p.pct_fuente || "") + (p.clase ? ' · clase ' + esc(p.clase) : '') + '</div>' +
+      (!conHd && !nuevo ? '<div class="piFila"><label>Precio AA directo (sin HD × %)</label><input id="piAa" type="number" step="10" min="0" value="' + Number(p.precio_aa || 0) + '"></div>' : '') +
       '<div class="piFila"><label><b>Precio AA</b></label><span class="v num" id="piAAV">' + pesos(v.AA) + '</span></div></div>' +
     '<div class="piBloque"><h4>Listas 2 y 3 · semáforo</h4>' +
       '<div class="piFila"><label>Lista 2 (% abajo del AA)</label><input id="piL2" type="number" step="1" min="0" max="95" value="' + Math.round(Number(p.l2) * 100) + '"></div>' +
@@ -4465,32 +4690,57 @@ function piPintarCapa() {
       '<div class="piFila"><label>Precio 3</label><span class="v num" id="piP3V">' + pesos(L.p3) + '</span></div>' +
       '<div class="piFila"><label>Semáforo (P3 ÷ AA: amarillo &lt;75%, rojo &lt;60%)</label><span id="piSemV" class="piChip ' + s[0] + '">' + s[1] + '</span></div>' +
       '<div class="piFila"><label>Orden en el catálogo (menor = más arriba)</label><input id="piOrden" type="number" step="1" min="0" value="' + Number(p.orden || 0) + '"></div></div></div>' +
-    '<div class="piBloque" style="margin-top:12px"><h4>Las 7 calificaciones</h4><div class="piCal" id="piCalV">' + piCalHtml(p, v) + '</div><div style="font-size:12px;color:var(--ink-3)">D/E/F editables (hoy ' + Math.round(p.d_pct * 100) + '/' + Math.round(p.e_pct * 100) + '/' + Math.round(p.f_pct * 100) + '); A 95%, B 90%, C 80% fijos. Kits y combos se calculan al generar el Excel de SICAR.</div></div>' +
+    '<div class="piBloque" style="margin-top:12px"><h4>Las 7 calificaciones</h4><div class="piCal" id="piCalV">' + piCalHtml(p, v) + '</div><div style="font-size:12px;color:var(--ink-3)">D/E/F editables (hoy ' + Math.round(p.d_pct * 100) + '/' + Math.round(p.e_pct * 100) + '/' + Math.round(p.f_pct * 100) + '); A 95%, B 90%, C 80% fijos.</div></div>' +
+    '<div class="piDos" style="margin-top:12px">' + piMercadoHtml(p) + '<div>' + piKitHtml(p) + '</div></div>' +
     metHtml +
     '<div class="piBloque" style="margin-top:12px"><h4>Notas</h4><textarea id="piNotas" placeholder="Por qué este % o qué revisar…">' + esc(p.notas || "") + '</textarea></div>' +
     '<div class="vtBtns"><button type="button" class="invbtn lleno" id="piGuardarB">Guardar cambios</button>' +
       (nuevo ? '<button type="button" class="invbtn" id="piAprobarB" style="border-color:var(--ok);color:var(--ok)">Aprobar</button><button type="button" class="invbtn rojo" id="piRechazarB">Rechazar</button>' + (p.decision !== "pendiente" ? '<button type="button" class="invbtn" id="piPendB">Regresar a pendiente</button>' : '') : '') +
       '<button type="button" class="invbtn" id="piCerrarB">Cerrar</button></div>' +
-    '<div class="piBloque"><h4>Historial de cambios</h4><div class="piHist">' + (hist ? (hist.length ? hist.map(h => '<div>' + new Date(h.ts).toLocaleString("es-MX", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}) + ' · <b>' + esc(h.campo) + '</b>: ' + esc(h.antes == null ? "—" : h.antes) + ' → ' + esc(h.despues == null ? "—" : h.despues) + (h.correo ? ' · ' + esc(h.correo) : '') + '</div>').join("") : '<div class="cpVacio">Sin cambios todavía.</div>') : '<div class="cpVacio">Cargando…</div>') + '</div></div>';
+    '<div class="piBloque"><h4>Historial de cambios</h4><div class="piHist">' + (hist ? (hist.length ? hist.map(h => '<div>' + new Date(h.ts).toLocaleString("es-MX", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}) + ' · <b>' + esc(h.campo) + '</b>: ' + esc(h.antes == null ? "—" : String(h.antes).slice(0, 80)) + ' → ' + esc(h.despues == null ? "—" : String(h.despues).slice(0, 80)) + (h.correo ? ' · ' + esc(h.correo) : '') + '</div>').join("") : '<div class="cpVacio">Sin cambios todavía.</div>') : '<div class="cpVacio">Cargando…</div>') + '</div></div>';
+  $("#piLado").innerHTML = piLadoHtml(p, C);
   // recálculo en vivo
-  const vivo = () => { const t = piLee(), v2 = piVar(t), L2 = piListas(t), s2 = piSem(t);
+  const vivo = () => { const t = piLee(), v2 = piVar(t), L2 = piListas(t), s2 = piSem(t), C2 = piCategoria(t);
     $("#piBaseV").textContent = pesos(piBase(t)); $("#piAAV").textContent = pesos(v2.AA); $("#piP2V").textContent = pesos(L2.p2); $("#piP3V").textContent = pesos(L2.p3);
-    $("#piSemV").className = "piChip " + s2[0]; $("#piSemV").textContent = s2[1]; $("#piCalV").innerHTML = piCalHtml(t, v2); amarraCal(); };
+    $("#piSemV").className = "piChip " + s2[0]; $("#piSemV").textContent = s2[1]; $("#piCalV").innerHTML = piCalHtml(t, v2); amarraCal();
+    $("#piCatV").innerHTML = 'promedio <b class="num">' + f2(C2.promedio) + '</b> · mediana <b class="num">' + f2(C2.mediana) + '</b> · rotan <b class="num">' + f2(C2.rotan) + '</b>';
+    const mv = $("#piMercV"); if (mv) mv.innerHTML = piMercadoV(t, piMercadoLee());
+    if ($("#piKitV")) { const d = piDesc(t); $("#piKitA").textContent = pesos(v2.A); $("#piKitV").textContent = pesos(piRed(v2.A * (1 - d.dk))); $("#piComboV").textContent = pesos(piRed(v2.A * (1 - d.dc))); }
+    else if ($("#piBT")) { const k = $("#piKit"); if (k) { k.outerHTML = piKitHtml(t); } }
+    pintaLado(); };
   const amarraCal = () => x.querySelectorAll("#piCalV input").forEach(i => i.oninput = vivo);
-  ["piHd", "piDol", "piPct", "piL2", "piL3"].forEach(id => $("#" + id).addEventListener("input", vivo)); amarraCal();
+  ["piHd", "piDol", "piPct", "piAa", "piL2", "piL3", "piDkit", "piDcombo"].forEach(id => { const e = $("#" + id); if (e) e.addEventListener("input", vivo); });
+  PI_MERC.forEach(([k]) => $("#piM_" + k).addEventListener("input", vivo)); amarraCal();
   x.querySelectorAll("[data-piport]").forEach(i => i.onclick = () => piGuardar(p.modelo, {portada: i.dataset.piport}));
-  $("#piGuardarB").onclick = () => { const t = piLee(); piGuardar(p.modelo, {precio_hd: t.precio_hd, dolar: t.dolar, pct_hd: t.pct_hd, l2: t.l2, l3: t.l3, d_pct: t.d_pct, e_pct: t.e_pct, f_pct: t.f_pct, orden: t.orden, notas: t.notas}); };
-  const ap = $("#piAprobarB"); if (ap) ap.onclick = async () => { const t = piLee(); await piGuardar(p.modelo, {precio_hd: t.precio_hd, dolar: t.dolar, pct_hd: t.pct_hd, l2: t.l2, l3: t.l3, d_pct: t.d_pct, e_pct: t.e_pct, f_pct: t.f_pct, orden: t.orden, notas: t.notas}); piDecidir(p.modelo, "aprobado"); };
+  const cambios = () => { const t = piLee(); const c = {precio_hd: t.precio_hd, dolar: t.dolar, pct_hd: t.pct_hd > 0 ? t.pct_hd : null, l2: t.l2, l3: t.l3, d_pct: t.d_pct, e_pct: t.e_pct, f_pct: t.f_pct, orden: t.orden, notas: t.notas, mercado: piMercadoCambios(p)};
+    if ($("#piAa")) c.precio_aa = t.precio_aa; if ($("#piDkit")) { c.d_kit = t.d_kit; c.d_combo = t.d_combo; } return c; };
+  $("#piGuardarB").onclick = () => piGuardar(p.modelo, cambios());
+  const ap = $("#piAprobarB"); if (ap) ap.onclick = async () => { await piGuardar(p.modelo, cambios()); piDecidir(p.modelo, "aprobado"); };
   const re = $("#piRechazarB"); if (re) re.onclick = () => piDecidir(p.modelo, "rechazado");
   const pe = $("#piPendB"); if (pe) pe.onclick = () => piDecidir(p.modelo, "pendiente");
   $("#piCerrarB").onclick = piCerrar;
+  const vb = $("#piVolverB"); if (vb) vb.onclick = piVolver;
+  // columna de la categoría
+  const usarMed = () => { const C2 = piCategoria(piLee()); if (C2.mediana != null && $("#piPct")) { $("#piPct").value = C2.mediana.toFixed(2); vivo(); toast("% HD = mediana de " + (p.categoria || "la categoría") + " (" + C2.mediana.toFixed(2) + "); toca «Guardar cambios»"); } };
+  const pintaLado = () => { $("#piLado").innerHTML = piLadoHtml(p, piCategoria(piLee())); amarraLado(); }; PI.pintaLado = pintaLado;
+  const amarraLado = () => {
+    document.querySelectorAll("#piLado [data-pimini]").forEach(c => { const ir = () => { if (c.dataset.pimini !== PI.abierto) piAbrir(c.dataset.pimini, "lado"); }; c.onclick = ir; c.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ir(); } }; });
+    const lm = $("#piLadoMas"); if (lm) lm.onclick = () => { PI.ladoTodo = true; pintaLado(); };
+    const um = $("#piUsarMed"); if (um) um.onclick = usarMed;
+    document.querySelectorAll("#piLado [data-pilo]").forEach(b => b.onclick = () => { PI.ladoOrd = b.dataset.pilo; pintaLado(); });
+  };
+  amarraLado();
 }
 function piCalHtml(p, v) {
   return ['AA', 'A', 'B', 'C'].map(k => '<div><small>' + k + '</small><b class="num">' + pesos(v[k]) + '</b></div>').join("") +
     [['D', 'd'], ['E', 'e'], ['F', 'f']].map(([k, j]) => '<div><small>' + k + '</small><b class="num">' + pesos(v[k]) + '</b><input id="pi_' + j + '" type="number" min="0" max="95" step="1" value="' + Math.round(Number(p[j + '_pct']) * 100) + '" aria-label="' + k + ' por ciento">%</div>').join("");
 }
 document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#piCapa").classList.contains("hidden")) piCerrar(); });
-document.addEventListener("click", ev => { const b = ev.target.closest('#opMenu [data-op="precio"]'); if (b) piCargar(true); });
+document.addEventListener("click", ev => { const b = ev.target.closest('#opMenu [data-op="precio"]'); if (b) { piCargar(true); piFotosCatalogo(); } });
+function piFotosCatalogo() {   // una vez: el índice de fotos del cotizador (core + pedido.json) para que los registrados sin existencia también tengan foto
+  if (PI.fotosCat || typeof czCatalogo !== "function") return; PI.fotosCat = 1;
+  czCatalogo().then(() => { if (!$("#piCapa").classList.contains("hidden")) { if (PI.pintaLado) PI.pintaLado(); } else piPintar(); }).catch(() => { PI.fotosCat = 0; });
+}
 
 iniciar();
 </script>
