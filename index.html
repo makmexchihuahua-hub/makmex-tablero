@@ -575,6 +575,57 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .actFila .cn b.mal{color:#e03131}
 .actFila .cu{color:var(--ink-3);font-size:12px;margin-left:auto}
 .actProp{opacity:.75}
+
+/* precio ideal */
+.piTabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.piTabs .cnt2{display:inline-block;min-width:18px;padding:0 6px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:11px;font-weight:700;margin-left:4px}
+.piBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.piBarra input[type=search]{flex:1 1 220px;font:inherit;font-size:14px;padding:8px 10px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink)}
+.piGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.piCard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;cursor:pointer;position:relative}
+.piCard:hover{border-color:var(--ink-3)}
+.piCard.aprobado{border-color:var(--ok)}.piCard.rechazado{opacity:.55}
+.piCard .ft{width:72px;height:72px;border-radius:8px;background:#fff;border:1px solid var(--line);object-fit:contain;display:block}
+.piCard .ft.vacia{display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:11px}
+.piCard .k{font-weight:700;font-size:15px;line-height:1.1}
+.piCard .d{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.piCard .n{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-top:4px;font-size:12.5px}
+.piCard .n b{font-family:var(--display);font-size:18px}
+.piCard .pct{width:62px;font:inherit;font-size:14px;font-weight:700;padding:3px 6px;border-radius:7px;border:1.5px solid var(--accent);background:var(--surface);color:var(--ink);text-align:center}
+.piCard .acc{grid-column:1 / -1;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.piCard .acc .invbtn{padding:5px 10px;font-size:12.5px}
+.piChip{font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.piChip.ok{background:var(--ok-soft);color:var(--ok)}.piChip.am{background:var(--warn-soft);color:var(--warn)}.piChip.ro{background:var(--bad-soft);color:var(--bad)}
+.piChip.pen{background:var(--surface-2);color:var(--ink-2)}.piChip.reg{background:var(--accent-soft);color:var(--accent)}
+#piCapa{position:fixed;inset:0;background:var(--bg);z-index:60;overflow:auto;padding:14px var(--gutter) 40px}
+#piCapa .piIn{max-width:980px;margin:0 auto}
+#piCapa h3{font-family:var(--display);font-size:24px;margin:0;line-height:1.1}
+#piCapa .vtSub{font-size:13px;color:var(--ink-3);margin:2px 0 12px}
+.piGal{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}
+.piGal img{width:96px;height:96px;object-fit:contain;background:#fff;border:2px solid var(--line);border-radius:10px;cursor:pointer}
+.piGal img.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.piGal .num{font-size:11px;text-align:center;color:var(--ink-3)}
+.piDos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.piDos{grid-template-columns:1fr}}
+.piBloque{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.piBloque h4{font-family:var(--display);font-size:16px;margin:0 0 8px}
+.piFila{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--line);font-size:14px}
+.piFila:last-child{border-bottom:0}
+.piFila label{color:var(--ink-2)}
+.piFila input,.piFila select{font:inherit;font-size:14px;padding:5px 8px;border-radius:8px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);width:96px;text-align:right}
+.piFila input.anch{width:150px}
+.piFila .v{font-weight:700;font-family:var(--display);font-size:18px}
+.piCal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;margin:6px 0}
+.piCal div{background:var(--surface-2);border-radius:8px;padding:6px 2px}
+.piCal b{display:block;font-family:var(--display);font-size:15px}.piCal small{font-size:11px;color:var(--ink-3)}
+.piCal input{width:44px;font:inherit;font-size:12px;padding:2px;border-radius:6px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);text-align:center;margin-top:3px}
+.piMet{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:6px}
+.piMet div{background:var(--surface-2);border-radius:8px;padding:6px 8px}.piMet b{display:block;font-family:var(--display);font-size:18px}.piMet small{font-size:11px;color:var(--ink-3)}
+.piSug{border:1.5px dashed var(--accent);border-radius:10px;padding:8px 12px;margin:8px 0;font-size:13.5px}
+#piNotas{width:100%;font:inherit;font-size:13.5px;padding:8px;border-radius:9px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);min-height:54px;box-sizing:border-box}
+.piHist{font-size:12.5px;color:var(--ink-2);max-height:180px;overflow:auto}
+.piHist div{padding:3px 0;border-bottom:1px solid var(--line)}
+.piPaso{border:1.5px solid var(--ok);background:var(--ok-soft);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:13.5px}
 </style>
 </head>
 <body>
@@ -760,6 +811,14 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
       <button type="button" class="pdfbtn" id="czVaciar" style="border-color:var(--bad);color:var(--bad)">Vaciar</button>
     </div>
   </section>
+  <section class="panel ancho" id="p-precio">
+    <h2>Precio ideal <small id="piSubTit"></small></h2>
+    <div class="piTabs" id="piTabs"><button type="button" class="rgChip sel" data-pit="nuevos">Nuevos<span class="cnt2" id="piNN">0</span></button><button type="button" class="rgChip" data-pit="catalogo">Catálogo<span class="cnt2" id="piNC">0</span></button></div>
+    <div id="piPaso"></div>
+    <div class="piBarra" id="piBarra"></div>
+    <div class="piGrid" id="piGrid"></div>
+    <input type="file" id="piArchivo" accept=".json,application/json" class="hidden">
+  </section>
   <section class="panel" id="p-inventario">
     <h2>Hacer inventario <small id="invResumen"></small></h2>
     <div id="icBloque"></div>
@@ -809,6 +868,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
   </div>
 </aside>
 <div id="velo" class="hidden"></div>
+<div id="piCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Dashboard del producto"><div class="piIn" id="piIn"></div></div>
 <div id="spCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificar pedido"><div class="vtIn" id="spIn"></div></div>
 <div id="envCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Modificar envío"><div class="envIn" id="envIn"></div></div>
 <div id="vtCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificación de traspasos"><div class="vtIn" id="vtIn"></div></div>
@@ -995,7 +1055,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -2035,6 +2095,7 @@ const OP = {abierto: false, actual: "", mods: [
   {id: "liq", t: "En liquidación", nodos: ["#secLiq"], sub: () => ($("#liqCuenta") || {}).textContent || ""},
   {id: "compras", t: "Compras de 90 días sin venta", nodos: ["#secCompras"], sub: () => ($("#comprasCuenta") || {}).textContent || ""},
   {id: "bit", t: "Bitácora", nodos: ["#secBit"], sub: () => ($("#bitCuenta") || {}).textContent || ""},
+  {id: "precio", t: "Precio ideal", nodos: ["#p-precio"], ocultar: ["#p-precio > h2"], sub: () => piResumen(), mal: () => piPendientes() > 0, ver: () => esDueno()},
   {id: "personas", t: "Personas y PIN", nodos: ["#secPersonas"], sub: () => "solo el dueño", ver: () => !$("#secPersonas").classList.contains("hidden")}
 ]};
 (function opMover() {
@@ -2082,7 +2143,8 @@ $("#opAtras").addEventListener("click", () => opVer(""));
 $("#opMenu").addEventListener("click", ev => { const b = ev.target.closest("button[data-op]"); if (b) opVer(b.dataset.op); });
 document.addEventListener("keydown", ev => {
   if (ev.key !== "Escape" || !OP.abierto) return;
-  if ($("#cajon").classList.contains("abierto") || !$("#pinVelo").classList.contains("hidden") || !$("#envCapa").classList.contains("hidden")) return;
+  // si hay otra capa a pantalla completa abierta (verificación, envío, surtido, precio…), Esc es de ella
+  if ($("#cajon").classList.contains("abierto") || !$("#pinVelo").classList.contains("hidden") || document.querySelector('[id$="Capa"]:not(.hidden)')) return;
   if (OP.actual) opVer(""); else opCerrar();
 }, true);
 
@@ -4186,6 +4248,249 @@ function spPintarAviso() {
 }
 document.getElementById("btnSurtir").addEventListener("click", spEmpezar);
 document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#spCapa").classList.contains("hidden")) spCerrar(); });
+
+/* ---------------- precio ideal (nuevos + catálogo) ---------------- */
+const PI = {lista: [], fotos: {}, hist: {}, cuando: 0, cargando: 0, error: "", tab: "nuevos", filtro: "todos", busca: "", abierto: null, ult: null};
+const piRed = x => Math.round((Number(x) || 0) / 10) * 10;
+const piBase = p => piRed(Number(p.precio_hd || 0) * Number(p.tax || 1.08) * Number(p.dolar || 0));
+const piAA = p => piRed(piBase(p) * Number(p.pct_hd || 0));
+function piVar(p) { const aa = piAA(p); return {AA: aa, A: piRed(aa * 0.95), B: piRed(aa * 0.90), C: piRed(aa * 0.80), D: piRed(aa * Number(p.d_pct)), E: piRed(aa * Number(p.e_pct)), F: piRed(aa * Number(p.f_pct))}; }
+function piListas(p) { const aa = piAA(p); return {p2: piRed(aa * (1 - Number(p.l2))), p3: piRed(aa * (1 - Number(p.l3)))}; }
+function piSem(p) { const aa = piAA(p); if (!aa) return ["pen", "—"]; const r = piListas(p).p3 / aa; return r < 0.60 ? ["ro", "ROJO"] : r < 0.75 ? ["am", "AMARILLO"] : ["ok", "OK"]; }
+const piNuevos = () => PI.lista.filter(p => p.estado === "nuevo");
+const piPendientes = () => piNuevos().filter(p => p.decision === "pendiente").length;
+function piResumen() {
+  if (PI.error === "falta") return "falta correr 10_precio_ideal.sql";
+  const n = piNuevos().length, pend = piPendientes(), reg = PI.lista.length - n;
+  return (n ? n + " nuevos" + (pend ? " · " + pend + " por aprobar" : " · todos decididos") : "sin nuevos") + " · " + reg + " en catálogo";
+}
+async function piCargar(forzar) {
+  if (!esDueno() || PI.cargando || (!forzar && Date.now() - PI.cuando < 120000)) return;
+  PI.cargando = 1;
+  try { PI.lista = await q("precio_producto", "select=*&order=estado,decision,modelo"); PI.error = ""; }
+  catch (e) { PI.error = /404|PGRST2|does not exist|schema cache/i.test(e.message) ? "falta" : e.message; }
+  PI.cuando = Date.now(); PI.cargando = 0; piPintar();
+  if (typeof opPintarMenu === "function") opPintarMenu();
+}
+async function piFotosPortada(modelos) {   // miniaturas de portada de las fichas nuevas, en una sola consulta por número
+  const faltan = modelos.filter(m => { const p = PI.lista.find(x => x.modelo === m); return p && !(PI.fotos[m] && PI.fotos[m][p.portada]); });
+  if (!faltan.length) return;
+  const porN = {};
+  for (const m of faltan) { const p = PI.lista.find(x => x.modelo === m); (porN[p.portada] = porN[p.portada] || []).push(m); }
+  for (const [n, ms] of Object.entries(porN)) {
+    for (let i = 0; i < ms.length; i += 60) {
+      const f = await q("precio_foto", "select=modelo,n,datos&n=eq." + n + "&modelo=in." + enLista(ms.slice(i, i + 60)) + "&order=modelo");
+      for (const x of f) (PI.fotos[x.modelo] = PI.fotos[x.modelo] || {})[x.n] = x.datos;
+    }
+  }
+}
+async function piFotosDe(m) {
+  const f = await q("precio_foto", "select=n,datos&modelo=eq." + encodeURIComponent(m) + "&order=n");
+  PI.fotos[m] = {}; for (const x of f) PI.fotos[m][x.n] = x.datos;
+}
+function piImg(p, cls) {
+  if (p.estado === "nuevo") { const d = PI.fotos[p.modelo] && PI.fotos[p.modelo][p.portada]; return d ? '<img class="' + cls + '" alt="" src="' + d + '">' : '<span class="' + cls + ' vacia">sin foto</span>'; }
+  const h = fotoHtml(p.modelo); return h.includes("<img") ? h.replace('class="mini"', 'class="' + cls + '"') : '<span class="' + cls + ' vacia">sin foto</span>';
+}
+/* ---- métricas vivas del catálogo (existencias + ventas por modelo, 4 tiendas) ---- */
+function piMetricas(p) {
+  const filas = (D.invModelo || []).filter(x => String(x.modelo).toUpperCase() === p.modelo);
+  const piezas = filas.reduce((a, x) => a + Number(x.piezas || 0), 0), valor = filas.reduce((a, x) => a + Number(x.valor || 0), 0);
+  const porSuc = {}; filas.forEach(x => porSuc[x.suc] = Number(x.piezas || 0));
+  const g = filas[0] || {};
+  const v180 = Number(g.pzas_180_global || 0), v90 = Number(g.pzas_90_global || 0), v365 = Number(g.pzas_365_global || 0);
+  const dias = g.dias_sin_venta_global != null ? Number(g.dias_sin_venta_global) : null;
+  const cobertura = piezas && v180 ? piezas / (v180 / 6) : (piezas ? Infinity : 0);
+  const sug = [];
+  if (!piezas) sug.push(v180 ? "Sin existencia y con ventas: candidato a recomprar." : "Sin existencia en las 4 tiendas.");
+  else {
+    if (cobertura < 1 && v180) sug.push("Rota rápido (cobertura < 1 mes): sugerir +5% y marcar recompra en eBay.");
+    if (cobertura >= 4 && piezas >= 3) sug.push("Pico de inventario (" + (isFinite(cobertura) ? cobertura.toFixed(1) + " meses de cobertura" : "sin ventas") + ", " + piezas + " pz): sugerir −5% u oferta digital.");
+    if (dias != null && dias >= 180) sug.push("Más de 180 días sin venta: sugerir −10% u oferta agresiva temporal.");
+    else if (dias != null && dias >= 90) sug.push("Más de 90 días sin venta: sugerir −5%.");
+    if (!sug.length) sug.push("Rotación dentro de la meta (4 meses).");
+  }
+  return {piezas, valor, porSuc, v90, v180, v365, dias, cobertura, sug, precio1: Number(g.precio1 || 0)};
+}
+/* ---- fichas ---- */
+function piFiltrar() {
+  let L = PI.tab === "nuevos" ? piNuevos() : PI.lista.filter(p => p.estado === "registrado");
+  if (PI.tab === "nuevos" && PI.filtro !== "todos") L = L.filter(p => p.decision === PI.filtro);
+  const b = PI.busca.trim().toUpperCase();
+  if (b) L = L.filter(p => (p.modelo + " " + (p.descripcion || "") + " " + (p.marca || "") + " " + (p.categoria || "")).toUpperCase().includes(b));
+  return L;
+}
+function piFicha(p) {
+  const v = piVar(p), s = piSem(p), nuevo = p.estado === "nuevo";
+  const dec = nuevo ? '<span class="piChip ' + (p.decision === "aprobado" ? "ok" : p.decision === "rechazado" ? "ro" : "pen") + '">' + p.decision + '</span>' : '<span class="piChip reg">en catálogo</span>';
+  let met = "";
+  if (!nuevo) { const M = piMetricas(p); met = '<span>' + M.piezas + ' pz' + (M.dias != null ? ' · ' + M.dias + ' d sin venta' : '') + (isFinite(M.cobertura) && M.piezas ? ' · ' + M.cobertura.toFixed(1) + ' m' : '') + '</span>'; }
+  return '<div class="piCard ' + (nuevo ? p.decision : "reg") + '" data-pim="' + esc(p.modelo) + '">' + piImg(p, "ft") +
+    '<div style="min-width:0"><div class="k">' + esc(p.modelo) + '</div><div class="d">' + esc((p.marca || "") + " · " + (p.categoria || "")) + '</div><div class="d">' + esc(p.descripcion || "") + '</div>' +
+    '<div class="n"><span>HD $' + Number(p.precio_hd || 0).toLocaleString("en-US") + '</span><span>% <input class="pct" type="number" step="0.01" min="0.3" max="2" value="' + Number(p.pct_hd || 0).toFixed(2) + '" data-pipct="' + esc(p.modelo) + '" aria-label="% HD"></span>' +
+    '<b class="num">' + pesos(v.AA) + '</b><span class="piChip ' + s[0] + '">' + s[1] + '</span>' + dec + met + '</div></div>' +
+    '<div class="acc">' + (nuevo ? '<button type="button" class="invbtn lleno" data-piok="' + esc(p.modelo) + '">Aprobar</button><button type="button" class="invbtn rojo" data-pino="' + esc(p.modelo) + '">Rechazar</button>' : '') +
+    '<button type="button" class="invbtn" data-piver="' + esc(p.modelo) + '">Abrir dashboard</button></div></div>';
+}
+function piPintar() {
+  const g = $("#piGrid"); if (!g) return;
+  const nuevos = piNuevos(), pend = piPendientes(), reg = PI.lista.length - nuevos.length;
+  $("#piNN").textContent = nuevos.length; $("#piNC").textContent = reg; $("#piSubTit").textContent = piResumen();
+  document.querySelectorAll("#piTabs [data-pit]").forEach(b => b.classList.toggle("sel", b.dataset.pit === PI.tab));
+  if (PI.error === "falta") { $("#piBarra").innerHTML = ""; g.innerHTML = '<div class="cpVacio" style="grid-column:1/-1">Falta correr <b>10_precio_ideal.sql</b> en Supabase.</div>'; return; }
+  if (PI.error) { $("#piBarra").innerHTML = ""; g.innerHTML = '<div class="cpVacio" style="grid-column:1/-1">' + esc(PI.error) + '</div>'; return; }
+  const filtros = PI.tab === "nuevos" ? [["todos", "Todos"], ["pendiente", "Pendientes"], ["aprobado", "Aprobados"], ["rechazado", "Rechazados"]].map(([k, t]) =>
+    '<button type="button" class="rgChip' + (PI.filtro === k ? " sel" : "") + '" data-pif="' + k + '">' + t + '</button>').join("") : "";
+  $("#piBarra").innerHTML = filtros + '<input type="search" id="piBusca" placeholder="Buscar modelo, marca o categoría" value="' + esc(PI.busca) + '">' +
+    (PI.tab === "nuevos" ? '<button type="button" class="invbtn" id="piCargarB">Cargar propuesta (archivo)</button>' +
+      '<button type="button" class="invbtn lleno" id="piIngresarB"' + (nuevos.length && !pend ? "" : " disabled") + ' title="' + (pend ? pend + " fichas por decidir" : "Pasar los aprobados al catálogo") + '">Ingresar productos' + (nuevos.length && !pend ? " (" + nuevos.filter(p => p.decision === "aprobado").length + ")" : "") + '</button>' : "");
+  const L = piFiltrar();
+  g.innerHTML = L.length ? L.map(piFicha).join("") : '<div class="cpVacio" style="grid-column:1/-1">' + (PI.tab === "nuevos" ? "No hay productos nuevos. Toca «Cargar propuesta» y elige el archivo del chat." : "Todavía no hay productos en el catálogo de precio ideal.") + '</div>';
+  piAmarrar();
+  if (PI.tab === "nuevos") piFotosPortada(L.map(p => p.modelo)).then(() => { L.forEach(p => { const c = g.querySelector('[data-pim="' + CSS.escape(p.modelo) + '"] .ft'); if (c && c.tagName !== "IMG") { const d = PI.fotos[p.modelo] && PI.fotos[p.modelo][p.portada]; if (d) c.outerHTML = '<img class="ft" alt="" src="' + d + '">'; } }); }).catch(() => {});
+}
+function piAmarrar() {
+  document.querySelectorAll("#piTabs [data-pit]").forEach(b => b.onclick = () => { PI.tab = b.dataset.pit; piPintar(); });
+  document.querySelectorAll("#piBarra [data-pif]").forEach(b => b.onclick = () => { PI.filtro = b.dataset.pif; piPintar(); });
+  const bu = $("#piBusca"); if (bu) { let t = null; bu.oninput = () => { clearTimeout(t); t = setTimeout(() => { PI.busca = bu.value; piPintar(); const b2 = $("#piBusca"); if (b2) { b2.focus(); b2.setSelectionRange(b2.value.length, b2.value.length); } }, 250); }; }
+  const cb = $("#piCargarB"); if (cb) cb.onclick = () => $("#piArchivo").click();
+  const ib = $("#piIngresarB"); if (ib) ib.onclick = piIngresar;
+  document.querySelectorAll("#piGrid [data-pipct]").forEach(i => { i.onclick = ev => ev.stopPropagation(); i.onchange = () => piGuardar(i.dataset.pipct, {pct_hd: i.value}); });
+  document.querySelectorAll("#piGrid [data-piok]").forEach(b => b.onclick = ev => { ev.stopPropagation(); piDecidir(b.dataset.piok, "aprobado"); });
+  document.querySelectorAll("#piGrid [data-pino]").forEach(b => b.onclick = ev => { ev.stopPropagation(); piDecidir(b.dataset.pino, "rechazado"); });
+  document.querySelectorAll("#piGrid [data-piver]").forEach(b => b.onclick = ev => { ev.stopPropagation(); piAbrir(b.dataset.piver); });
+  document.querySelectorAll("#piGrid .piCard").forEach(c => c.onclick = ev => { if (ev.target.closest("input,button")) return; piAbrir(c.dataset.pim); });
+}
+async function piGuardar(m, cambios) {
+  const p = PI.lista.find(x => x.modelo === m); if (!p) return;
+  const limpio = {}; for (const [k, v] of Object.entries(cambios)) { if (String(p[k] == null ? "" : p[k]) !== String(v)) limpio[k] = String(v); }
+  if (!Object.keys(limpio).length) return;
+  try {
+    await rpc("pi_ajustar", {p_modelo: m, p_cambios: limpio});
+    for (const [k, v] of Object.entries(limpio)) p[k] = ["notas", "clase"].includes(k) ? v : Number(v);
+    p.actualizado = new Date().toISOString(); delete PI.hist[m];
+    toast("Guardado " + m + ": " + Object.keys(limpio).join(", "));
+    if (PI.abierto === m) { piPintarCapa(); piHist(m); } else piPintar();
+  } catch (e) { toast(e.message === "sesion" ? "La sesión caducó; vuelve a entrar" : "No se guardó: " + e.message, true); if (PI.abierto === m) piPintarCapa(); else piPintar(); }
+}
+async function piDecidir(m, d) {
+  try { await rpc("pi_decidir", {p_modelo: m, p_decision: d}); const p = PI.lista.find(x => x.modelo === m); if (p) { p.decision = d; } delete PI.hist[m];
+    toast(m + ": " + d); if (PI.abierto === m) { piPintarCapa(); piHist(m); } else piPintar(); if (typeof opPintarMenu === "function") opPintarMenu(); }
+  catch (e) { toast("No se pudo: " + e.message, true); }
+}
+async function piIngresar() {
+  const n = piNuevos().filter(p => p.decision === "aprobado").length, r = piNuevos().filter(p => p.decision === "rechazado").length;
+  if (!confirm("¿Ingresar " + n + " productos aprobados al catálogo" + (r ? " y borrar " + r + " rechazados" : "") + "? Después se genera el Excel para SICAR con el comando de la Mac.")) return;
+  try {
+    const res = await rpc("pi_ingresar", {});
+    $("#piPaso").innerHTML = '<div class="piPaso"><b>✓ ' + res.ingresados + ' productos ingresados al catálogo' + (res.borrados ? ' · ' + res.borrados + ' rechazados borrados' : '') + '.</b><br>Siguiente paso en la Mac: <b>ingresar_nuevos.command</b> (genera el Excel ESTANDAR para SICAR, acomoda las fotos y prepara la página). Luego el operador los mete a compra en SICAR.</div>';
+    toast(res.ingresados + " ingresados"); await piCargar(true);
+  } catch (e) { toast("No se pudo ingresar: " + e.message, true); }
+}
+/* ---- cargar propuesta (archivo JSON del chat: items + fotos en miniatura) ---- */
+$("#piArchivo").addEventListener("change", async ev => {
+  const f = ev.target.files && ev.target.files[0]; ev.target.value = ""; if (!f) return;
+  let j; try { j = JSON.parse(await f.text()); } catch (e) { toast("El archivo no es un JSON válido", true); return; }
+  if (!j || !Array.isArray(j.items)) { toast("El archivo no trae la lista «items»", true); return; }
+  const b = $("#piCargarB"); if (b) { b.disabled = true; b.textContent = "Subiendo datos…"; }
+  try {
+    const res = await rpc("pi_cargar", {p_items: j.items});
+    const fotos = j.fotos || {}; const modelos = Object.keys(fotos); let hechas = 0, total = modelos.reduce((a, m) => a + (fotos[m] || []).length, 0);
+    for (const m of modelos) {
+      const L = fotos[m] || [];
+      for (let i = 0; i < L.length; i++) { await rpc("pi_foto_guardar", {p_modelo: m, p_n: i + 1, p_datos: L[i]}); hechas++; if (b && hechas % 10 === 0) b.textContent = "Subiendo fotos… " + hechas + " de " + total; }
+      delete PI.fotos[m];
+    }
+    toast("Propuesta cargada: " + res.nuevos + " nuevos, " + res.actualizados + " actualizados" + (res.saltados ? ", " + res.saltados + " ya estaban en el catálogo" : "") + (total ? " · " + total + " fotos" : ""));
+    await piCargar(true);
+  } catch (e) { toast("No se pudo cargar: " + (e.message === "sesion" ? "la sesión caducó" : e.message), true); piPintar(); }
+});
+/* ---- dashboard del producto (pantalla completa) ---- */
+async function piAbrir(m) {
+  const p = PI.lista.find(x => x.modelo === m); if (!p) return;
+  PI.abierto = m; $("#piCapa").classList.remove("hidden"); document.body.style.overflow = "hidden"; piPintarCapa();
+  const tareas = [];
+  if (p.estado === "nuevo" && !(PI.fotos[m] && Object.keys(PI.fotos[m]).length >= (p.fotos || []).length)) tareas.push(piFotosDe(m));
+  if (!PI.hist[m]) tareas.push(piHist(m));
+  if (tareas.length) { try { await Promise.all(tareas); } catch (e) {} if (PI.abierto === m) piPintarCapa(); }
+}
+async function piHist(m) { try { PI.hist[m] = await q("precio_cambio", "select=campo,antes,despues,correo,ts&modelo=eq." + encodeURIComponent(m) + "&order=ts.desc&limit=40"); } catch (e) { PI.hist[m] = []; } if (PI.abierto === m) piPintarCapa(); }
+function piCerrar() { $("#piCapa").classList.add("hidden"); document.body.style.overflow = ""; PI.abierto = null; piPintar(); }
+function piLee() {   // lo que hay en los campos del dashboard, como objeto temporal para recalcular en vivo
+  const p = Object.assign({}, PI.lista.find(x => x.modelo === PI.abierto));
+  const g = id => { const e = $("#" + id); return e ? e.value : null; };
+  if (g("piHd") !== null) p.precio_hd = Number(g("piHd"));
+  if (g("piDol") !== null) p.dolar = Number(g("piDol"));
+  if (g("piPct") !== null) p.pct_hd = Number(g("piPct"));
+  for (const k of ["d", "e", "f"]) if (g("pi_" + k) !== null) p[k + "_pct"] = Number(g("pi_" + k)) / 100;
+  if (g("piL2") !== null) p.l2 = Number(g("piL2")) / 100;
+  if (g("piL3") !== null) p.l3 = Number(g("piL3")) / 100;
+  if (g("piOrden") !== null) p.orden = Number(g("piOrden"));
+  if (g("piNotas") !== null) p.notas = g("piNotas");
+  return p;
+}
+function piPintarCapa() {
+  const p0 = PI.lista.find(x => x.modelo === PI.abierto); const x = $("#piIn"); if (!p0) { piCerrar(); return; }
+  const p = p0, v = piVar(p), L = piListas(p), s = piSem(p), nuevo = p.estado === "nuevo";
+  const fuera = p.pct_hd < 0.65 || p.pct_hd > 1.20;
+  const fotos = nuevo ? Object.entries(PI.fotos[p.modelo] || {}).sort((a, b) => a[0] - b[0]) : [];
+  const gal = nuevo ? '<div class="piGal">' + (fotos.length ? fotos.map(([n, d]) => '<div><img src="' + d + '" alt="" class="' + (Number(n) === Number(p.portada) ? "sel" : "") + '" data-piport="' + n + '"><div class="num">' + n + (Number(n) === Number(p.portada) ? " · portada" : "") + '</div></div>').join("") : '<div class="cpVacio">Sin fotos cargadas para este modelo.</div>') + '</div>'
+    : '<div class="piGal"><div>' + piImg(p, "") + '</div></div>';
+  let metHtml = "";
+  if (!nuevo) { const M = piMetricas(p);
+    metHtml = '<div class="piBloque"><h4>Métricas del producto (4 tiendas)</h4><div class="piMet">' +
+      '<div><b class="num">' + M.piezas + '</b><small>piezas en total</small></div><div><b class="num">' + pesos(M.valor) + '</b><small>valor a lista</small></div>' +
+      '<div><b class="num">' + M.v90 + ' / ' + M.v180 + ' / ' + M.v365 + '</b><small>vendidas 90 / 180 / 365 d</small></div>' +
+      '<div><b class="num">' + (M.dias == null ? "—" : M.dias) + '</b><small>días sin venta</small></div>' +
+      '<div><b class="num">' + (M.piezas ? (isFinite(M.cobertura) ? M.cobertura.toFixed(1) : "∞") : "0") + '</b><small>meses de cobertura (meta 4)</small></div>' +
+      '<div><b class="num">' + (M.precio1 ? pesos(M.precio1) : "—") + '</b><small>precio 1 en SICAR</small></div></div>' +
+      '<div class="piMet" style="margin-top:6px">' + [1, 3, 2, 4].map(s2 => '<div><b class="num">' + (M.porSuc[s2] || 0) + '</b><small>' + esc(SUCS[s2]) + '</small></div>').join("") + '</div>' +
+      '<div class="piSug"><b>Sugerencia de las reglas:</b> ' + M.sug.map(esc).join(" ") + '</div></div>'; }
+  const hist = PI.hist[p.modelo];
+  x.innerHTML = '<h3>' + esc(p.modelo) + ' <small style="font-family:var(--body);font-weight:400;font-size:14px;color:var(--ink-3)">' + esc((p.marca || "") + " · " + (p.categoria || "") + (p.tipo ? " · " + p.tipo : "") + (p.plataforma ? " · " + p.plataforma : "")) + '</small></h3>' +
+    '<div class="vtSub">' + esc(p.descripcion || "") + ' · ' + (nuevo ? '<span class="piChip ' + (p.decision === "aprobado" ? "ok" : p.decision === "rechazado" ? "ro" : "pen") + '">' + p.decision + '</span>' : '<span class="piChip reg">en catálogo' + (p.ingresado_en ? " desde " + new Date(p.ingresado_en).toLocaleDateString("es-MX") : "") + '</span>') +
+      (p.link_hd ? ' · <a href="' + esc(p.link_hd) + '" target="_blank" rel="noopener">ver en Home Depot</a>' : '') + '</div>' +
+    gal +
+    '<div class="piDos"><div class="piBloque"><h4>Precio de mercado → precio AA</h4>' +
+      '<div class="piFila"><label>Precio Home Depot USD (antes de tax)</label><input id="piHd" type="number" step="0.01" min="0" value="' + Number(p.precio_hd || 0) + '"></div>' +
+      '<div class="piFila"><label>Dólar usado</label><input id="piDol" type="number" step="0.0001" min="1" value="' + Number(p.dolar || 0) + '"></div>' +
+      '<div class="piFila"><label>Base MXN = HD × ' + Number(p.tax || 1.08) + ' × dólar</label><span class="v num" id="piBaseV">' + pesos(piBase(p)) + '</span></div>' +
+      '<div class="piFila"><label>% HD propuesto' + (fuera ? ' <span class="piChip ro">fuera de banda 0.65–1.20</span>' : '') + '</label><input id="piPct" type="number" step="0.01" min="0.3" max="2" value="' + Number(p.pct_hd || 0).toFixed(2) + '"></div>' +
+      '<div style="font-size:12px;color:var(--ink-3);margin:2px 0 6px">' + esc(p.pct_fuente || "") + (p.clase ? ' · clase ' + esc(p.clase) : '') + '</div>' +
+      '<div class="piFila"><label><b>Precio AA</b></label><span class="v num" id="piAAV">' + pesos(v.AA) + '</span></div></div>' +
+    '<div class="piBloque"><h4>Listas 2 y 3 · semáforo</h4>' +
+      '<div class="piFila"><label>Lista 2 (% abajo del AA)</label><input id="piL2" type="number" step="1" min="0" max="95" value="' + Math.round(Number(p.l2) * 100) + '"></div>' +
+      '<div class="piFila"><label>Precio 2</label><span class="v num" id="piP2V">' + pesos(L.p2) + '</span></div>' +
+      '<div class="piFila"><label>Lista 3 (% abajo del AA)</label><input id="piL3" type="number" step="1" min="0" max="95" value="' + Math.round(Number(p.l3) * 100) + '"></div>' +
+      '<div class="piFila"><label>Precio 3</label><span class="v num" id="piP3V">' + pesos(L.p3) + '</span></div>' +
+      '<div class="piFila"><label>Semáforo (P3 ÷ AA: amarillo &lt;75%, rojo &lt;60%)</label><span id="piSemV" class="piChip ' + s[0] + '">' + s[1] + '</span></div>' +
+      '<div class="piFila"><label>Orden en el catálogo (menor = más arriba)</label><input id="piOrden" type="number" step="1" min="0" value="' + Number(p.orden || 0) + '"></div></div></div>' +
+    '<div class="piBloque" style="margin-top:12px"><h4>Las 7 calificaciones</h4><div class="piCal" id="piCalV">' + piCalHtml(p, v) + '</div><div style="font-size:12px;color:var(--ink-3)">D/E/F editables (hoy ' + Math.round(p.d_pct * 100) + '/' + Math.round(p.e_pct * 100) + '/' + Math.round(p.f_pct * 100) + '); A 95%, B 90%, C 80% fijos. Kits y combos se calculan al generar el Excel de SICAR.</div></div>' +
+    metHtml +
+    '<div class="piBloque" style="margin-top:12px"><h4>Notas</h4><textarea id="piNotas" placeholder="Por qué este % o qué revisar…">' + esc(p.notas || "") + '</textarea></div>' +
+    '<div class="vtBtns"><button type="button" class="invbtn lleno" id="piGuardarB">Guardar cambios</button>' +
+      (nuevo ? '<button type="button" class="invbtn" id="piAprobarB" style="border-color:var(--ok);color:var(--ok)">Aprobar</button><button type="button" class="invbtn rojo" id="piRechazarB">Rechazar</button>' + (p.decision !== "pendiente" ? '<button type="button" class="invbtn" id="piPendB">Regresar a pendiente</button>' : '') : '') +
+      '<button type="button" class="invbtn" id="piCerrarB">Cerrar</button></div>' +
+    '<div class="piBloque"><h4>Historial de cambios</h4><div class="piHist">' + (hist ? (hist.length ? hist.map(h => '<div>' + new Date(h.ts).toLocaleString("es-MX", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}) + ' · <b>' + esc(h.campo) + '</b>: ' + esc(h.antes == null ? "—" : h.antes) + ' → ' + esc(h.despues == null ? "—" : h.despues) + (h.correo ? ' · ' + esc(h.correo) : '') + '</div>').join("") : '<div class="cpVacio">Sin cambios todavía.</div>') : '<div class="cpVacio">Cargando…</div>') + '</div></div>';
+  // recálculo en vivo
+  const vivo = () => { const t = piLee(), v2 = piVar(t), L2 = piListas(t), s2 = piSem(t);
+    $("#piBaseV").textContent = pesos(piBase(t)); $("#piAAV").textContent = pesos(v2.AA); $("#piP2V").textContent = pesos(L2.p2); $("#piP3V").textContent = pesos(L2.p3);
+    $("#piSemV").className = "piChip " + s2[0]; $("#piSemV").textContent = s2[1]; $("#piCalV").innerHTML = piCalHtml(t, v2); amarraCal(); };
+  const amarraCal = () => x.querySelectorAll("#piCalV input").forEach(i => i.oninput = vivo);
+  ["piHd", "piDol", "piPct", "piL2", "piL3"].forEach(id => $("#" + id).addEventListener("input", vivo)); amarraCal();
+  x.querySelectorAll("[data-piport]").forEach(i => i.onclick = () => piGuardar(p.modelo, {portada: i.dataset.piport}));
+  $("#piGuardarB").onclick = () => { const t = piLee(); piGuardar(p.modelo, {precio_hd: t.precio_hd, dolar: t.dolar, pct_hd: t.pct_hd, l2: t.l2, l3: t.l3, d_pct: t.d_pct, e_pct: t.e_pct, f_pct: t.f_pct, orden: t.orden, notas: t.notas}); };
+  const ap = $("#piAprobarB"); if (ap) ap.onclick = async () => { const t = piLee(); await piGuardar(p.modelo, {precio_hd: t.precio_hd, dolar: t.dolar, pct_hd: t.pct_hd, l2: t.l2, l3: t.l3, d_pct: t.d_pct, e_pct: t.e_pct, f_pct: t.f_pct, orden: t.orden, notas: t.notas}); piDecidir(p.modelo, "aprobado"); };
+  const re = $("#piRechazarB"); if (re) re.onclick = () => piDecidir(p.modelo, "rechazado");
+  const pe = $("#piPendB"); if (pe) pe.onclick = () => piDecidir(p.modelo, "pendiente");
+  $("#piCerrarB").onclick = piCerrar;
+}
+function piCalHtml(p, v) {
+  return ['AA', 'A', 'B', 'C'].map(k => '<div><small>' + k + '</small><b class="num">' + pesos(v[k]) + '</b></div>').join("") +
+    [['D', 'd'], ['E', 'e'], ['F', 'f']].map(([k, j]) => '<div><small>' + k + '</small><b class="num">' + pesos(v[k]) + '</b><input id="pi_' + j + '" type="number" min="0" max="95" step="1" value="' + Math.round(Number(p[j + '_pct']) * 100) + '" aria-label="' + k + ' por ciento">%</div>').join("");
+}
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#piCapa").classList.contains("hidden")) piCerrar(); });
+document.addEventListener("click", ev => { const b = ev.target.closest('#opMenu [data-op="precio"]'); if (b) piCargar(true); });
 
 iniciar();
 </script>
