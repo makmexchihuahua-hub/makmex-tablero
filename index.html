@@ -622,6 +622,13 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .piGal img{width:96px;height:96px;object-fit:contain;background:#fff;border:2px solid var(--line);border-radius:10px;cursor:pointer}
 .piGal img.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 .piGal .num{font-size:11px;text-align:center;color:var(--ink-3)}
+.piCab{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.piCab .piGal{flex:1 1 300px;min-width:0}
+.piKitF{flex:0 0 296px;max-width:100%;border:1px solid var(--line);border-radius:12px;padding:8px 10px 10px;background:var(--card, #fff)}
+.piKitF h4{margin:0 0 6px;font-size:13px}
+.piKitF img{width:100%;height:210px;object-fit:contain;background:#fff;border-radius:8px}
+.piKitF .pie{font-size:11.5px;color:var(--ink-3);margin-top:4px;line-height:1.3}
+.piKitF .falta{height:210px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;color:var(--ink-3);background:var(--accent-soft);border-radius:8px;padding:10px}
 .piDos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media (max-width:760px){.piDos{grid-template-columns:1fr}}
 .piBloque{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
@@ -4530,6 +4537,31 @@ const PI_KITS = {M185: ["48-11-1850", "48-59-1812"], M122: ["48-11-2420", "48-59
 const PI_PIEZAS = {"48-11-1850": [2070, 1570, 1240], "48-11-2420": [950, 780, 650], PBP006: [1020, 740, 610], "48-11-1820": [1230, 900, 740], "48-11-2440": [1450, 1160, 1040], DCB205: [2060, 1570, 1240],
                    PBP005: [1460, 1110, 880], DCB203: [1250, 910, 750], OP4040A1: [2190, 1660, 1310], DCB606: [2530, 2150, 2020], AC8400802: [1090, 710, 650], AC87004: [1480, 960, 890], OP4020A: [1760, 1280, 1060],
                    "48-59-1812": [1230, 800, 650], "48-59-2401": [780, 470, 410], DCB115: [1240, 810, 660], DCB1106: [1410, 920, 850], PCG002: [550, 360, 290], OP404: [940, 610, 500], AC86093N: [840, 590, 550]};
+/* ---- imagen de KIT COMPLETO: la arma generar_kits.py y la deja SIEMPRE en la foto 90, para que no se mezcle con las fotos del producto ---- */
+const PI_N_KIT = 90;
+const PI_BAT = {M185: ["MILWAUKEE", 18, 5], M182: ["MILWAUKEE", 18, 2], M122: ["MILWAUKEE", 12, 2], M124: ["MILWAUKEE", 12, 4],
+                "20V5": ["DEWALT", 20, 5], "20V2": ["DEWALT", 20, 2], "60V6": ["DEWALT", 60, 6],
+                "18V2": ["RYOBI", 18, 2], "18V4": ["RYOBI", 18, 4], "40V2": ["RYOBI", 40, 2], "40V4": ["RYOBI", 40, 4],
+                R18V2: ["RIDGID", 18, 2], R18V4: ["RIDGID", 18, 4]};
+function piBatCode(p) {   // el código de batería del producto, con el mismo criterio que armar_kit.py (vacío = no lleva kit)
+  const que = ((p.tipo || "") + " " + (p.categoria || "")).toUpperCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  if (/BATERIA|CARGADOR|ESTUCHE|COMBO/.test(que)) return "";      // la pieza ES el accesorio: no se le arma kit
+  const c = String(p.bat_code || "").trim().toUpperCase();
+  if (PI_BAT[c]) return c;
+  const v = String(p.plataforma || "").match(/\d{2}/), ah = parseFloat(String(p.ah || "").replace(",", ".")), marca = String(p.marca || "").toUpperCase();
+  if (!v || !isFinite(ah)) return "";
+  return Object.keys(PI_BAT).find(k => PI_BAT[k][0] === marca && PI_BAT[k][1] === Number(v[0]) && PI_BAT[k][2] === ah) || "";
+}
+function piKitFoto(p) {   // el recuadro de la ficha: herramienta + batería + cargador + logo, ya armado
+  const code = piBatCode(p);
+  if (!code) return "";
+  const d = PI.fotos[p.modelo] && PI.fotos[p.modelo][PI_N_KIT], par = PI_KITS[code] || [];
+  const pie = "batería " + (p.kit_bateria || par[0] || "—") + " · cargador " + (p.kit_cargador || par[1] || "—") + " · template " + code;
+  return '<div class="piKitF" id="piKitFoto"><h4>Kit completo</h4>' +
+    (d ? '<img src="' + d + '" alt="kit completo de ' + esc(p.modelo) + '">'
+       : '<div class="falta">Falta armarla: doble clic a <b>generar_kits.command</b> en MAKMEX-catalogo y vuelve a abrir la ficha.</div>') +
+    '<div class="pie">' + esc(pie) + (d ? " · es la portada del kit en makmex.com" : "") + '</div></div>';
+}
 function piDesc(p) { const t = piTipo(p); return {dk: p.d_kit != null && p.d_kit !== "" ? Number(p.d_kit) : (t === "CARGADORES" ? 0.35 : 0.24), dc: p.d_combo != null && p.d_combo !== "" ? Number(p.d_combo) : (t === "CARGADORES" ? 0.47 : 0.40)}; }
 function piPieza(modelo) {   // batería o cargador del kit: precio A, en kit y en combo (del catálogo; si no está, tabla fija de oct 2026)
   const r = PI.lista.find(x => x.modelo === modelo && x.estado === "registrado");
@@ -4703,7 +4735,9 @@ async function piAbrir(m, desde) {
   if (!desde) PI.pila = [];
   PI.abierto = m; PI.ladoTodo = false; $("#piCapa").classList.remove("hidden"); $("#piCapa").scrollTop = 0; document.body.style.overflow = "hidden"; piPintarCapa();
   const tareas = [];
-  if (p.estado === "nuevo" && !(PI.fotos[m] && Object.keys(PI.fotos[m]).length >= (p.fotos || []).length)) tareas.push(piFotosDe(m));
+  // las fotos + la de kit (foto 90); si todavía no está armada se vuelve a buscar al abrir, para que aparezca sola en cuanto se genere
+  const faltanFotos = (p.fotos || []).length + (piBatCode(p) ? 1 : 0);
+  if (p.estado === "nuevo" && !(PI.fotos[m] && Object.keys(PI.fotos[m]).length >= faltanFotos)) tareas.push(piFotosDe(m));
   if (!PI.hist[m]) tareas.push(piHist(m));
   if (PI.carac[m] === undefined) tareas.push(piCaracDe(m));
   if (tareas.length) { try { await Promise.all(tareas); } catch (e) {} if (PI.abierto === m) piPintarCapa(); }
@@ -4822,7 +4856,7 @@ function piPintarCapa() {
   const p0 = PI.lista.find(x => x.modelo === PI.abierto); const x = $("#piIn"); if (!p0) { piCerrar(); return; }
   const p = p0, v = piVar(p), L = piListas(p), s = piSem(p), nuevo = p.estado === "nuevo", conHd = piConHd(p);
   const fuera = conHd && (p.pct_hd < 0.65 || p.pct_hd > 1.20);
-  const fotos = nuevo ? Object.entries(PI.fotos[p.modelo] || {}).sort((a, b) => a[0] - b[0]) : [];
+  const fotos = nuevo ? Object.entries(PI.fotos[p.modelo] || {}).filter(([n]) => Number(n) < PI_N_KIT).sort((a, b) => a[0] - b[0]) : [];
   const gal = nuevo ? '<div class="piGal">' + (fotos.length ? fotos.map(([n, d]) => '<div><img src="' + d + '" alt="" class="' + (Number(n) === Number(p.portada) ? "sel" : "") + '" data-piport="' + n + '"><div class="num">' + n + (Number(n) === Number(p.portada) ? " · portada" : "") + '</div></div>').join("") : '<div class="cpVacio">Sin fotos cargadas para este modelo.</div>') + '</div>'
     : '<div class="piGal"><div>' + piImg(p, "") + '</div></div>';
   const C = piCategoria(p), f2 = n => n == null ? "—" : n.toFixed(2);
@@ -4841,7 +4875,7 @@ function piPintarCapa() {
     '<h3>' + esc(p.modelo) + ' <small style="font-family:var(--body);font-weight:400;font-size:14px;color:var(--ink-3)">' + esc((p.marca || "") + " · " + (p.categoria || "") + (p.tipo ? " · " + p.tipo : "") + (p.plataforma ? " · " + p.plataforma : "")) + '</small></h3>' +
     '<div class="vtSub">' + esc(p.descripcion || "") + ' · ' + (nuevo ? '<span class="piChip ' + (p.decision === "aprobado" ? "ok" : p.decision === "rechazado" ? "ro" : "pen") + '">' + p.decision + '</span>' : '<span class="piChip reg">en catálogo' + (p.ingresado_en ? " desde " + new Date(p.ingresado_en).toLocaleDateString("es-MX") : "") + '</span>') +
       (p.link_hd ? ' · <a href="' + esc(p.link_hd) + '" target="_blank" rel="noopener">ver en Home Depot</a>' : '') + '</div>' +
-    gal + (carac ? '<details class="piCarac"><summary>Características</summary>' + esc(carac) + '</details>' : '') +
+    '<div class="piCab">' + gal + (nuevo ? piKitFoto(p) : "") + '</div>' + (carac ? '<details class="piCarac"><summary>Características</summary>' + esc(carac) + '</details>' : '') +
     '<div class="piDos"><div class="piBloque"><h4>Precio de mercado → precio AA</h4>' +
       '<div class="piFila"><label>Precio Home Depot USD (antes de tax)</label><input id="piHd" type="number" step="0.01" min="0" value="' + Number(p.precio_hd || 0) + '"></div>' +
       '<div class="piFila"><label>Dólar usado</label><input id="piDol" type="number" step="0.0001" min="1" value="' + Number(p.dolar || 0) + '"></div>' +
