@@ -4559,7 +4559,7 @@ function piKitFoto(p) {   // el recuadro de la ficha: herramienta + batería + c
   const pie = "batería " + (p.kit_bateria || par[0] || "—") + " · cargador " + (p.kit_cargador || par[1] || "—") + " · template " + code;
   return '<div class="piKitF" id="piKitFoto"><h4>Kit completo</h4>' +
     (d ? '<img src="' + d + '" alt="kit completo de ' + esc(p.modelo) + '">'
-       : '<div class="falta">Falta armarla: doble clic a <b>generar_kits.command</b> en MAKMEX-catalogo y vuelve a abrir la ficha.</div>') +
+       : '<div class="falta"><span>Falta armarla: doble clic a <b>generar_kits.command</b> en MAKMEX-catalogo y vuelve a abrir la ficha.</span></div>') +
     '<div class="pie">' + esc(pie) + (d ? " · es la portada del kit en makmex.com" : "") + '</div></div>';
 }
 function piDesc(p) { const t = piTipo(p); return {dk: p.d_kit != null && p.d_kit !== "" ? Number(p.d_kit) : (t === "CARGADORES" ? 0.35 : 0.24), dc: p.d_combo != null && p.d_combo !== "" ? Number(p.d_combo) : (t === "CARGADORES" ? 0.47 : 0.40)}; }
