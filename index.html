@@ -2207,7 +2207,7 @@ function przPinta1(x) {
     '<div class="przCom">' + coms +
       '<div class="caja"><input maxlength="400" placeholder="Escribe un comentario…" aria-label="Comentario"><button type="button" class="comGuardar">Comentar</button></div>' +
       '<div class="przAcc"><button type="button" class="encurso' + (x.estado === "en_curso" ? " on" : "") + '">' + (x.estado === "en_curso" ? "quitar «en curso»" : "marcar en curso") + '</button></div>' +
-    '</div></div>';
+    '</div></div></div>';   // cierra przCom, przTx y przFila (sin el tercero las fichas se anidan unas en otras)
 }
 function przPintar() {
   const np = PRZ.lista.filter(x => x.tipo === "proyecto" && przVivo(x)).length;
