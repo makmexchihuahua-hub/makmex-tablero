@@ -647,6 +647,43 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .piHist div{padding:3px 0;border-bottom:1px solid var(--line)}
 .piPaso{border:1.5px solid var(--ok);background:var(--ok-soft);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:13.5px}
 .piCarac{font-size:12.5px;color:var(--ink-2);margin:0 0 10px}.piCarac summary{cursor:pointer;color:var(--ink-3)}
+
+/* proyectos e ideas */
+#p-proyectos{display:none}
+.przTabs{display:flex;gap:8px;margin:2px 0 10px;flex-wrap:wrap;align-items:center}
+.przTabs button{border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-weight:600;color:var(--ink-2)}
+.przTabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.przTabs .espacio{flex:1}
+.przFila{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--surface)}
+.przFila.hecho{opacity:.55}
+.przFila.rezago{border-color:#d97706}
+.przPalo{width:21px;height:21px;min-width:21px;margin-top:2px;accent-color:var(--ok,#16a34a);cursor:pointer}
+.przTx{flex:1;min-width:0}
+.przTit{font-weight:600;cursor:pointer}
+.przFila.hecho .przTit{text-decoration:line-through}
+.przMeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:11.5px;color:var(--ink-3)}
+.przMeta .chip{border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.przMeta .p1{color:#b91c1c;border-color:#b91c1c;font-weight:700}
+.przMeta .p3{opacity:.75}
+.przMeta .rez{color:#d97706;border-color:#d97706;font-weight:700}
+.przDet{display:none;margin-top:8px;font-size:13px;color:var(--ink-2);white-space:pre-wrap}
+.przFila.abierto .przDet{display:block}
+.przCom{display:none;margin-top:8px}
+.przFila.abierto .przCom{display:block}
+.przCom .uno{font-size:12.5px;border-left:3px solid var(--line);padding:2px 8px;margin:4px 0;color:var(--ink-2)}
+.przCom .uno small{color:var(--ink-3)}
+.przCom .caja{display:flex;gap:6px;margin-top:6px}
+.przCom input{flex:1;border:1px solid var(--line);border-radius:8px;padding:6px 9px;background:var(--bg);color:var(--ink)}
+.przCom button,.przAcc button{border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12.5px;color:var(--ink-2)}
+.przAcc{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.przAcc .encurso.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+#przForm{display:none;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+#przForm.abierto{display:block}
+#przForm input,#przForm textarea,#przForm select{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 9px;margin:4px 0;background:var(--bg);color:var(--ink);font:inherit}
+#przForm textarea{min-height:64px}
+#przForm .fila{display:flex;gap:8px}
+#przForm .fila > *{flex:1}
+.przAviso{font-size:12.5px;color:var(--ink-3);margin:6px 0 10px}
 </style>
 </head>
 <body>
@@ -840,6 +877,32 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div class="piGrid" id="piGrid"></div>
     <input type="file" id="piArchivo" accept=".json,application/json" class="hidden">
     <input type="file" id="piArchivoCat" accept=".json,application/json" class="hidden">
+  </section>
+  <section class="panel" id="p-proyectos">
+    <h2>Proyectos e ideas</h2>
+    <div class="przTabs">
+      <button type="button" id="przTabP" class="on">Proyectos <span id="przNp"></span></button>
+      <button type="button" id="przTabI">Ideas y mejoras <span id="przNi"></span></button>
+      <span class="espacio"></span>
+      <select id="przFiltro" aria-label="Filtro">
+        <option value="vivos">Pendientes y en curso</option>
+        <option value="hechos">Hechas</option>
+        <option value="todos">Todas</option>
+      </select>
+      <button type="button" id="przMas">+ Agregar</button>
+    </div>
+    <div id="przForm">
+      <input id="przfTit" maxlength="200" placeholder="Título (qué hay que hacer o qué idea es)">
+      <textarea id="przfDet" placeholder="Detalle (opcional)"></textarea>
+      <div class="fila">
+        <select id="przfTipo"><option value="proyecto">Proyecto</option><option value="idea">Idea / mejora</option></select>
+        <select id="przfPri"><option value="1">Prioridad alta</option><option value="2" selected>Media</option><option value="3">Baja</option></select>
+        <input id="przfOri" maxlength="40" placeholder="Origen (módulo)">
+      </div>
+      <div class="przAcc"><button type="button" id="przfGuardar">Guardar</button><button type="button" id="przfCerrar">Cancelar</button><span id="przfAviso" class="przAviso"></span></div>
+    </div>
+    <div class="przAviso" id="przAviso"></div>
+    <div id="przLista"></div>
   </section>
   <section class="panel" id="p-inventario">
     <h2>Hacer inventario <small id="invResumen"></small></h2>
@@ -1077,7 +1140,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); przCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -2106,6 +2169,106 @@ function vsDespues(lista) {
     const t = vsNorm($("#vsBuscar").value); VS.txt = t.length >= 2 ? t : ""; VS.res = null; VS.llave = ""; VS.tok++; pintarVentas(); }, 350); });
 })();
 
+/* ---------------- proyectos e ideas ---------------- */
+const PRZ = {lista: [], tab: "proyecto", filtro: "vivos", error: "", cargando: 0, abiertos: {}};
+const PRZ_REZAGO_DIAS = 21;
+
+async function przCargar() {
+  if (!esDueno() || PRZ.cargando) return;
+  PRZ.cargando = 1;
+  try { PRZ.lista = await q("proyecto", "select=*&order=estado,prioridad,actualizado"); PRZ.error = ""; }
+  catch (e) { PRZ.error = /PGRST205|42P01/.test(e.message || "") ? "falta correr 15_proyectos.sql en Supabase" : (e.message || "error"); }
+  PRZ.cargando = 0;
+  przPintar();
+}
+const przVivo = x => x.estado === "pendiente" || x.estado === "en_curso";
+const przEsRez = x => przVivo(x) && (Date.now() - new Date(x.actualizado).getTime()) / 864e5 >= PRZ_REZAGO_DIAS;
+const przRezagados = () => PRZ.lista.filter(przEsRez).length;
+function przResumen() {
+  const p = PRZ.lista.filter(x => x.tipo === "proyecto" && przVivo(x)).length;
+  const i = PRZ.lista.filter(x => x.tipo === "idea" && przVivo(x)).length;
+  const r = przRezagados();
+  if (!PRZ.lista.length) return PRZ.error || "proyectos pendientes e ideas, con palomita y comentarios";
+  return p + " proyectos vivos · " + i + " ideas" + (r ? " · " + r + " sin movimiento" : "");
+}
+function przPinta1(x) {
+  const pri = x.prioridad === 1 ? '<span class="chip p1">alta</span>' : x.prioridad === 3 ? '<span class="chip p3">baja</span>' : "";
+  const rez = przEsRez(x) ? '<span class="chip rez">' + Math.floor((Date.now() - new Date(x.actualizado).getTime()) / 864e5) + ' días sin movimiento</span>' : "";
+  const coms = (x.comentarios || []).map(c => '<div class="uno">' + esc(c.t) + ' <small>· ' + esc(c.fecha || "") + '</small></div>').join("");
+  return '<div class="przFila ' + (x.estado === "hecho" ? "hecho " : "") + (przEsRez(x) ? "rezago " : "") + (PRZ.abiertos[x.id] ? "abierto" : "") + '" data-id="' + x.id + '">' +
+    '<input type="checkbox" class="przPalo" aria-label="Marcar hecho" ' + (x.estado === "hecho" ? "checked" : "") + '>' +
+    '<div class="przTx"><div class="przTit">' + esc(x.titulo) + '</div>' +
+    '<div class="przMeta">' + pri + (x.origen ? '<span class="chip">' + esc(x.origen) + '</span>' : "") +
+      (x.responsable ? '<span class="chip">' + esc(x.responsable) + '</span>' : "") +
+      (x.estado === "en_curso" ? '<span class="chip" style="color:#1d4ed8;border-color:#1d4ed8">en curso</span>' : "") +
+      (x.estado === "hecho" && x.hecho_en ? '<span class="chip">hecho ' + esc(String(x.hecho_en).slice(0, 10)) + '</span>' : "") + rez +
+      ((x.comentarios || []).length ? '<span class="chip">' + x.comentarios.length + ' comentario' + (x.comentarios.length > 1 ? 's' : '') + '</span>' : "") + '</div>' +
+    '<div class="przDet">' + esc(x.detalle || "(sin detalle)") + '</div>' +
+    '<div class="przCom">' + coms +
+      '<div class="caja"><input maxlength="400" placeholder="Escribe un comentario…" aria-label="Comentario"><button type="button" class="comGuardar">Comentar</button></div>' +
+      '<div class="przAcc"><button type="button" class="encurso' + (x.estado === "en_curso" ? " on" : "") + '">' + (x.estado === "en_curso" ? "quitar «en curso»" : "marcar en curso") + '</button></div>' +
+    '</div></div>';
+}
+function przPintar() {
+  const np = PRZ.lista.filter(x => x.tipo === "proyecto" && przVivo(x)).length;
+  const ni = PRZ.lista.filter(x => x.tipo === "idea" && przVivo(x)).length;
+  $("#przNp").textContent = np ? "· " + np : ""; $("#przNi").textContent = ni ? "· " + ni : "";
+  $("#przAviso").textContent = PRZ.error ? "⚠ " + PRZ.error :
+    (przRezagados() ? "⚠ " + przRezagados() + " sin movimiento desde hace " + PRZ_REZAGO_DIAS + "+ días: que no se queden en el pasado." : "");
+  let v = PRZ.lista.filter(x => x.tipo === PRZ.tab);
+  if (PRZ.filtro === "vivos") v = v.filter(przVivo);
+  else if (PRZ.filtro === "hechos") v = v.filter(x => x.estado === "hecho");
+  v = v.slice().sort((a, b) => (przEsRez(b) - przEsRez(a)) || (przVivo(b) - przVivo(a)) || (a.prioridad - b.prioridad) || String(b.actualizado).localeCompare(String(a.actualizado)));
+  $("#przLista").innerHTML = v.map(przPinta1).join("") ||
+    '<div class="przAviso">' + (PRZ.filtro === "hechos" ? "todavía no hay hechas aquí" : "nada pendiente por aquí 🎉") + '</div>';
+  if (typeof opPintarMenu === "function") opPintarMenu();
+}
+async function przAccion(llamada, msj) {           // llamada: () => rpc("pr_…", {…}) con el nombre LITERAL (el verificador de ecosistema lo lee)
+  try { await llamada(); await przCargar(); }
+  catch (e) { $("#przAviso").textContent = "⚠ " + msj + ": " + (e.message || "error"); }
+}
+function przArmar() {
+  $("#przTabP").onclick = () => { PRZ.tab = "proyecto"; $("#przTabP").classList.add("on"); $("#przTabI").classList.remove("on"); przPintar(); };
+  $("#przTabI").onclick = () => { PRZ.tab = "idea"; $("#przTabI").classList.add("on"); $("#przTabP").classList.remove("on"); przPintar(); };
+  $("#przFiltro").onchange = () => { PRZ.filtro = $("#przFiltro").value; przPintar(); };
+  $("#przMas").onclick = () => { $("#przForm").classList.toggle("abierto"); $("#przfTipo").value = PRZ.tab; $("#przfTit").focus(); };
+  $("#przfCerrar").onclick = () => $("#przForm").classList.remove("abierto");
+  $("#przfGuardar").onclick = async () => {
+    const t = $("#przfTit").value.trim();
+    if (t.length < 3) { $("#przfAviso").textContent = "ponle título"; return; }
+    try {
+      const r = await rpc("pr_agregar", {p_tipo: $("#przfTipo").value, p_titulo: t, p_detalle: $("#przfDet").value.trim(),
+                                         p_origen: $("#przfOri").value.trim(), p_prioridad: parseInt($("#przfPri").value, 10)});
+      $("#przfAviso").textContent = r && r.ya_existe ? "ya existe uno vivo con ese título" : "guardado ✓";
+      if (!(r && r.ya_existe)) {
+        $("#przfTit").value = ""; $("#przfDet").value = ""; $("#przfOri").value = "";
+        $("#przForm").classList.remove("abierto");           // guardado: se cierra; si ya existía, se queda para corregir
+      }
+      PRZ.tab = $("#przfTipo").value; ($("#przfTipo").value === "idea" ? $("#przTabI") : $("#przTabP")).click();
+      await przCargar();
+    } catch (e) { $("#przfAviso").textContent = "⚠ " + (e.message || "error"); }
+  };
+  $("#przLista").addEventListener("click", ev => {
+    const fila = ev.target.closest(".przFila"); if (!fila) return;
+    const id = parseInt(fila.dataset.id, 10), x = PRZ.lista.find(y => y.id === id); if (!x) return;
+    if (ev.target.classList.contains("przPalo")) {
+      const palo = ev.target.checked;
+      przAccion(() => rpc("pr_estado", {p_id: id, p_estado: palo ? "hecho" : "pendiente"}), "no se pudo palomear"); return;
+    }
+    if (ev.target.classList.contains("comGuardar")) {
+      const caja = fila.querySelector(".przCom input"), t = (caja.value || "").trim();
+      if (t) { caja.value = ""; PRZ.abiertos[id] = 1; przAccion(() => rpc("pr_comentar", {p_id: id, p_texto: t}), "no se pudo comentar"); }
+      return;
+    }
+    if (ev.target.classList.contains("encurso")) {
+      PRZ.abiertos[id] = 1;
+      przAccion(() => rpc("pr_estado", {p_id: id, p_estado: x.estado === "en_curso" ? "pendiente" : "en_curso"}), "no se pudo cambiar"); return;
+    }
+    if (ev.target.closest(".przCom")) return;          // escribir en la caja no cierra la fila
+    PRZ.abiertos[id] = PRZ.abiertos[id] ? 0 : 1; przPintar();
+  });
+}
+przArmar();
 /* ---------------- panel de opciones (derecha) ---------------- */
 const OP = {abierto: false, actual: "", mods: [
   {id: "criticos", t: "Críticos para kits", nodos: ["#p-criticos"], ocultar: ["#p-criticos > h2"],
@@ -2118,6 +2281,7 @@ const OP = {abierto: false, actual: "", mods: [
   {id: "compras", t: "Compras de 90 días sin venta", nodos: ["#secCompras"], sub: () => ($("#comprasCuenta") || {}).textContent || ""},
   {id: "bit", t: "Bitácora", nodos: ["#secBit"], sub: () => ($("#bitCuenta") || {}).textContent || ""},
   {id: "precio", t: "Precio ideal", nodos: ["#p-precio"], ocultar: ["#p-precio > h2"], sub: () => piResumen(), mal: () => piPendientes() > 0, ver: () => esDueno()},
+  {id: "proyectos", t: "Proyectos e ideas", nodos: ["#p-proyectos"], ocultar: ["#p-proyectos > h2"], sub: () => przResumen(), mal: () => przRezagados() > 0, ver: () => esDueno()},
   {id: "personas", t: "Personas y PIN", nodos: ["#secPersonas"], sub: () => "solo el dueño", ver: () => !$("#secPersonas").classList.contains("hidden")}
 ]};
 (function opMover() {
@@ -4573,9 +4737,13 @@ function piMercadoCambios(p) {   // lo que hay en los campos de mercado, listo p
   return JSON.stringify(ahora);
 }
 function piLinks(p) {
-  const qq = encodeURIComponent(((p.marca || "") + " " + p.modelo).trim()), m = encodeURIComponent(p.modelo);
+  const texto = ((p.marca || "") + " " + p.modelo).trim();
+  const qq = encodeURIComponent(texto);
+  // Mercado Libre busca por ruta, no por ?q=: «Stanley 020800R» → /stanley-020800r (sin acentos ni signos).
+  // Antes iba solo el modelo y por eso costaba encontrar el producto entre refacciones (1 nov).
+  const ml = texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || encodeURIComponent(p.modelo);
   const L = [["eBay nuevos (más barato primero)", "https://www.ebay.com/sch/i.html?_nkw=" + qq + "&LH_ItemCondition=1000&LH_BIN=1&_sop=15"], ["eBay vendidos", "https://www.ebay.com/sch/i.html?_nkw=" + qq + "&LH_Sold=1&LH_Complete=1"],
-             ["Amazon USA", "https://www.amazon.com/s?k=" + qq], ["Mercado Libre", "https://listado.mercadolibre.com.mx/" + m], ["Amazon México", "https://www.amazon.com.mx/s?k=" + qq], ["Google Shopping MX", "https://www.google.com/search?tbm=shop&gl=mx&hl=es&q=" + qq]];
+             ["Amazon USA", "https://www.amazon.com/s?k=" + qq], ["Mercado Libre", "https://listado.mercadolibre.com.mx/" + ml], ["Amazon México", "https://www.amazon.com.mx/s?k=" + qq], ["Google Shopping MX", "https://www.google.com/search?tbm=shop&gl=mx&hl=es&q=" + qq]];
   if (p.link_ebay) L.unshift(["eBay (link del maestro)", p.link_ebay]);
   if (p.link_hd) L.unshift(["Home Depot", p.link_hd]);
   return L.map(([t, u]) => '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + t + '</a>').join(" · ");
