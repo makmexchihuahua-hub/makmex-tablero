@@ -4628,16 +4628,19 @@ function piPintar() {
   if (PI.tab === "nuevos") {
     barra = [["todos", "Todos"], ["pendiente", "Pendientes"], ["aprobado", "Aprobados"], ["rechazado", "Rechazados"]].map(([k, t]) =>
       '<button type="button" class="rgChip' + (PI.filtro === k ? " sel" : "") + '" data-pif="' + k + '">' + t + '</button>').join("") + barra +
+      '<button type="button" class="invbtn" id="piXlsB">Excel SICAR (.xls)</button>' +
       '<button type="button" class="invbtn" id="piCargarB">Cargar propuesta (archivo)</button>' +
       '<button type="button" class="invbtn lleno" id="piIngresarB"' + (nuevos.length && !pend ? "" : " disabled") + ' title="' + (pend ? pend + " fichas por decidir" : "Pasar los aprobados al catálogo") + '">Ingresar productos' + (nuevos.length && !pend ? " (" + nuevos.filter(p => p.decision === "aprobado").length + ")" : "") + '</button>';
   } else {
     const cats = {}; piRegistrados().forEach(p => { const c = p.categoria || "(sin categoría)"; cats[c] = (cats[c] || 0) + 1; });
     barra += '<select id="piOrd" aria-label="Ordenar">' + [["vendidos", "Más vendidos primero"], ["orden", "Orden del catálogo"], ["pct", "% HD mayor primero"], ["dias", "Más días sin venta"], ["precio", "Precio mayor primero"]].map(([k, t]) => '<option value="' + k + '"' + (PI.ord === k ? " selected" : "") + '>' + t + '</option>').join("") + '</select>' +
       '<select id="piCat" aria-label="Categoría"><option value="">Todas las categorías (' + reg + ')</option>' + Object.keys(cats).sort((a, b) => a.localeCompare(b)).map(c => '<option value="' + esc(c) + '"' + (PI.cat === c ? " selected" : "") + '>' + esc(c) + ' (' + cats[c] + ')</option>').join("") + '</select>' +
+      '<button type="button" class="invbtn" id="piXlsB">Excel SICAR (.xls)</button>' +
       '<button type="button" class="invbtn" id="piCargarCatB"' + (PI.falta11 ? ' disabled title="Falta correr 11_precio_catalogo.sql"' : '') + '>Cargar catálogo (archivo)</button>' +
       (PI.falta11 ? '<span class="piChip ro">falta correr 11_precio_catalogo.sql</span>' : '');
   }
   $("#piBarra").innerHTML = barra;
+  const bx = $("#piXlsB"); if (bx) bx.onclick = piXlsElegir;
   const L = piFiltrar(), tope = PI.pag * PI_PAG, V = L.slice(0, tope);
   g.innerHTML = V.length ? V.map(piFicha).join("") + (L.length > tope ? '<div class="piMas"><button type="button" class="invbtn" id="piMas">Mostrar más (' + (L.length - tope) + ' restantes)</button></div>' : '') :
     '<div class="cpVacio" style="grid-column:1/-1">' + (PI.tab === "nuevos" ? "No hay productos nuevos. Toca «Cargar propuesta» y elige el archivo del chat." : (piRegistrados().length ? "Nada con ese filtro." : "Todavía no hay productos en el catálogo: toca «Cargar catálogo» y elige MAKMEX-dashboard/precio-catalogo.json (lo genera exportar_catalogo_precio.py en la Mac).")) + '</div>';
@@ -4942,6 +4945,134 @@ document.addEventListener("click", ev => { const b = ev.target.closest('#opMenu 
 function piFotosCatalogo() {   // una vez: el índice de fotos del cotizador (core + pedido.json) para que los registrados sin existencia también tengan foto
   if (PI.fotosCat || typeof czCatalogo !== "function") return; PI.fotosCat = 1;
   czCatalogo().then(() => { if (!$("#piCapa").classList.contains("hidden")) { if (PI.pintaLado) PI.pintaLado(); } else piPintar(); }).catch(() => { PI.fotosCat = 0; });
+}
+/* ===== Excel de SICAR (.xls): alta y modificación masiva con el acomodo del maestro (1 nov 2026) =====
+   SICAR solo importa .xls DEL VIEJO (BIFF8 dentro de un contenedor CDFV2), así que el archivo se arma aquí
+   byte por byte, sin librerías de fuera (regla del proyecto). 7 renglones por producto (AA…F) y los precios
+   1/2/3 según el tipo: herramienta de batería → sola / BT / BK; batería → 24/40 %; cargador → 35/47 %; lo
+   demás → listas 2 y 3. Verificado contra renglones reales de ESTANDAR-sicar (claude/formato-estandar-sicar.md). */
+const XLS_COLS = ["CLAVE", "CLAVE ALTERNA", "DESCRIPCION", "SERVICIO (S/N)", "INV_MIN", "INV_MAX", "PRECIO COMPRA", "PRECIO 1", "PRECIO 2", "MAYOREO 2", "PRECIO 3", "MAYOREO 3", "PRECIO 4", "MAYOREO 4", "EXIST.", "PESO", "CARACTERISTICAS", "DEPARTAMENTO", "CATEGORIA", "RECETA (S/N)", "GRANEL (S/N)", "IMPUESTO (S/N)", "IMP Texas State Tax (S/N)", "IMP Arizona Tax (S/N)"];
+function xlsBiff(filas) {   // las filas (texto o número) → el flujo BIFF8 (lo que vive dentro del .xls)
+  const partes = [];
+  const u16 = n => [n & 255, (n >> 8) & 255];
+  const u32 = n => [n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >>> 24) & 255];
+  const f64 = n => { const b = new ArrayBuffer(8); new DataView(b).setFloat64(0, n, true); return Array.from(new Uint8Array(b)); };
+  const rec = (tipo, datos) => { partes.push(...u16(tipo), ...u16(datos.length)); for (let i = 0; i < datos.length; i += 8000) partes.push(...datos.slice(i, i + 8000)); };
+  rec(0x0809, [...u16(0x0600), ...u16(0x0005), ...u16(0x0DBB), ...u16(0x07CC), ...u32(0), ...u32(0x0600)]);    // BOF del libro
+  rec(0x0042, u16(1200));                                                                                      // CODEPAGE UTF-16
+  rec(0x003D, [...u16(0x0168), ...u16(0x001E), ...u16(0x3A5C), ...u16(0x23C3), ...u16(0x0038), ...u16(0), ...u16(0), ...u16(1), ...u16(600)]);   // WINDOW1
+  for (let i = 0; i < 5; i++)                                                                                  // 5 fuentes (el mínimo clásico de Excel)
+    rec(0x0031, [...u16(200), ...u16(0), ...u16(0x7FFF), ...u16(400), ...u16(0), 0, 0, 0, 0, 5, 0, 65, 114, 105, 97, 108]);
+  const xf = estilo => [...u16(0), ...u16(0), ...u16(estilo ? 0xFFF5 : 0x0001), 0x20, 0, 0, estilo ? 0xF4 : 0, ...u32(0), ...u32(0), ...u16(0x20C0)];
+  for (let i = 0; i < 15; i++) rec(0x00E0, xf(1));
+  for (let i = 0; i < 185; i++) rec(0x00E0, xf(0));   // de sobra A PROPÓSITO: el flujo pasa de 4 KB y el contenedor no necesita mini-FAT
+  rec(0x0293, [...u16(0x8000), 0, 255]);              // estilo Normal
+  const posHoja = partes.length + 4;                  // aquí va el brinco al BOF de la hoja (se parcha abajo)
+  rec(0x0085, [...u32(0), ...u16(0), 8, 0, 69, 83, 84, 65, 78, 68, 65, 82]);                                   // BOUNDSHEET «ESTANDAR»
+  rec(0x000A, []);
+  const ini = partes.length;
+  partes[posHoja] = ini & 255; partes[posHoja + 1] = (ini >> 8) & 255; partes[posHoja + 2] = (ini >> 16) & 255; partes[posHoja + 3] = (ini >>> 24) & 255;
+  rec(0x0809, [...u16(0x0600), ...u16(0x0010), ...u16(0x0DBB), ...u16(0x07CC), ...u32(0), ...u32(0x0600)]);    // BOF de la hoja
+  rec(0x0200, [...u32(0), ...u32(filas.length), ...u16(0), ...u16(XLS_COLS.length), ...u16(0)]);               // DIMENSIONS
+  filas.forEach((fila, r) => fila.forEach((v, c) => {
+    if (v === "" || v == null) return;
+    if (typeof v === "number") { rec(0x0203, [...u16(r), ...u16(c), ...u16(15), ...f64(v)]); return; }         // NUMBER
+    let t = String(v); if (t.length > 4000) t = t.slice(0, 3999) + "…";
+    let alto = false; for (let i = 0; i < t.length; i++) if (t.charCodeAt(i) > 255) { alto = true; break; }
+    const ch = []; for (let i = 0; i < t.length; i++) { const cc = t.charCodeAt(i); ch.push(cc & 255); if (alto) ch.push((cc >> 8) & 255); }
+    rec(0x0204, [...u16(r), ...u16(c), ...u16(15), ...u16(t.length), alto ? 1 : 0, ...ch]);                    // LABEL (texto)
+  }));
+  rec(0x000A, []);
+  return Uint8Array.from(partes);
+}
+function xlsCfb(flujo) {   // mete el BIFF en su contenedor CDFV2: eso ES el archivo .xls
+  const SEC = 512, nFlu = Math.ceil(flujo.length / SEC);
+  let nFat = 1;
+  while (nFat * 128 < nFat + 1 + nFlu) nFat++;
+  const total = nFat + 1 + nFlu;                       // sectores: [FAT…][directorio][flujo…]
+  const f = new Uint8Array(512 + total * SEC), dv = new DataView(f.buffer);
+  [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1].forEach((b, i) => { f[i] = b; });
+  dv.setUint16(24, 0x003E, true); dv.setUint16(26, 3, true); dv.setUint16(28, 0xFFFE, true);
+  dv.setUint16(30, 9, true); dv.setUint16(32, 6, true);
+  dv.setUint32(44, nFat, true); dv.setUint32(48, nFat, true); dv.setUint32(56, 4096, true);
+  dv.setUint32(60, 0xFFFFFFFE, true); dv.setUint32(64, 0, true);
+  dv.setUint32(68, 0xFFFFFFFE, true); dv.setUint32(72, 0, true);
+  for (let i = 0; i < 109; i++) dv.setUint32(76 + i * 4, i < nFat ? i : 0xFFFFFFFF, true);
+  for (let j = 0; j < nFat * 128; j++)
+    dv.setUint32(512 + j * 4, j >= total ? 0xFFFFFFFF : j < nFat ? 0xFFFFFFFD : j === nFat ? 0xFFFFFFFE : j === total - 1 ? 0xFFFFFFFE : j + 1, true);
+  const dir = 512 + nFat * SEC;
+  const entrada = (n, txt, tipo) => { const o = dir + n * 128; for (let i = 0; i < txt.length; i++) dv.setUint16(o + i * 2, txt.charCodeAt(i), true);
+    dv.setUint16(o + 64, (txt.length + 1) * 2, true); f[o + 66] = tipo; f[o + 67] = 1;
+    dv.setInt32(o + 68, -1, true); dv.setInt32(o + 72, -1, true); dv.setInt32(o + 76, -1, true); return o; };
+  const r0 = entrada(0, "Root Entry", 5);
+  dv.setInt32(r0 + 76, 1, true); dv.setUint32(r0 + 116, 0xFFFFFFFE, true); dv.setUint32(r0 + 120, 0, true);
+  const e1 = entrada(1, "Workbook", 2);
+  dv.setUint32(e1 + 116, nFat + 1, true); dv.setUint32(e1 + 120, flujo.length, true);
+  dv.setInt32(dir + 2 * 128 + 68, -1, true); dv.setInt32(dir + 2 * 128 + 72, -1, true); dv.setInt32(dir + 2 * 128 + 76, -1, true);
+  dv.setInt32(dir + 3 * 128 + 68, -1, true); dv.setInt32(dir + 3 * 128 + 72, -1, true); dv.setInt32(dir + 3 * 128 + 76, -1, true);
+  f.set(flujo, 512 + (nFat + 1) * SEC);
+  return f;
+}
+function piXlsPrecios(p, ak) {   // PRECIO 2 y 3 de SICAR para esta calificación, según el tipo (acomodo del maestro)
+  const t = piTipo(p);
+  if (t === "BATERIAS" || t === "CARGADORES") { const d = piDesc(p); return [piRed(ak * (1 - d.dk)), piRed(ak * (1 - d.dc))]; }
+  if (t === "KIT") {
+    const K = piKit(p);
+    if (K && K.bat) { const ar = piRed(ak * (1 - Number(p.l2))); return [piRed(ar + K.bat.kit * 1.12), Math.round(ar + K.bat.kit + (K.car ? K.car.kit : 0))]; }
+  }
+  return [piRed(ak * (1 - Number(p.l2))), piRed(ak * (1 - Number(p.l3)))];
+}
+function piXlsFilas(productos) {   // los renglones del .xls: encabezados + 7 por producto (AA…F)
+  const filas = [XLS_COLS.slice()], fuera = [], avisos = [];
+  for (const p of productos) {
+    const t = piTipo(p);
+    if (t === "COMBO") { fuera.push(p.modelo + " (combo: se arma aparte, como en el maestro)"); continue; }
+    const v = piVar(p);
+    if (!v.AA) { fuera.push(p.modelo + " (sin precio AA)"); continue; }
+    if (t === "KIT") { const K = piKit(p); if (!K || !K.bat) avisos.push(p.modelo + ": de batería pero sin batería asignada; fue con listas 2/3"); }
+    let desc = String(p.descripcion || "").trim();
+    const code = t === "KIT" ? piBatCode(p) : "";
+    if (code && !desc.toUpperCase().endsWith(" " + code)) desc += " " + code;   // el maestro lleva el código de batería al final del título
+    const carac = PI.carac[p.modelo] || "";
+    for (const suf of ["AA", "A", "B", "C", "D", "E", "F"]) {
+      const ak = v[suf], [p2, p3] = piXlsPrecios(p, ak);
+      filas.push([p.modelo + "-" + suf, p.upc ? p.upc + "-" + suf : "", desc, "", "", "", "", ak, p2, "", p3, "", "", "", "", "", carac, p.marca || "", p.categoria || "", "", "", "", "", ""]);
+    }
+  }
+  return {filas, fuera, avisos};
+}
+async function piXlsCarac(modelos) {   // las características de los elegidos (la lista general no las trae)
+  const faltan = modelos.filter(m => PI.carac[m] === undefined);
+  for (let i = 0; i < faltan.length; i += 60) {
+    const parte = faltan.slice(i, i + 60);
+    const f = await q("precio_producto", "select=modelo,caracteristicas&modelo=in." + enLista(parte));
+    for (const x of f) PI.carac[x.modelo] = x.caracteristicas || "";
+    parte.forEach(m => { if (PI.carac[m] === undefined) PI.carac[m] = ""; });
+  }
+}
+async function piXls(productos, nombre) {
+  try {
+    await piXlsCarac(productos.map(p => p.modelo));
+    const {filas, fuera, avisos} = piXlsFilas(productos);
+    if (filas.length <= 1) { toast("Nada que exportar" + (fuera.length ? " · " + fuera.join(" · ").slice(0, 120) : ""), true); return; }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([xlsCfb(xlsBiff(filas))], {type: "application/vnd.ms-excel"}));
+    a.download = nombre; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+    const extra = fuera.concat(avisos);
+    toast(nombre + ": " + (filas.length - 1) + " renglones de " + (filas.length - 1) / 7 + " productos" + (extra.length ? " · OJO: " + extra.join(" · ").slice(0, 160) : ""), extra.length > 0);
+    $("#piPaso").innerHTML = "";
+  } catch (e) { toast("No se pudo armar el Excel: " + e.message, true); }
+}
+const piIngresadosRecientes = () => { const corte = Date.now() - 14 * 864e5; return piRegistrados().filter(p => p.ingresado_en && new Date(p.ingresado_en).getTime() >= corte); };
+function piXlsElegir() {
+  const ing = piIngresadosRecientes(), vista = piFiltrar(), hoy = new Date().toISOString().slice(0, 10);
+  $("#piPaso").innerHTML = '<div class="piPaso"><b>Excel de SICAR (.xls)</b> · 7 renglones por producto (AA–F), precios 1/2/3 con el acomodo del maestro. ' +
+    '<button type="button" class="invbtn" id="piXlsIng"' + (ing.length ? '' : ' disabled') + '>Alta: ingresados en los últimos 14 días (' + ing.length + ')</button> ' +
+    '<button type="button" class="invbtn" id="piXlsVista"' + (vista.length ? '' : ' disabled') + '>La vista actual (' + vista.length + ')</button> ' +
+    '<button type="button" class="invbtn" id="piXlsNo">Cerrar</button></div>';
+  $("#piXlsIng").onclick = () => piXls(piIngresadosRecientes(), "SICAR-alta-" + hoy + ".xls");
+  $("#piXlsVista").onclick = () => piXls(piFiltrar(), "SICAR-precios-" + hoy + ".xls");
+  $("#piXlsNo").onclick = () => { $("#piPaso").innerHTML = ""; };
 }
 
 iniciar();
