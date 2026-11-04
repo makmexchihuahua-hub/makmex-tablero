@@ -691,6 +691,29 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 #przForm .fila{display:flex;gap:8px}
 #przForm .fila > *{flex:1}
 .przAviso{font-size:12.5px;color:var(--ink-3);margin:6px 0 10px}
+
+/* ofertas */
+#p-ofertas{display:none}
+.ofBarra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:2px 0 12px}
+.ofBarra input[type=search]{flex:1;min-width:150px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--bg);color:var(--ink)}
+.ofGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.ofCard{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
+.ofCard.aprobado{border-color:#16a34a}
+.ofCard.rechazado{opacity:.5}
+.ofMod{font-weight:700;font-family:var(--display)}
+.ofDesc{font-size:12.5px;color:var(--ink-2);margin:2px 0 6px;min-height:30px}
+.ofMeta{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3);margin-bottom:6px}
+.ofMeta .chip{border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.ofMeta .muerto{color:#b91c1c;border-color:#b91c1c;font-weight:700}
+.ofMeta .pub{color:#1d4ed8;border-color:#1d4ed8;font-weight:700}
+.ofPrecios{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ofTachado{text-decoration:line-through;color:var(--ink-3)}
+.ofPrecios .num{font-size:20px;font-weight:700;color:#b91c1c}
+.ofPct{font-weight:700;color:#b91c1c}
+.ofEdit{display:flex;gap:6px;align-items:center;margin:6px 0;font-size:12.5px;color:var(--ink-3)}
+.ofEdit input{width:90px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--bg);color:var(--ink)}
+.ofAcc{display:flex;gap:6px;margin-top:6px}
+.ofAviso{font-size:12.5px;color:var(--ink-3);margin:6px 0 10px}
 </style>
 </head>
 <body>
@@ -884,6 +907,13 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div class="piGrid" id="piGrid"></div>
     <input type="file" id="piArchivo" accept=".json,application/json" class="hidden">
     <input type="file" id="piArchivoCat" accept=".json,application/json" class="hidden">
+  </section>
+  <section class="panel" id="p-ofertas">
+    <h2>Ofertas</h2>
+    <div class="ofBarra" id="ofBarra"></div>
+    <div class="ofAviso" id="ofAviso"></div>
+    <div class="ofGrid" id="ofGrid"></div>
+    <input type="file" id="ofArchivo" accept=".json,application/json" class="hidden">
   </section>
   <section class="panel" id="p-proyectos">
     <h2>Proyectos e ideas</h2>
@@ -1147,7 +1177,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); przCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); przCargar(); ofCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -2276,6 +2306,102 @@ function przArmar() {
   });
 }
 przArmar();
+/* ---------------- ofertas (buen fin y campañas) ---------------- */
+const OF = {lista: [], filtro: "pendiente", busca: "", error: "", cargando: 0};
+
+async function ofCargar() {
+  if (!esDueno() || OF.cargando) return;
+  OF.cargando = 1;
+  try { OF.lista = await q("oferta", "select=*&order=valor.desc.nullslast,modelo"); OF.error = ""; }
+  catch (e) { OF.error = /PGRST205|42P01/.test(e.message || "") ? "falta" : (e.message || "error"); }
+  OF.cargando = 0;
+  ofPintar();
+}
+const ofPendientes = () => OF.lista.filter(x => x.decision === "pendiente");
+const ofAprobadas = () => OF.lista.filter(x => x.decision === "aprobado");
+const ofPorPublicar = () => ofAprobadas().filter(x => !x.publicado_en);
+function ofResumen() {
+  if (OF.error === "falta") return "falta correr 17_ofertas.sql en Supabase";
+  if (OF.error) return OF.error;
+  if (!OF.lista.length) return "carga el archivo de ofertas que te pase Claude";
+  const p = ofPendientes().length, a = ofAprobadas().length;
+  return (p ? p + " por decidir · " : "") + a + " aprobadas de " + OF.lista.length +
+    (ofPorPublicar().length ? " · " + ofPorPublicar().length + " sin publicar" : "");
+}
+function ofProducto(m) { return (typeof PI !== "undefined" && PI.lista || []).find(p => p.modelo === m) || {}; }
+function ofFicha(o) {
+  const p = ofProducto(o.modelo), pct = Math.round((o.descuento_pct || 0) * 100);
+  return '<div class="ofCard ' + esc(o.decision) + '" data-ofm="' + esc(o.modelo) + '">' +
+    '<div class="ofMod">' + esc(o.modelo) + '</div>' +
+    '<div class="ofDesc">' + esc((p.descripcion || "").slice(0, 80)) + '</div>' +
+    '<div class="ofMeta">' + (o.nivel ? '<span class="chip' + (/muerto/.test(o.nivel) ? " muerto" : "") + '">' + esc(o.nivel) + '</span>' : "") +
+      (o.pzs != null ? '<span class="chip">' + Number(o.pzs) + ' pzs</span>' : "") +
+      (o.meses != null ? '<span class="chip">' + (Number(o.meses) >= 99 ? "sin venta 90d" : Number(o.meses).toFixed(0) + " meses inv") + '</span>' : "") +
+      (o.valor != null ? '<span class="chip">$' + Math.round(o.valor).toLocaleString() + ' atorado</span>' : "") +
+      (o.publicado_en ? '<span class="chip pub">publicada</span>' : "") + '</div>' +
+    '<div class="ofPrecios"><span class="ofTachado">' + pesos(o.precio_normal) + '</span>' +
+      '<b class="num">' + pesos(o.precio_oferta) + '</b><span class="ofPct">−' + pct + '%</span></div>' +
+    '<div class="ofEdit">$ oferta <input type="number" step="10" min="0" value="' + esc(o.precio_oferta) + '" data-ofp="' + esc(o.modelo) + '">' +
+      '<span>piso ' + pesos(o.piso) + '</span></div>' +
+    '<div class="ofAcc">' +
+      (o.decision !== "aprobado" ? '<button type="button" class="invbtn lleno" data-ofok="' + esc(o.modelo) + '">Aprobar</button>' : '<button type="button" class="invbtn" data-ofpen="' + esc(o.modelo) + '">Regresar a pendiente</button>') +
+      (o.decision !== "rechazado" ? '<button type="button" class="invbtn rojo" data-ofno="' + esc(o.modelo) + '">Rechazar</button>' : '') +
+    '</div></div>';
+}
+function ofPintar() {
+  const g = $("#ofGrid"); if (!g) return;
+  if (OF.error === "falta") { $("#ofBarra").innerHTML = ""; g.innerHTML = '<div class="cpVacio" style="grid-column:1/-1">Falta correr <b>17_ofertas.sql</b> en Supabase.</div>'; return; }
+  if (OF.error) { $("#ofBarra").innerHTML = ""; g.innerHTML = '<div class="cpVacio" style="grid-column:1/-1">' + esc(OF.error) + '</div>'; return; }
+  const n = {pendiente: ofPendientes().length, aprobado: ofAprobadas().length, rechazado: OF.lista.filter(x => x.decision === "rechazado").length, todos: OF.lista.length};
+  $("#ofBarra").innerHTML =
+    [["pendiente", "Pendientes"], ["aprobado", "Aprobadas"], ["rechazado", "Rechazadas"], ["todos", "Todas"]].map(([k, t]) =>
+      '<button type="button" class="rgChip' + (OF.filtro === k ? " sel" : "") + '" data-off="' + k + '">' + t + ' (' + n[k] + ')</button>').join("") +
+    '<input type="search" id="ofBusca" placeholder="Buscar modelo o descripción" value="' + esc(OF.busca) + '">' +
+    '<button type="button" class="invbtn" id="ofCargarB">Cargar ofertas (archivo)</button>' +
+    '<button type="button" class="invbtn lleno" id="ofPublicarB"' + (ofPorPublicar().length && !ofPendientes().length ? "" : " disabled") +
+      ' title="' + (ofPendientes().length ? ofPendientes().length + " ofertas por decidir" : "Marcar las aprobadas como publicadas") + '">Publicar ofertas' + (ofPorPublicar().length && !ofPendientes().length ? " (" + ofPorPublicar().length + ")" : "") + '</button>';
+  const b = OF.busca.trim().toLowerCase();
+  let v = OF.filtro === "todos" ? OF.lista : OF.lista.filter(x => x.decision === OF.filtro);
+  if (b) v = v.filter(x => (x.modelo + " " + (ofProducto(x.modelo).descripcion || "")).toLowerCase().includes(b));
+  g.innerHTML = v.map(ofFicha).join("") ||
+    '<div class="cpVacio" style="grid-column:1/-1">' + (OF.lista.length ? "Nada con ese filtro." : "No hay ofertas. Toca «Cargar ofertas» y elige el archivo del chat.") + '</div>';
+  ofAmarrar();
+  if (typeof opPintarMenu === "function") opPintarMenu();
+}
+function ofAmarrar() {
+  document.querySelectorAll("#ofBarra [data-off]").forEach(b => b.onclick = () => { OF.filtro = b.dataset.off; ofPintar(); });
+  const bu = $("#ofBusca"); if (bu) { let t = null; bu.oninput = () => { clearTimeout(t); t = setTimeout(() => { OF.busca = bu.value; ofPintar(); const b2 = $("#ofBusca"); if (b2) { b2.focus(); b2.setSelectionRange(b2.value.length, b2.value.length); } }, 250); }; }
+  const cb = $("#ofCargarB"); if (cb) cb.onclick = () => $("#ofArchivo").click();
+  const pb = $("#ofPublicarB"); if (pb) pb.onclick = ofPublicar;
+  document.querySelectorAll("#ofGrid [data-ofok]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofok, "aprobado"));
+  document.querySelectorAll("#ofGrid [data-ofno]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofno, "rechazado"));
+  document.querySelectorAll("#ofGrid [data-ofpen]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofpen, "pendiente"));
+  document.querySelectorAll("#ofGrid [data-ofp]").forEach(i => i.onchange = async () => {
+    const m = i.dataset.ofp, o = OF.lista.find(x => x.modelo === m); if (!o || i.value === "" || Number(i.value) === Number(o.precio_oferta)) return;
+    try { await rpc("of_ajustar", {p_modelo: m, p_cambios: {precio_oferta: i.value}}); toast("Oferta de " + m + ": " + pesos(i.value)); await ofCargar(); }
+    catch (e) { toast("No se guardó: " + e.message, true); i.value = o.precio_oferta; }
+  });
+}
+async function ofDecidir(m, d) {
+  try { await rpc("of_decidir", {p_modelo: m, p_decision: d}); const o = OF.lista.find(x => x.modelo === m); if (o) { o.decision = d; o.publicado_en = null; } toast(m + ": " + d); ofPintar(); }
+  catch (e) { toast("No se pudo: " + e.message, true); }
+}
+async function ofPublicar() {
+  const n = ofPorPublicar().length;
+  if (!confirm("¿Marcar " + n + " ofertas aprobadas como publicadas? El sitio las toma con el flujo de siempre en la Mac (doble clic); nada sale solo desde aquí.")) return;
+  try { const r = await rpc("of_publicar", {}); toast(r.publicadas + " ofertas marcadas; sigue el comando de la Mac"); await ofCargar(); }
+  catch (e) { toast("No se pudo publicar: " + e.message, true); }
+}
+$("#ofArchivo").addEventListener("change", async ev => {
+  const j = await piLeeArchivo(ev); if (!j) return;
+  const b = $("#ofCargarB"); if (b) { b.disabled = true; b.textContent = "Cargando ofertas…"; }
+  try {
+    const res = await rpc("of_cargar", {p_items: j.items, p_campana: j.campana || null, p_inicio: j.inicio || null, p_fin: j.fin || null});
+    toast("Ofertas cargadas: " + res.nuevas + " nuevas, " + res.actualizadas + " actualizadas" +
+      (res.saltadas ? ", " + res.saltadas + " ya decididas (no se tocan)" : "") + (res.sin_producto ? ", " + res.sin_producto + " sin producto en el catálogo" : ""));
+    OF.filtro = "pendiente"; await ofCargar();
+  } catch (e) { toast("No se pudo cargar: " + (e.message === "sesion" ? "la sesión caducó" : e.message), true); ofPintar(); }
+});
 /* ---------------- panel de opciones (derecha) ---------------- */
 const OP = {abierto: false, actual: "", mods: [
   {id: "criticos", t: "Críticos para kits", nodos: ["#p-criticos"], ocultar: ["#p-criticos > h2"],
@@ -2288,6 +2414,7 @@ const OP = {abierto: false, actual: "", mods: [
   {id: "compras", t: "Compras de 90 días sin venta", nodos: ["#secCompras"], sub: () => ($("#comprasCuenta") || {}).textContent || ""},
   {id: "bit", t: "Bitácora", nodos: ["#secBit"], sub: () => ($("#bitCuenta") || {}).textContent || ""},
   {id: "precio", t: "Precio ideal", nodos: ["#p-precio"], ocultar: ["#p-precio > h2"], sub: () => piResumen(), mal: () => piPendientes() > 0, ver: () => esDueno()},
+  {id: "ofertas", t: "Ofertas", nodos: ["#p-ofertas"], ocultar: ["#p-ofertas > h2"], sub: () => ofResumen(), mal: () => ofPendientes().length > 0, ver: () => esDueno()},
   {id: "proyectos", t: "Proyectos e ideas", nodos: ["#p-proyectos"], ocultar: ["#p-proyectos > h2"], sub: () => przResumen(), mal: () => przRezagados() > 0, ver: () => esDueno()},
   {id: "personas", t: "Personas y PIN", nodos: ["#secPersonas"], sub: () => "solo el dueño", ver: () => !$("#secPersonas").classList.contains("hidden")}
 ]};
