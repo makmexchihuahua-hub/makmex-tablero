@@ -721,6 +721,13 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .ofMeta .util{color:#15803d;border-color:#15803d;font-weight:600}
 .ofMeta .util.neg{color:#b91c1c;border-color:#b91c1c}
 .ofMeta .hdref{color:#1d4ed8;border-color:#1d4ed8}
+.ofGraB{border:none;background:none;color:var(--ink-3);font-size:12.5px;padding:4px 0;cursor:pointer;text-decoration:underline dotted}
+.ofGra{border-top:1px dashed var(--line);margin-top:6px;padding-top:6px;display:grid;gap:4px}
+.ofGra .fila{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--ink-2);flex-wrap:wrap}
+.ofGra .fila b{min-width:108px;font-family:var(--display)}
+.ofGra .fila input{width:58px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--bg);color:var(--ink)}
+.ofGra .fila .res{font-weight:700}
+.ofGra .fila .res.bajo{color:#b91c1c}
 </style>
 </head>
 <body>
@@ -2314,7 +2321,8 @@ function przArmar() {
 }
 przArmar();
 /* ---------------- ofertas (buen fin y campañas) ---------------- */
-const OF = {lista: [], filtro: "pendiente", busca: "", error: "", cargando: 0};
+const OF = {lista: [], filtro: "pendiente", busca: "", error: "", cargando: 0, abiertoG: {}};
+const OF_GRADOS = ["AA", "A", "B", "C", "D", "E", "F"];
 
 async function ofCargar() {
   if (!esDueno() || OF.cargando) return;
@@ -2323,11 +2331,14 @@ async function ofCargar() {
   catch (e) { OF.error = /PGRST205|42P01/.test(e.message || "") ? "falta" : (e.message || "error"); }
   if (!OF.ex && !OF.error && OF.lista.length) {   // existencia VIVA por sucursal, una sola consulta
     try {
-      const ex = await q("sicar_existencia", "select=suc,clave,existencia&existencia=gt.0");
+      const ex = await q("sicar_existencia", "select=suc,clave,existencia,precio1&existencia=gt.0");
       OF.ex = {};
       for (const e of ex) {
         const m = String(e.clave || "").replace(/-(AA|A|B|C|D|E|F)$/i, "").toUpperCase();
-        (OF.ex[m] = OF.ex[m] || {})[e.suc] = (OF.ex[m][e.suc] || 0) + Number(e.existencia || 0);
+        const r = OF.ex[m] = OF.ex[m] || {suc: {}, claves: {}};
+        r.suc[e.suc] = (r.suc[e.suc] || 0) + Number(e.existencia || 0);
+        const c = r.claves[e.clave] = r.claves[e.clave] || {pzs: 0, p1: 0};
+        c.pzs += Number(e.existencia || 0); c.p1 = Math.max(c.p1, Number(e.precio1 || 0));
       }
     } catch (e) { OF.ex = {}; }
   }
@@ -2352,8 +2363,8 @@ function ofHdHoy(p) {   // el precio normal de HD convertido (lectura fresca del
 }
 function ofFicha(o) {
   const p = ofProducto(o.modelo), pct = Math.round((o.descuento_pct || 0) * 100);
-  const porSuc = (OF.ex || {})[String(o.modelo).toUpperCase()] || {};
-  const sucTxt = Object.keys(porSuc).sort().map(s => (typeof SUCS !== "undefined" && SUCS[s] || "S" + s) + " " + porSuc[s]).join(" · ");
+  const ex = (OF.ex || {})[String(o.modelo).toUpperCase()] || {suc: {}, claves: {}};
+  const sucTxt = Object.keys(ex.suc).sort().map(s => (typeof SUCS !== "undefined" && SUCS[s] || "S" + s) + " " + ex.suc[s]).join(" · ");
   const costo = Math.round(Number(o.precio_normal || 0) * 0.63);   // su costo ≈ 63 % del precio 1 (regla del 4 nov)
   const util = Number(o.precio_oferta || 0) - costo;
   const bajoPiso = o.piso != null && Number(o.precio_oferta) < Number(o.piso);
@@ -2376,11 +2387,34 @@ function ofFicha(o) {
       '<b class="num">' + pesos(o.precio_oferta) + '</b><span class="ofPct">−' + pct + '%</span></div>' +
     '<div class="ofEdit">$ oferta <input type="number" step="10" min="0" value="' + esc(o.precio_oferta) + '" data-ofp="' + esc(o.modelo) + '">' +
       '<span>piso ' + pesos(o.piso) + '</span></div>' +
+    ofGradosHtml(o, ex) +
     '<div class="ofAcc">' +
       (o.decision !== "aprobado" ? '<button type="button" class="invbtn lleno" data-ofok="' + esc(o.modelo) + '">Aprobar</button>' : '<button type="button" class="invbtn" data-ofpen="' + esc(o.modelo) + '">Regresar a pendiente</button>') +
       (o.decision !== "rechazado" ? '<button type="button" class="invbtn rojo" data-ofno="' + esc(o.modelo) + '">Rechazar</button>' : '') +
       '<button type="button" class="invbtn" data-ofver="' + esc(o.modelo) + '">Dashboard</button>' +
     '</div></div>';
+}
+function ofGrado(clave) { const m = /-(AA|A|B|C|D|E|F)$/.exec(String(clave).toUpperCase()); return m ? m[1] : null; }
+function ofGradosHtml(o, ex) {
+  const claves = Object.keys(ex.claves || {}).filter(c => ofGrado(c)).sort((a, b) => OF_GRADOS.indexOf(ofGrado(a)) - OF_GRADOS.indexOf(ofGrado(b)));
+  if (!claves.length) return "";
+  const G = o.grados || {}, conG = Object.keys(G).length;
+  let h = '<button type="button" class="ofGraB" data-ofgb="' + esc(o.modelo) + '">Por calificación ' +
+    (conG ? "(" + Object.keys(G).sort((a, b) => OF_GRADOS.indexOf(a) - OF_GRADOS.indexOf(b)).map(g => g + " −" + Math.round(G[g] * 100) + "%").join(" · ") + ") " : "") +
+    (OF.abiertoG[o.modelo] ? "▴" : "▾") + '</button>';
+  if (!OF.abiertoG[o.modelo]) return h;
+  h += '<div class="ofGra">';
+  for (const c of claves) {
+    const g = ofGrado(c), d = G[g] != null ? Number(G[g]) : Number(o.descuento_pct || 0);
+    const p1 = ex.claves[c].p1, precio = typeof piRed === "function" ? piRed(p1 * (1 - d)) : Math.round(p1 * (1 - d));
+    const piso = Math.ceil(p1 * 0.63 * 1.05 / 10) * 10;
+    h += '<div class="fila"><b>' + esc(c) + '</b><span>' + ex.claves[c].pzs + ' pzs · ' + pesos(p1) + '</span>' +
+      '<span>−</span><input type="number" min="0" max="95" step="1" inputmode="numeric" data-ofgi="' + esc(o.modelo) + '" data-g="' + g + '"' +
+      ' value="' + (G[g] != null ? Math.round(G[g] * 100) : "") + '" placeholder="' + Math.round(Number(o.descuento_pct || 0) * 100) + '"> %' +
+      '<span class="res' + (precio < piso ? " bajo" : "") + '">→ ' + pesos(precio) + (precio < piso ? " (bajo el piso " + pesos(piso) + ")" : "") + '</span></div>';
+  }
+  h += '<div class="fila" style="color:var(--ink-3)">vacío = hereda el % general del modelo · cada cambio se guarda solo</div></div>';
+  return h;
 }
 function ofPintar() {
   const g = $("#ofGrid"); if (!g) return;
@@ -2411,6 +2445,13 @@ function ofAmarrar() {
   document.querySelectorAll("#ofGrid [data-ofno]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofno, "rechazado"));
   document.querySelectorAll("#ofGrid [data-ofpen]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofpen, "pendiente"));
   document.querySelectorAll("#ofGrid [data-ofver]").forEach(b => b.onclick = () => { if (typeof piAbrir === "function") piAbrir(b.dataset.ofver); });
+  document.querySelectorAll("#ofGrid [data-ofgb]").forEach(b => b.onclick = () => { OF.abiertoG[b.dataset.ofgb] = !OF.abiertoG[b.dataset.ofgb]; ofPintar(); });
+  document.querySelectorAll("#ofGrid [data-ofgi]").forEach(i => i.onchange = async () => {
+    const m = i.dataset.ofgi, tarjeta = i.closest(".ofCard"), G = {};
+    tarjeta.querySelectorAll("[data-ofgi]").forEach(x => { const v = String(x.value).trim(); if (v !== "") G[x.dataset.g] = Math.min(95, Math.max(0, Number(v))) / 100; });
+    try { await rpc("of_ajustar", {p_modelo: m, p_cambios: {grados: JSON.stringify(G)}}); toast(m + " por calificación: " + (Object.keys(G).length ? Object.keys(G).map(g => g + " −" + Math.round(G[g] * 100) + "%").join(" · ") : "sin ajustes propios")); await ofCargar(); }
+    catch (e) { toast("No se guardó: " + e.message, true); ofPintar(); }
+  });
   document.querySelectorAll("#ofGrid [data-ofp]").forEach(i => i.onchange = async () => {
     const m = i.dataset.ofp, o = OF.lista.find(x => x.modelo === m); if (!o || i.value === "" || Number(i.value) === Number(o.precio_oferta)) return;
     if (o.piso != null && Number(i.value) < Number(o.piso) &&
