@@ -714,6 +714,13 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .ofEdit input{width:90px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--bg);color:var(--ink)}
 .ofAcc{display:flex;gap:6px;margin-top:6px}
 .ofAviso{font-size:12.5px;color:var(--ink-3);margin:6px 0 10px}
+.ofTop{display:flex;gap:10px;align-items:flex-start}
+.ofTop .mini{width:62px;height:62px;min-width:62px;object-fit:contain;border:1px solid var(--line);border-radius:10px;background:#fff}
+.ofTop span.mini{display:inline-block}
+.ofMeta .bajo{color:#b91c1c;border-color:#b91c1c;font-weight:700}
+.ofMeta .util{color:#15803d;border-color:#15803d;font-weight:600}
+.ofMeta .util.neg{color:#b91c1c;border-color:#b91c1c}
+.ofMeta .hdref{color:#1d4ed8;border-color:#1d4ed8}
 </style>
 </head>
 <body>
@@ -2314,6 +2321,16 @@ async function ofCargar() {
   OF.cargando = 1;
   try { OF.lista = await q("oferta", "select=*&order=valor.desc.nullslast,modelo"); OF.error = ""; }
   catch (e) { OF.error = /PGRST205|42P01/.test(e.message || "") ? "falta" : (e.message || "error"); }
+  if (!OF.ex && !OF.error && OF.lista.length) {   // existencia VIVA por sucursal, una sola consulta
+    try {
+      const ex = await q("sicar_existencia", "select=suc,clave,existencia&existencia=gt.0");
+      OF.ex = {};
+      for (const e of ex) {
+        const m = String(e.clave || "").replace(/-(AA|A|B|C|D|E|F)$/i, "").toUpperCase();
+        (OF.ex[m] = OF.ex[m] || {})[e.suc] = (OF.ex[m][e.suc] || 0) + Number(e.existencia || 0);
+      }
+    } catch (e) { OF.ex = {}; }
+  }
   OF.cargando = 0;
   ofPintar();
 }
@@ -2329,15 +2346,31 @@ function ofResumen() {
     (ofPorPublicar().length ? " · " + ofPorPublicar().length + " sin publicar" : "");
 }
 function ofProducto(m) { return (typeof PI !== "undefined" && PI.lista || []).find(p => p.modelo === m) || {}; }
+function ofHdHoy(p) {   // el precio normal de HD convertido (lectura fresca del robot si la hay; si no, el de la ficha)
+  const hd = Number(p.hd_nuevo || p.precio_hd || 0), dol = Number(p.dolar || 0), tax = Number(p.tax || 1.08);
+  return hd > 0 && dol > 0 && typeof piRed === "function" ? piRed(piRed(hd * tax * dol)) : 0;
+}
 function ofFicha(o) {
   const p = ofProducto(o.modelo), pct = Math.round((o.descuento_pct || 0) * 100);
+  const porSuc = (OF.ex || {})[String(o.modelo).toUpperCase()] || {};
+  const sucTxt = Object.keys(porSuc).sort().map(s => (typeof SUCS !== "undefined" && SUCS[s] || "S" + s) + " " + porSuc[s]).join(" · ");
+  const costo = Math.round(Number(o.precio_normal || 0) * 0.63);   // su costo ≈ 63 % del precio 1 (regla del 4 nov)
+  const util = Number(o.precio_oferta || 0) - costo;
+  const bajoPiso = o.piso != null && Number(o.precio_oferta) < Number(o.piso);
+  const hd = ofHdHoy(p);
   return '<div class="ofCard ' + esc(o.decision) + '" data-ofm="' + esc(o.modelo) + '">' +
-    '<div class="ofMod">' + esc(o.modelo) + '</div>' +
-    '<div class="ofDesc">' + esc((p.descripcion || "").slice(0, 80)) + '</div>' +
+    '<div class="ofTop">' + (typeof fotoHtml === "function" ? fotoHtml(o.modelo + "-A") : "") +
+    '<div style="min-width:0"><div class="ofMod">' + esc(o.modelo) + '</div>' +
+    '<div class="ofDesc">' + esc(((p.descripcion || "") + " " + (p.marca || "")).trim().slice(0, 90)) + '</div></div></div>' +
     '<div class="ofMeta">' + (o.nivel ? '<span class="chip' + (/muerto/.test(o.nivel) ? " muerto" : "") + '">' + esc(o.nivel) + '</span>' : "") +
-      (o.pzs != null ? '<span class="chip">' + Number(o.pzs) + ' pzs</span>' : "") +
+      (o.pzs != null ? '<span class="chip" title="' + esc(sucTxt) + '">' + Number(o.pzs) + ' pzs' + (sucTxt ? ": " + esc(sucTxt) : "") + '</span>' : "") +
+      '<span class="chip">' + (Number(o.ventas90 || 0)) + ' vendidas en 90d</span>' +
       (o.meses != null ? '<span class="chip">' + (Number(o.meses) >= 99 ? "sin venta 90d" : Number(o.meses).toFixed(0) + " meses inv") + '</span>' : "") +
-      (o.valor != null ? '<span class="chip">$' + Math.round(o.valor).toLocaleString() + ' atorado</span>' : "") +
+      (o.valor != null ? '<span class="chip">$' + Math.round(o.valor).toLocaleString() + ' atorado</span>' : "") + '</div>' +
+    '<div class="ofMeta">' +
+      '<span class="chip util' + (util < 0 ? " neg" : "") + '" title="contra tu costo (63 % del precio normal) · costo ≈ ' + pesos(costo) + '">utilidad ≈ ' + pesos(util) + (costo ? " (" + Math.round(util / costo * 100) + "%)" : "") + '</span>' +
+      (hd ? '<span class="chip hdref" title="precio normal de Home Depot convertido (' + (p.hd_nuevo ? "lectura fresca del robot" : "el de la ficha") + ')">HD hoy ≈ ' + pesos(hd) + '</span>' : "") +
+      (bajoPiso ? '<span class="chip bajo">BAJO EL PISO (' + pesos(o.piso) + ')</span>' : "") +
       (o.publicado_en ? '<span class="chip pub">publicada</span>' : "") + '</div>' +
     '<div class="ofPrecios"><span class="ofTachado">' + pesos(o.precio_normal) + '</span>' +
       '<b class="num">' + pesos(o.precio_oferta) + '</b><span class="ofPct">−' + pct + '%</span></div>' +
@@ -2346,6 +2379,7 @@ function ofFicha(o) {
     '<div class="ofAcc">' +
       (o.decision !== "aprobado" ? '<button type="button" class="invbtn lleno" data-ofok="' + esc(o.modelo) + '">Aprobar</button>' : '<button type="button" class="invbtn" data-ofpen="' + esc(o.modelo) + '">Regresar a pendiente</button>') +
       (o.decision !== "rechazado" ? '<button type="button" class="invbtn rojo" data-ofno="' + esc(o.modelo) + '">Rechazar</button>' : '') +
+      '<button type="button" class="invbtn" data-ofver="' + esc(o.modelo) + '">Dashboard</button>' +
     '</div></div>';
 }
 function ofPintar() {
@@ -2376,8 +2410,11 @@ function ofAmarrar() {
   document.querySelectorAll("#ofGrid [data-ofok]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofok, "aprobado"));
   document.querySelectorAll("#ofGrid [data-ofno]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofno, "rechazado"));
   document.querySelectorAll("#ofGrid [data-ofpen]").forEach(b => b.onclick = () => ofDecidir(b.dataset.ofpen, "pendiente"));
+  document.querySelectorAll("#ofGrid [data-ofver]").forEach(b => b.onclick = () => { if (typeof piAbrir === "function") piAbrir(b.dataset.ofver); });
   document.querySelectorAll("#ofGrid [data-ofp]").forEach(i => i.onchange = async () => {
     const m = i.dataset.ofp, o = OF.lista.find(x => x.modelo === m); if (!o || i.value === "" || Number(i.value) === Number(o.precio_oferta)) return;
+    if (o.piso != null && Number(i.value) < Number(o.piso) &&
+        !confirm(pesos(i.value) + " queda DEBAJO de tu piso (costo +5% = " + pesos(o.piso) + ") en " + m + ". ¿Lo dejamos así?")) { i.value = o.precio_oferta; return; }
     try { await rpc("of_ajustar", {p_modelo: m, p_cambios: {precio_oferta: i.value}}); toast("Oferta de " + m + ": " + pesos(i.value)); await ofCargar(); }
     catch (e) { toast("No se guardó: " + e.message, true); i.value = o.precio_oferta; }
   });
