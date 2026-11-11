@@ -305,6 +305,24 @@ details.sec summary small{font-family:var(--body);font-weight:400;font-size:12.5
 .cztot{margin-top:12px;padding:4px 12px}
 .cztot .kv:last-child{border-bottom:0}
 .cztot input{width:110px;text-align:right;padding:6px 8px;font-size:14px}
+/* existencias por tienda, oferta, artículo rápido y foto (11 nov 2026) */
+.czEx{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+.czEx span{font-size:11px;border:1px solid var(--line-2);border-radius:999px;padding:1px 7px;color:var(--ink-2);white-space:nowrap}
+.czEx span.hay{border-color:var(--ok);color:var(--ok)}
+.czEx span.no{color:var(--ink-3)}
+.czsug .sp s{display:block;font-family:var(--body);font-weight:400;font-size:11.5px;color:var(--ink-3)}
+.czsug .sp .of{color:var(--bad)}
+.czOf{font-size:11.5px;font-weight:700;color:var(--bad);border:1px solid var(--bad);border-radius:999px;padding:1px 7px;white-space:nowrap}
+.czAplicar{margin-top:6px;font-size:12.5px;font-weight:600;border:1.5px solid var(--bad);color:var(--bad);background:transparent;border-radius:9px;padding:5px 10px}
+.czAplicar.puesta{border-color:var(--ok);color:var(--ok)}
+.czBarraBusca{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.czVig{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.czVig button{font-size:11.5px;border:1px solid var(--line-2);border-radius:999px;padding:2px 9px;color:var(--ink-2);background:transparent}
+.czfila img.mini{width:46px;height:46px;object-fit:contain;border-radius:8px;background:#fff;display:block}
+.czFoto{display:flex;flex-direction:column;gap:4px;align-items:center}
+.czFoto button{font-size:11px;border:1px solid var(--line-2);border-radius:8px;padding:2px 6px;color:var(--ink-3);background:transparent;white-space:nowrap}
+.czlibre input[type=text]{width:100%;font:inherit;font-size:14px;padding:6px 8px;border-radius:8px;border:1px solid var(--line-2);background:var(--bg);color:var(--ink);box-sizing:border-box}
+.czlibre .k2{margin-bottom:5px}
 
 /* ---- ventas en rojo + historial con calendario ---- */
 .fila.roja{box-shadow:inset 3px 0 0 #e03131;background:rgba(224,49,49,.10)}
@@ -728,6 +746,22 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .ofGra .fila input{width:58px;border:1px solid var(--line);border-radius:8px;padding:4px 6px;background:var(--bg);color:var(--ink)}
 .ofGra .fila .res{font-weight:700}
 .ofGra .fila .res.bajo{color:#b91c1c}
+
+/* cotizaciones guardadas */
+.cgBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
+.cgBarra .estado{font-size:12px;color:var(--ink-3);flex:1 1 160px;min-width:0}
+.cgBarra .estado.mal{color:var(--bad)}
+.cgLista{margin:0 0 12px}
+.cgIt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:9px 12px;border-top:1px solid var(--line);align-items:center}
+.cgIt:first-child{border-top:0}
+.cgIt .c{font-weight:600}
+.cgIt .d{font-size:12px;color:var(--ink-3)}
+.cgIt .t{font-family:var(--display);font-weight:700;white-space:nowrap}
+.cgIt .ops{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.cgIt .ops button{font-size:12px;border:1px solid var(--line-2);border-radius:8px;padding:3px 9px;color:var(--ink-2);background:transparent}
+.cgIt .ops button.abrir{border-color:var(--accent);color:var(--accent);font-weight:600}
+.cgIt .ops button.borrar{border-color:var(--bad);color:var(--bad)}
+.cgIt.esta{background:var(--accent-soft)}
 </style>
 </head>
 <body>
@@ -890,15 +924,21 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 
   <section class="panel" id="p-cotizar">
     <h2>Cotizador <small id="czResumen"></small></h2>
+    <div class="cgBarra" id="cgBarra"></div>
+    <div class="lista cgLista hidden" id="cgLista"></div>
     <div class="czcab">
       <div><label for="czCliente">Cliente</label><input id="czCliente" placeholder="Nombre del cliente" autocomplete="off"></div>
-      <div><label for="czVigencia">Vigencia</label><input id="czVigencia" autocomplete="off"></div>
+      <div><label for="czVigencia">Vigencia</label><input id="czVigencia" autocomplete="off">
+        <div class="czVig" id="czVigChips"><button type="button" data-v="30">30 días</button><button type="button" data-v="60">60 días</button><button type="button" data-v="90">90 días</button></div></div>
     </div>
     <div class="barra" id="czIva"></div>
     <div id="czSug">
       <input id="czBuscar" placeholder="Busca por clave, modelo o nombre… (ej. 2953 o taladro)" autocomplete="off" autocorrect="off" spellcheck="false">
       <div id="czSugLista" class="hidden"></div>
     </div>
+    <div class="czBarraBusca"><button type="button" class="invbtn" id="czLibre">+ Artículo rápido</button>
+      <span class="nota" style="font-size:12px;color:var(--ink-3)">para algo que no está en el catálogo</span></div>
+    <input type="file" id="czArchivoFoto" accept="image/*" class="hidden" aria-hidden="true">
     <div class="lista" id="czLista" style="margin-top:10px"></div>
     <div class="lista cztot">
       <div class="kv"><span class="k">Total parcial</span><span class="v num" id="czParcial">$0.00</span></div>
@@ -2922,11 +2962,17 @@ $("#btnPdfLiq").addEventListener("click", pdfLiquidacion);
 
 /* ---------------- cotizador (presupuestos para clientes; no toca la base) ---------------- */
 const CZ_LLAVE = "cotizadorMK";
-const CZ_VIGENCIA_BASE = "Precios válidos 3 días o hasta agotar existencias";
+const CZ_VIGENCIA_DIAS = 30;   // mínimo pedido por Emilio el 11 nov 2026 (antes eran 3 días)
+const czVigenciaTxt = d => "Precios válidos " + d + " días o hasta agotar existencias";
+const CZ_VIGENCIA_BASE = czVigenciaTxt(CZ_VIGENCIA_DIAS);
 let CZ = {cliente: "", vigencia: CZ_VIGENCIA_BASE, iva: "inc", desc: 0, envio: 0, items: []};
 try { const g = JSON.parse(localStorage.getItem(CZ_LLAVE) || "null"); if (g && Array.isArray(g.items)) CZ = Object.assign(CZ, g); } catch (e) {}
-let CZCAT = null, CZCARGANDO = null;
-function czGuardar() { try { localStorage.setItem(CZ_LLAVE, JSON.stringify(CZ)); } catch (e) {} }
+// borradores viejos (y cotizaciones guardadas antes del 11 nov) traían 3 días: se suben al mínimo nuevo
+if (/\b([1-9]|1\d|2\d)\s*días?\b/.test(CZ.vigencia || "")) CZ.vigencia = CZ_VIGENCIA_BASE;
+let CZCAT = null, CZCARGANDO = null, CZ_OF = null, CZ_EX = null, CZ_EX_SUC = null, CZ_EX_N = -1, CZ_IX = {};
+const CZ_EX_PROPIA = false;   // true donde el tablero no trae existencias en D (HandyMan)
+let CZ_EX_RAW = null;
+function czGuardar() { try { localStorage.setItem(CZ_LLAVE, JSON.stringify(CZ)); } catch (e) {} if (typeof cgSucio === "function") cgSucio(); }
 const CZ_G = ["AA", "A", "B", "C", "D", "E", "F"];
 /* El catálogo del cotizador = core.json (lo dado de alta en la página, con su existencia) COMPLETADO con
    grados.json (los precios del maestro por calificación): toda calificación AA–F que no esté dada de alta
@@ -2940,8 +2986,12 @@ function czCatalogo() {
   CZCARGANDO = CZCARGANDO || Promise.all([
     fetch("https://makmex.com/core.json", {cache: "no-cache"}).then(r => r.json()),
     fetch("https://makmex.com/core.json".replace("core.json", "grados.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : {m: {}}).catch(() => ({m: {}})),
-    fetch("https://makmex.com/core.json".replace("core.json", "pedido.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : {rows: []}).catch(() => ({rows: []}))
-  ]).then(([c, g, e]) => {
+    fetch("https://makmex.com/core.json".replace("core.json", "pedido.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : {rows: []}).catch(() => ({rows: []})),
+    fetch("https://makmex.com/core.json".replace("core.json", "ofertas.json"), {cache: "no-cache"}).then(r => r.ok ? r.json() : null).catch(() => null)
+  ]).then(([c, g, e, of]) => {
+    // ofertas vigentes (Buen Fin u otra campaña): solo se usan para ENSEÑAR el descuento al vendedor
+    const hoy = hoyStr();
+    CZ_OF = (of && of.m && (!of.inicio || hoy >= of.inicio) && (!of.fin || hoy <= of.fin)) ? of : null;
     const ix = {}; ["sku", "model", "grade", "name", "brand", "p1", "st", "img", "kit", "bat", "car"].forEach(k => ix[k] = c.cols.indexOf(k));
     const v = (f, k) => ix[k] >= 0 ? f[ix[k]] : null;
     CZCAT = c.rows.map(f => {
@@ -2953,6 +3003,7 @@ function czCatalogo() {
         name, brand: String(v(f, "brand") || ""), kit,
         p1: Number(v(f, "p1") || 0),
         st: Array.isArray(v(f, "st")) ? v(f, "st").reduce((a, b) => a + Number(b || 0), 0) : Number(v(f, "st") || 0),
+        stA: Array.isArray(v(f, "st")) ? v(f, "st").map(x => Number(x || 0)) : null,   // por tienda, como lo publica la página
         img: v(f, "img")
       };
     }).filter(p => p.sku);
@@ -2992,12 +3043,107 @@ function czCatalogo() {
           CZCAT.push({sku: pz + "+BAT", model: mod, grade: CZ_G[k], name: name + " · Kit: herramienta + batería " + bat + " (sin cargador)", brand, kit: 1, p1: kt[k], st: 0, img, pedido: 1, encargo: 1}); }
       }
     }
+    CZ_IX = {}; for (const p of CZCAT) CZ_IX[p.sku] = p;   // para ver existencia y oferta de un renglón ya agregado
+    czExBajar();
+    if (CZ.items.length) setTimeout(czPintaLista, 0);      // los renglones ya puestos estrenan existencia y oferta
     return CZCAT;
   }).catch(e => { CZCARGANDO = null; throw e; });
   return CZCARGANDO;
 }
 /* foto: a los kits y al «+BAT» se les quita el sufijo para usar la foto de la pieza */
-function czFoto(sku) { return fotoHtml(String(sku || "").replace(/(-KIT\d+A|\+BAT)$/i, "")); }
+const czPieza = sku => String(sku || "").replace(/(-KIT\d+A|\+BAT)$/i, "");
+function czFoto(sku) { return fotoHtml(czPieza(sku)); }
+/* ---- existencias POR TIENDA (uso interno del vendedor, no sale en la hoja del cliente) ----
+   En vivo desde D.existencias cuando el tablero la trae (makmex: las 4 tiendas); si no, la del
+   catálogo publicado (`st` de core.json: [CEDIS, Denmor, CDMX, Monterrey]), que es lo que ve el
+   cliente en la página. La clave de un kit no existe en el inventario: se mira la de la pieza. */
+function czExIndex() {
+  const propia = (CZ_EX_PROPIA && CZ_EX_RAW) ? CZ_EX_RAW : null;
+  const ex = propia || ((typeof D !== "undefined" && Array.isArray(D.existencias)) ? D.existencias : []);
+  if (CZ_EX_N === ex.length && CZ_EX !== undefined) return CZ_EX;
+  CZ_EX_N = ex.length;
+  if (!ex.length) { CZ_EX = null; CZ_EX_SUC = null; return null; }
+  const m = {}, sucs = {};
+  for (const e of ex) {
+    const c = String(e.clave || "").toUpperCase(), n = Number(e.existencia || 0), s = Number(e.suc);
+    sucs[s] = 1;
+    if (!c || n <= 0) continue;
+    (m[c] = m[c] || {})[s] = (m[c][s] || 0) + n;
+  }
+  CZ_EX = m; CZ_EX_SUC = sucs; return m;
+}
+/* En HandyMan el tablero no trae existencias; las baja una vez (solo su tienda) para que lo de
+   Monterrey sea de hoy, y de las demás tiendas sigue valiendo lo del catálogo publicado. */
+async function czExBajar() {
+  if (!CZ_EX_PROPIA || CZ_EX_RAW) return;
+  CZ_EX_RAW = [];
+  try {
+    CZ_EX_RAW = await q("sicar_existencia", "select=suc,clave,existencia&existencia=gt.0&order=clave,suc");
+    CZ_EX_N = -1; czPintaLista();
+    const lista = $("#czSugLista");                      // si ya estaba buscando, la lista estrena existencias
+    if (lista && !lista.classList.contains("hidden")) czPintaSug(czBusca($("#czBuscar").value));
+  } catch (e) { CZ_EX_RAW = []; }
+}
+function czExiste(p) {
+  const vivo = czExIndex(), pz = czPieza(p && p.sku).toUpperCase();
+  const a = (p && Array.isArray(p.stA)) ? p.stA : null;
+  const d = vivo ? (vivo[pz] || {}) : null;
+  return [1, 2, 3, 4].map(s => {
+    // la tienda que reporta en vivo manda; de las demás vale lo que publica la página
+    const n = (d && CZ_EX_SUC && CZ_EX_SUC[s]) ? Number(d[s] || 0) : (a ? Number(a[s - 1] || 0) : 0);
+    return {s, n};
+  }).filter(x => x.n > 0);
+}
+function czExHtml(p) {
+  const L = czExiste(p);
+  if (!L.length) return '<div class="czEx"><span class="no">' + (p && p.encargo ? "por encargo" : p && p.pedido ? "sobre pedido" : "sin existencia") + '</span></div>';
+  return '<div class="czEx">' + L.map(x => '<span class="hay">' + esc(SUCS[x.s] || ("suc " + x.s)) + " " + x.n + '</span>').join("") + '</div>';
+}
+/* ---- oferta vigente (ofertas.json): se ENSEÑA, no se aplica sola ---- */
+function czOferta(sku, lista) {
+  if (!CZ_OF || !sku) return null;
+  const m = /^(.*)-(AA|A|B|C|D|E|F)(-KIT\d+A)?$/i.exec(String(sku));
+  if (!m) return null;
+  const d = CZ_OF.m[m[1]]; if (!d) return null;
+  const k = CZ_G.indexOf(m[2].toUpperCase()); if (k < 0) return null;
+  const arr = m[3] ? d.kp : d.pp;
+  const precio = Array.isArray(arr) ? Number(arr[k] || 0) : 0;
+  const base = Number(lista || 0);
+  if (!precio || !base || precio >= base) return null;
+  return {precio, pct: Math.round((1 - precio / base) * 100)};
+}
+/* ---- foto del renglón: la del catálogo o la que subió el vendedor de su computadora ---- */
+function czMini(it) {
+  if (it && it.foto) return '<img class="mini" src="' + it.foto + '" alt="">';
+  if (it && it.libre) return '<span class="mini" style="display:grid;place-items:center;color:var(--ink-3);font-size:18px">+</span>';
+  return czFoto(it.sku);
+}
+/* el navegador achica la imagen antes de guardarla: una cotización no debe pesar megas */
+function czAchica(file) {
+  return new Promise((ok, mal) => {
+    const fr = new FileReader();
+    fr.onerror = () => mal(new Error("no se pudo leer el archivo"));
+    fr.onload = () => {
+      const img = new Image();
+      img.onerror = () => mal(new Error("el archivo no es una imagen"));
+      img.onload = () => {
+        const salida = (lado, q) => {
+          const e = Math.min(1, lado / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width = Math.max(1, Math.round(img.width * e)); c.height = Math.max(1, Math.round(img.height * e));
+          const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+          x.drawImage(img, 0, 0, c.width, c.height);
+          return c.toDataURL("image/jpeg", q);
+        };
+        let d = salida(700, 0.82);
+        if (d.length > 340000) d = salida(520, 0.6);
+        ok(d);
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
 function czBusca(q) {
   q = (q || "").trim().toLowerCase();
   if (q.length < 2 || !CZCAT) return [];
@@ -3014,9 +3160,13 @@ function czBusca(q) {
 function czPintaSug(res) {
   const el = $("#czSugLista");
   if (!res.length) { el.classList.add("hidden"); el.innerHTML = ""; return; }
-  el.innerHTML = res.map((p, i) => '<button type="button" class="czsug" data-cz="' + i + '">' + czFoto(p.sku) +
-    '<div><div class="s1">' + esc(p.sku) + '</div><div class="s2">' + esc(p.name || p.model) + '</div></div>' +
-    '<div class="sp num">' + (p.p1 ? pesos(p.p1) : "—") + '<small>' + (p.st > 0 ? p.st + " en existencia" : p.encargo ? "por encargo" : p.pedido ? "sobre pedido" : "sin existencia") + '</small></div></button>').join("");
+  el.innerHTML = res.map((p, i) => { const of = czOferta(p.sku, p.p1);
+    const tot = czExiste(p).reduce((a, x) => a + x.n, 0);
+    return '<button type="button" class="czsug" data-cz="' + i + '" data-sku="' + esc(p.sku) + '">' + czFoto(p.sku) +
+    '<div><div class="s1">' + esc(p.sku) + (of ? ' <span class="czOf">oferta −' + of.pct + ' %</span>' : "") + '</div>' +
+    '<div class="s2">' + esc(p.name || p.model) + '</div>' + czExHtml(p) + '</div>' +
+    '<div class="sp num">' + (of ? '<s>' + pesos(p.p1) + '</s><span class="of">' + pesos(of.precio) + '</span>' : (p.p1 ? pesos(p.p1) : "—")) +
+    '<small>' + (tot > 0 ? tot + " en existencia" : p.encargo ? "por encargo" : p.pedido ? "sobre pedido" : "sin existencia") + '</small></div></button>'; }).join("");
   el.classList.remove("hidden");
   el.querySelectorAll("[data-cz]").forEach(b => b.addEventListener("click", () => czAgregar(res[+b.dataset.cz])));
 }
@@ -3030,23 +3180,60 @@ function czAgregar(p) {
 function czImporte(it) { const pu = (it.pdesc != null && it.pdesc !== "" && Number(it.pdesc) > 0) ? Number(it.pdesc) : Number(it.precio || 0); return pu * Number(it.n || 0); }
 function czPintaLista() {
   const el = $("#czLista");
-  el.innerHTML = CZ.items.length ? CZ.items.map((it, i) => '<div class="czfila">' + czFoto(it.sku) +
-    '<div><div class="k">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div>' +
+  el.innerHTML = CZ.items.length ? CZ.items.map((it, i) => {
+    const p = CZ_IX[it.sku] || null;
+    const of = it.libre ? null : czOferta(it.sku, it.precio);
+    const puesta = of && it.pdesc != null && it.pdesc !== "" && Math.round(Number(it.pdesc)) === Math.round(of.precio);
+    const cab = it.libre
+      ? '<div class="czlibre"><div class="k2"><input type="text" placeholder="Clave o modelo (opcional)" value="' + esc(it.sku || "") + '" data-i="' + i + '" data-f="sku"></div>' +
+        '<input type="text" placeholder="Descripción del artículo" value="' + esc(it.nombre || "") + '" data-i="' + i + '" data-f="nombre"></div>'
+      : '<div class="k">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div>' + (p ? czExHtml(p) : "");
+    return '<div class="czfila" data-sku="' + esc(it.sku || "") + '">' +
+    '<div class="czFoto">' + czMini(it) +
+      '<button type="button" data-foto="' + i + '">' + (it.foto ? "Cambiar" : "Foto") + '</button>' +
+      (it.foto ? '<button type="button" data-sinfoto="' + i + '">Quitar</button>' : "") + '</div>' +
+    '<div>' + cab +
     '<div class="czcampos">' +
       '<label>Cantidad<input type="number" min="1" step="1" inputmode="numeric" value="' + Number(it.n) + '" data-i="' + i + '" data-f="n"></label>' +
       '<label>Precio<input type="number" min="0" step="any" inputmode="decimal" value="' + Number(it.precio) + '" data-i="' + i + '" data-f="precio"></label>' +
       '<label>Precio con descuento<input type="number" min="0" step="any" inputmode="decimal" placeholder="—" value="' + (it.pdesc != null && it.pdesc !== "" ? Number(it.pdesc) : "") + '" data-i="' + i + '" data-f="pdesc"></label>' +
-    '</div></div>' +
-    '<div class="czlado"><button type="button" class="czquitar" data-q="' + i + '" aria-label="Quitar ' + esc(it.sku) + '">✕</button><span class="czimp num" id="czImp' + i + '">' + pesosC(czImporte(it)) + '</span></div></div>').join("")
-    : '<div class="vacio">Busca un producto arriba y tócalo para agregarlo a la cotización.</div>';
+    '</div>' +
+    (of ? '<button type="button" class="czAplicar' + (puesta ? " puesta" : "") + '" data-of="' + i + '">' +
+      (puesta ? "✓ Oferta aplicada · quitar" : "Aplicar oferta −" + of.pct + " % (" + pesosC(of.precio) + ")") + '</button>' : "") +
+    '</div>' +
+    '<div class="czlado"><button type="button" class="czquitar" data-q="' + i + '" aria-label="Quitar ' + esc(it.sku || "renglón") + '">✕</button><span class="czimp num" id="czImp' + i + '">' + pesosC(czImporte(it)) + '</span></div></div>'; }).join("")
+    : '<div class="vacio">Busca un producto arriba y tócalo para agregarlo a la cotización, o usa «+ Artículo rápido».</div>';
   el.querySelectorAll("[data-q]").forEach(b => b.addEventListener("click", () => { CZ.items.splice(+b.dataset.q, 1); czGuardar(); czPintaLista(); czTotales(); }));
+  el.querySelectorAll("[data-of]").forEach(b => b.addEventListener("click", () => {
+    const i = +b.dataset.of, it = CZ.items[i], of = czOferta(it.sku, it.precio); if (!of) return;
+    const ya = it.pdesc != null && it.pdesc !== "" && Math.round(Number(it.pdesc)) === Math.round(of.precio);
+    it.pdesc = ya ? null : of.precio;
+    czGuardar(); czPintaLista(); czTotales();
+  }));
+  el.querySelectorAll("[data-foto]").forEach(b => b.addEventListener("click", () => czPideFoto(+b.dataset.foto)));
+  el.querySelectorAll("[data-sinfoto]").forEach(b => b.addEventListener("click", () => {
+    const it = CZ.items[+b.dataset.sinfoto]; if (!it) return;
+    it.foto = null; czGuardar(); czPintaLista();
+  }));
 }
+/* artículo rápido: un renglón en blanco que el vendedor llena a mano */
+function czArticuloRapido() {
+  CZ.items.push({sku: "", nombre: "", img: null, precio: 0, pdesc: null, n: 1, libre: 1, foto: null});
+  czGuardar(); czPintaLista(); czTotales();
+  const inps = $("#czLista").querySelectorAll('.czlibre input[data-f="nombre"]');
+  if (inps.length) inps[inps.length - 1].focus();
+}
+/* foto del disco de la computadora para un renglón */
+let CZ_FOTO_I = -1;
+function czPideFoto(i) { CZ_FOTO_I = i; const f = $("#czArchivoFoto"); f.value = ""; f.click(); }
 $("#czLista").addEventListener("input", ev => {
   const inp = ev.target.closest("input[data-i]"); if (!inp) return;
   const it = CZ.items[+inp.dataset.i]; if (!it) return;
   const f = inp.dataset.f;
   if (f === "n") it.n = Math.max(1, Math.round(Number(inp.value) || 1));
   else if (f === "precio") it.precio = Math.max(0, Number(inp.value) || 0);
+  else if (f === "sku") it.sku = inp.value.slice(0, 60);          // artículo rápido: clave a mano
+  else if (f === "nombre") it.nombre = inp.value.slice(0, 160);   // artículo rápido: descripción a mano
   else it.pdesc = inp.value === "" ? null : Math.max(0, Number(inp.value) || 0);
   czGuardar();
   const imp = $("#czImp" + inp.dataset.i); if (imp) imp.textContent = pesosC(czImporte(it));
@@ -3124,9 +3311,10 @@ function czPdf() {
   const pz = CZ.items.reduce((a, it) => a + Number(it.n || 0), 0);
   const cuerpo = CZ.items.map((it, i) => {
     const conDesc = it.pdesc != null && it.pdesc !== "" && Number(it.pdesc) > 0 && Number(it.pdesc) < Number(it.precio);
-    return '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(it.sku) +
+    return '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + (it.foto ? '<img src="' + it.foto + '" alt="">' : foto(it.sku)) +
       '</td><td class="pz num">' + Number(it.n) + '</td>' +
-      '<td><div class="k num">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div></td>' +
+      '<td>' + (it.sku ? '<div class="k num">' + esc(it.sku) + '</div><div class="d">' + esc(it.nombre || "") + '</div>'
+                       : '<div class="k">' + esc(it.nombre || "Artículo") + '</div>') + '</td>' +
       '<td class="pr num">' + (conDesc ? '<s>' + pesosC(it.precio) + '</s> <b class="oferta">' + pesosC(it.pdesc) + '</b>' : pesosC(it.precio)) + '</td>' +
       '<td class="pr num"><b>' + pesosC(czImporte(it)) + '</b></td></tr>';
   }).join("");
@@ -3214,6 +3402,18 @@ function czPdf() {
   cli.value = CZ.cliente || ""; vig.value = CZ.vigencia || CZ_VIGENCIA_BASE;
   cli.addEventListener("input", () => { CZ.cliente = cli.value; czGuardar(); });
   vig.addEventListener("input", () => { CZ.vigencia = vig.value; czGuardar(); });
+  $("#czVigChips").addEventListener("click", ev => {
+    const b = ev.target.closest("button[data-v]"); if (!b) return;
+    CZ.vigencia = czVigenciaTxt(b.dataset.v); vig.value = CZ.vigencia; czGuardar();
+  });
+  $("#czLibre").addEventListener("click", czArticuloRapido);
+  $("#czArchivoFoto").addEventListener("change", async ev => {
+    const f = ev.target.files && ev.target.files[0], it = CZ.items[CZ_FOTO_I];
+    if (!f || !it) return;
+    try { it.foto = await czAchica(f); czGuardar(); czPintaLista(); }
+    catch (e) { alert("No se pudo usar esa imagen: " + e.message); }
+    ev.target.value = "";
+  });
   $("#czDesc").value = Number(CZ.desc) || ""; $("#czEnvio").value = Number(CZ.envio) || "";
   $("#czDesc").addEventListener("input", () => { CZ.desc = Math.max(0, Number($("#czDesc").value) || 0); czGuardar(); czTotales(); });
   $("#czEnvio").addEventListener("input", () => { CZ.envio = Math.max(0, Number($("#czEnvio").value) || 0); czGuardar(); czTotales(); });
@@ -3233,7 +3433,186 @@ function czPdf() {
     czPintaLista(); czTotales();
   });
   czPintaIva(); czPintaLista(); czTotales();
+  if (CZ.items.length) czCatalogo().catch(() => {});   // para enseñar existencia y oferta de lo que ya estaba
 })();
+/* ---------------- cotizaciones guardadas (en pausa) ---------------- */
+const CG_PEND = "czPendientes";
+const CG = {lista: [], cargado: false, cargando: false, abierto: false, guardando: false,
+            falta: false, aviso: "", avisoMal: false, sucio: false, temporizador: null};
+const cgFecha = s => { const d = new Date(s); return isNaN(d) ? "" : d.toLocaleString("es-MX", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}); };
+function cgPendLee() { try { return JSON.parse(localStorage.getItem(CG_PEND) || "[]"); } catch (e) { return []; } }
+function cgPendEscribe(a) { try { localStorage.setItem(CG_PEND, JSON.stringify(a.slice(-10))); } catch (e) {} }
+function cgQuien() {
+  try { if (typeof EMP !== "undefined" && EMP && EMP.nombre) return EMP.nombre; } catch (e) {}
+  try { if (typeof CUENTA !== "undefined" && CUENTA && CUENTA.correo) return CUENTA.correo; } catch (e) {}
+  try { if (sesion && sesion.user && sesion.user.email) return sesion.user.email; } catch (e) {}
+  return "";
+}
+function cgFolio() {
+  if (CZ.folio) return CZ.folio;
+  const f = new Date();
+  CZ.folio = "COT-" + f.getFullYear().toString().slice(2) + String(f.getMonth() + 1).padStart(2, "0") +
+    String(f.getDate()).padStart(2, "0") + "-" + String(f.getHours()).padStart(2, "0") + String(f.getMinutes()).padStart(2, "0");
+  return CZ.folio;
+}
+function cgPaquete() {
+  const t = czCuentas();
+  return {p_id: CZ.id || null, p_folio: cgFolio(), p_cliente: CZ.cliente || "", p_vigencia: CZ.vigencia || "",
+          p_iva: CZ.iva || "inc", p_desc: Number(CZ.desc || 0), p_envio: Number(CZ.envio || 0),
+          p_total: Math.round((t.total || 0) * 100) / 100, p_renglones: CZ.items.length,
+          p_items: CZ.items, p_quien: cgQuien()};
+}
+async function cgManda(p) {
+  const r = await rpc("cotizacion_guardar", p);
+  if (r && r.error) throw new Error(r.error);
+  return r;
+}
+/* guardar la que está en pantalla; `callado` = la guarda sola (autoguardado o al abrir otra) */
+async function cgGuardar(callado) {
+  if (CG.guardando) return false;
+  if (!CZ.items.length && !CZ.cliente) { if (!callado) cgAviso("No hay nada que guardar todavía.", true); return false; }
+  CG.guardando = true; CG.sucio = false;
+  if (!callado) cgAviso("Guardando…");
+  try {
+    const r = await cgManda(cgPaquete());
+    if (r && r.id) CZ.id = r.id;
+    try { localStorage.setItem(CZ_LLAVE, JSON.stringify(CZ)); } catch (e) {}
+    CG.falta = false; cgAviso("Guardada " + cgFecha(new Date().toISOString()));
+    CG.cargado = false; cgCargar(true);
+    return true;
+  } catch (e) {
+    const m = String(e.message || "");
+    CG.falta = /HTTP 404|PGRST2|desconocida|does not exist|schema cache/i.test(m) && m !== "sesion";
+    if (!CG.falta) { const a = cgPendLee(); a.push(cgPaquete()); cgPendEscribe(a); }
+    cgAviso(CG.falta ? "Falta correr 18_cotizaciones.sql en Supabase para poder guardar."
+      : "No se pudo subir (" + (m === "sesion" ? "la sesión caducó" : m) + "); queda guardada en este dispositivo.", true);
+    return false;
+  } finally {
+    CG.guardando = false; cgPintarBarra();
+  }
+}
+async function cgReintentar() {
+  const a = cgPendLee(); if (!a.length) return false;
+  const quedan = []; let hubo = false;
+  for (const p of a) { try { await cgManda(Object.assign({}, p, {p_id: null})); hubo = true; } catch (e) { quedan.push(p); } }
+  cgPendEscribe(quedan);
+  return hubo;
+}
+/* autoguardado: a los 3 s de dejar de teclear, solo si ya se había guardado una vez */
+function cgSucio() {
+  CG.sucio = true;
+  if (!CZ.id) { cgPintarBarra(); return; }
+  clearTimeout(CG.temporizador);
+  CG.temporizador = setTimeout(() => { if (CG.sucio) cgGuardar(true); }, 3000);
+  cgPintarBarra();
+}
+function cgAviso(txt, mal) { CG.aviso = txt || ""; CG.avisoMal = !!mal; cgPintarBarra(); }
+/* ---- la lista ---- */
+async function cgCargar(forzar) {
+  if (CG.cargando || (!forzar && CG.cargado)) return;
+  CG.cargando = true;
+  try {
+    if (await cgReintentar()) CG.cargado = false;
+    const filas = await q("cotizacion", "select=id,folio,cliente,total,renglones,quien,actualizado&order=actualizado.desc,id.desc&limit=100");
+    CG.lista = filas; CG.falta = false; CG.cargado = true;
+  } catch (e) {
+    const m = String(e.message || "");
+    CG.falta = /HTTP 404|PGRST2|desconocida|does not exist|schema cache/i.test(m) && m !== "sesion";
+    CG.lista = []; CG.cargado = true;
+  } finally {
+    CG.cargando = false; cgPintarBarra(); cgPintarLista();
+  }
+}
+function cgPintarBarra() {
+  const b = $("#cgBarra"); if (!b) return;
+  const pend = cgPendLee().length;
+  b.innerHTML = '<button type="button" class="invbtn lleno" id="cgBtnGuardar">Guardar</button>' +
+    '<button type="button" class="invbtn" id="cgBtnNueva">Nueva cotización</button>' +
+    '<button type="button" class="invbtn" id="cgBtnVer">Guardadas' + (CG.lista.length ? " (" + CG.lista.length + ")" : "") + '</button>' +
+    '<span class="estado' + (CG.avisoMal ? " mal" : "") + '" id="cgEstado">' +
+      esc(CG.aviso || (CZ.id ? "Guardada · los cambios se suben solos" : CZ.items.length ? "Sin guardar" : "")) +
+      (pend ? " · " + pend + (pend === 1 ? " sin subir" : " sin subir") : "") + '</span>';
+  $("#cgBtnGuardar").addEventListener("click", () => cgGuardar(false));
+  $("#cgBtnNueva").addEventListener("click", cgNueva);
+  $("#cgBtnVer").addEventListener("click", () => { CG.abierto = !CG.abierto; if (CG.abierto) cgCargar(true); cgPintarLista(); });
+}
+function cgPintarLista() {
+  const el = $("#cgLista"); if (!el) return;
+  el.classList.toggle("hidden", !CG.abierto);
+  if (!CG.abierto) return;
+  if (CG.falta) {
+    el.innerHTML = '<div class="vacio">Todavía no se pueden guardar cotizaciones: falta correr <b>18_cotizaciones.sql</b> en Supabase. Mientras tanto, la cotización en curso se sigue guardando en este navegador.</div>';
+    return;
+  }
+  if (CG.cargando && !CG.lista.length) { el.innerHTML = '<div class="vacio">Cargando…</div>'; return; }
+  el.innerHTML = CG.lista.length ? CG.lista.map(c => '<div class="cgIt' + (CZ.id === c.id ? " esta" : "") + '">' +
+    '<div><div class="c">' + esc(c.cliente || "Público en general") + (CZ.id === c.id ? " · <b>en pantalla</b>" : "") + '</div>' +
+    '<div class="d">' + esc(c.folio || "") + " · " + Number(c.renglones || 0) + (Number(c.renglones) === 1 ? " renglón" : " renglones") +
+      " · " + esc(c.quien || "") + " · " + esc(cgFecha(c.actualizado)) + '</div>' +
+    '<div class="ops"><button type="button" class="abrir" data-abrir="' + c.id + '">Abrir</button>' +
+      '<button type="button" data-copiar="' + c.id + '">Duplicar</button>' +
+      '<button type="button" class="borrar" data-borrar="' + c.id + '">Borrar</button></div></div>' +
+    '<div class="t num">' + pesosC(c.total) + '</div></div>').join("")
+    : '<div class="vacio">No hay cotizaciones guardadas. Arma una y toca «Guardar» para dejarla en pausa.</div>';
+  el.querySelectorAll("[data-abrir]").forEach(b => b.addEventListener("click", () => cgAbrir(+b.dataset.abrir, false)));
+  el.querySelectorAll("[data-copiar]").forEach(b => b.addEventListener("click", () => cgAbrir(+b.dataset.copiar, true)));
+  el.querySelectorAll("[data-borrar]").forEach(b => b.addEventListener("click", () => cgBorrar(+b.dataset.borrar)));
+}
+/* ---- abrir, duplicar, empezar otra, borrar ---- */
+function cgPonerEnPantalla() {
+  $("#czCliente").value = CZ.cliente || "";
+  $("#czVigencia").value = CZ.vigencia || CZ_VIGENCIA_BASE;
+  $("#czDesc").value = Number(CZ.desc) || ""; $("#czEnvio").value = Number(CZ.envio) || "";
+  czPintaIva(); czPintaLista(); czTotales(); cgPintarBarra(); cgPintarLista();
+}
+async function cgAbrir(id, duplicar) {
+  if (CZ.id !== id && (CZ.items.length || CZ.cliente)) { if (!(await cgGuardar(true))) {
+    if (!confirm("No se pudo guardar la cotización que tienes en pantalla. ¿Abrir la otra de todas formas?")) return; } }
+  cgAviso("Abriendo…");
+  try {
+    const r = await q("cotizacion", "select=id,folio,cliente,vigencia,iva,descuento,envio,items&id=eq." + id + "&order=id");
+    const c = r[0]; if (!c) { cgAviso("Esa cotización ya no está.", true); CG.cargado = false; cgCargar(true); return; }
+    CZ = {id: duplicar ? null : c.id, folio: duplicar ? "" : (c.folio || ""), cliente: (c.cliente || "") + (duplicar ? " (copia)" : ""),
+          vigencia: c.vigencia || CZ_VIGENCIA_BASE, iva: c.iva || "inc", desc: Number(c.descuento || 0),
+          envio: Number(c.envio || 0), items: Array.isArray(c.items) ? c.items : []};
+    if (/\b([1-9]|1\d|2\d)\s*días?\b/.test(CZ.vigencia)) CZ.vigencia = CZ_VIGENCIA_BASE;
+    czGuardar(); CG.sucio = false;
+    cgAviso(duplicar ? "Copia lista: es una cotización nueva." : "Abierta la cotización de " + (c.cliente || "público en general") + ".");
+    CG.abierto = false;
+    cgPonerEnPantalla();
+  } catch (e) {
+    cgAviso("No se pudo abrir: " + (e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message), true);
+  }
+}
+async function cgNueva() {
+  if (CZ.items.length || CZ.cliente) {
+    const ok = await cgGuardar(true);
+    if (!ok && !confirm("No se pudo guardar la cotización que tienes en pantalla (queda en este dispositivo). ¿Empezar otra de todas formas?")) return;
+  }
+  CZ = {cliente: "", vigencia: CZ_VIGENCIA_BASE, iva: CZ.iva, desc: 0, envio: 0, items: []};
+  czGuardar(); CG.sucio = false;
+  cgAviso("Lista para otro cliente. La anterior quedó guardada.");
+  CG.cargado = false; cgCargar(true);
+  cgPonerEnPantalla();
+}
+async function cgBorrar(id) {
+  const c = CG.lista.find(x => x.id === id);
+  if (!confirm("¿Borrar la cotización de " + ((c && c.cliente) || "público en general") + "? No se puede deshacer.")) return;
+  try {
+    const r = await rpc("cotizacion_borrar", {p_id: id});
+    if (r && r.error) throw new Error(r.error);
+    if (CZ.id === id) { CZ.id = null; CZ.folio = ""; czGuardar(); }
+    cgAviso("Borrada.");
+    CG.cargado = false; cgCargar(true);
+  } catch (e) {
+    cgAviso("No se pudo borrar: " + (e.message === "sesion" ? "la sesión caducó" : e.message), true);
+  }
+}
+(function cgInicio() {
+  cgPintarBarra();
+  setTimeout(() => cgCargar(false), 1500);   // sin estorbar al arranque del tablero
+})();
+
 
 
 /* =============== ventas en rojo (reglas del carrito de makmex.com) + historial =============== */
