@@ -747,6 +747,37 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .ofGra .fila .res{font-weight:700}
 .ofGra .fila .res.bajo{color:#b91c1c}
 
+/* costos: lotes y eBay */
+#p-costos{display:none}
+.lcBarra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}
+.lcBarra button,.lcBtn{border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-size:13px;color:var(--ink-2);background:var(--surface)}
+.lcBtn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lcBtn:disabled{opacity:.45}
+.lcCard{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--surface);color:var(--ink)}
+.lcCard b{font-family:var(--display);font-size:18px;font-weight:600}
+.lcCard small,.lcMeta{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.lcChip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:11.5px;margin-left:6px;color:var(--ink-2)}
+.lcChip.cerrado{color:var(--ink-3)}
+.lcChip.mal{color:var(--bad);border-color:var(--bad)}
+#lcForm{display:none;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+#lcForm.abierto{display:block}
+#lcForm label{display:block;font-size:12px;color:var(--ink-3);margin-top:6px}
+#lcForm input,#lcForm select,#lcForm textarea,.lcCosto input,.lcCosto select,#lcEbNotas,#lcDias{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+#lcForm input,#lcForm select,#lcForm textarea{width:100%}
+#lcForm .fila{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.lcSec{margin:14px 0 6px;font-weight:700;font-size:13px;color:var(--ink-2)}
+.lcCosto{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:5px 0}
+.lcCosto .et{min-width:92px;font-size:13px;font-weight:600}
+.lcCosto .lcMonto{width:110px}.lcCosto .lcTc{width:104px}.lcCosto .lcFtc{width:138px}
+.lcCosto .mx{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.lcFolio{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-bottom:6px;background:var(--surface)}
+.lcFolio .tx{flex:1;min-width:0}
+.lcFolio .tx small{display:block;font-size:12px;color:var(--ink-3)}
+.lcFolio input[type=checkbox]{width:19px;height:19px;min-width:19px}
+.lcEb{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px;background:var(--surface)}
+.lcEb .lcFolio{border:0;padding:0;margin:0 0 4px;background:none}
+#lcEbNotas{width:100%;margin:6px 0}
+
 /* cotizaciones guardadas */
 .cgBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
 .cgBarra .estado{font-size:12px;color:var(--ink-3);flex:1 1 160px;min-width:0}
@@ -995,6 +1026,40 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div class="przAviso" id="przAviso"></div>
     <div id="przLista"></div>
   </section>
+  <section class="panel" id="p-costos">
+    <h2>Costos: lotes y eBay</h2>
+    <div class="przTabs">
+      <button type="button" id="lcTabL" class="on">Lotes <span id="lcNl"></span></button>
+      <button type="button" id="lcTabE">eBay <span id="lcNe"></span></button>
+      <span class="espacio"></span>
+      <label class="przAviso" style="margin:0">Folios sin asignar de los últimos
+        <select id="lcDias" aria-label="Días de folios sin asignar"><option value="30">30</option><option value="60" selected>60</option><option value="120">120</option><option value="365">365</option></select> días</label>
+    </div>
+    <div class="przAviso" id="lcAviso"></div>
+    <div id="lcLotes">
+      <div class="lcBarra" id="lcBarraL"><button type="button" id="lcNuevo">+ Nuevo lote</button></div>
+      <div id="lcForm">
+        <div class="fila">
+          <div><label for="lcfNum">Número de lote</label><input id="lcfNum" inputmode="numeric" maxlength="6"></div>
+          <div><label for="lcfProv">Proveedor</label><input id="lcfProv" maxlength="120" value="Select Source"></div>
+          <div><label for="lcfFecha">Fecha de compra</label><input id="lcfFecha" type="date"></div>
+          <div><label for="lcfTar">Tarimas</label><input id="lcfTar" inputmode="numeric" maxlength="3"></div>
+          <div><label for="lcfEstado">Estado</label><select id="lcfEstado"><option value="abierto">Abierto</option><option value="cerrado">Cerrado</option></select></div>
+        </div>
+        <label for="lcfNotas">Notas</label><textarea id="lcfNotas" rows="2"></textarea>
+        <div class="lcBarra"><button type="button" class="lcBtn pri" id="lcfGuardar">Guardar</button><button type="button" class="lcBtn" id="lcfCerrar">Cancelar</button><span class="przAviso" id="lcfAviso" style="margin:0"></span></div>
+      </div>
+      <div id="lcLista"></div>
+    </div>
+    <div id="lcEbay" class="hidden">
+      <div class="lcSec">Marcar como eBay</div>
+      <div id="lcEbLibres"></div>
+      <input id="lcEbNotas" maxlength="300" placeholder="Pedidos eBay que junta el folio (opcional), p. ej. 12-34567-89012, 12-34567-89013">
+      <div class="lcBarra"><button type="button" class="lcBtn pri" id="lcEbMarcar">Marcar seleccionados como eBay</button></div>
+      <div class="lcSec">Folios eBay y sus costos</div>
+      <div id="lcEbLista"></div>
+    </div>
+  </section>
   <section class="panel" id="p-inventario">
     <h2>Hacer inventario <small id="invResumen"></small></h2>
     <div id="icBloque"></div>
@@ -1231,7 +1296,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); przCargar(); ofCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); przCargar(); ofCargar(); lcCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -2520,6 +2585,212 @@ $("#ofArchivo").addEventListener("change", async ev => {
     OF.filtro = "pendiente"; await ofCargar();
   } catch (e) { toast("No se pudo cargar: " + (e.message === "sesion" ? "la sesión caducó" : e.message), true); ofPintar(); }
 });
+/* ---------------- costos: lotes y eBay (solo Emilio) ---------------- */
+const LC = {lotes: [], folios: [], costos: [], compras: {}, libres: [], marcados: new Set(), dias: 60, dolar: 0,
+            tab: "lotes", sel: 0, editando: 0, error: "", cargando: 0, listo: 0};
+const LC_COLS = "select=suc,com_id,fecha,folio,status,renglones,piezas";
+const lcK = (suc, cid) => suc + ":" + cid;
+const lcUsd = n => "US$" + Number(n || 0).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const lcFolioTx = f => f && f.folio && f.folio !== "-" ? String(f.folio) : String(f ? f.com_id : "");
+const lcNum = s => { const t = String(s == null ? "" : s).replace(/[$,\s]/g, ""); return t === "" ? null : Number(t); };
+const lcEscribiendo = () => { const a = document.activeElement; return !!a && $("#p-costos").contains(a) && a.matches("input:not([type=checkbox]),select,textarea"); };
+
+async function lcCargar(forzar) {
+  if (!esDueno() || LC.cargando) return;
+  if (!forzar && LC.listo && lcEscribiendo()) return;      // la recarga del tablero no borra lo que Emilio está tecleando
+  LC.cargando = 1;
+  try {
+    const [lotes, folios, costos, recientes] = await Promise.all([
+      q("lote", "select=*&order=numero.desc"),
+      q("folio_origen", "select=*&order=suc,com_id"),
+      q("costo", "select=*&order=id"),
+      q("sicar_compra", LC_COLS + "&suc=eq.1&gasto=eq.0&status=eq.1&fecha=gte." + thDias(LC.dias) + "T00:00:00&order=fecha.desc,com_id.desc")]);
+    const compras = {};
+    for (const c of recientes) compras[lcK(c.suc, c.com_id)] = c;
+    // folios asignados más viejos que el rango (o cancelados después): sus datos de SICAR, por partes
+    const faltan = folios.filter(f => !compras[lcK(f.suc, f.com_id)]);
+    for (const suc of [...new Set(faltan.map(f => f.suc))]) {
+      const ids = faltan.filter(f => f.suc === suc).map(f => f.com_id);
+      for (let i = 0; i < ids.length; i += 300)
+        for (const c of await q("sicar_compra", LC_COLS + "&suc=eq." + suc + "&com_id=in." + enLista(ids.slice(i, i + 300)) + "&order=com_id"))
+          compras[lcK(c.suc, c.com_id)] = c;
+    }
+    const asignados = new Set(folios.map(f => lcK(f.suc, f.com_id)));
+    Object.assign(LC, {lotes, folios, costos, compras, libres: recientes.filter(c => !asignados.has(lcK(c.suc, c.com_id))), error: "", listo: 1});
+    for (const k of [...LC.marcados]) if (!LC.libres.some(c => lcK(c.suc, c.com_id) === k)) LC.marcados.delete(k);
+    if (!LC.dolar) { try { LC.dolar = Number(((await q("precio_parametro", "select=valor&clave=eq.dolar", {unaPagina: true}))[0] || {}).valor) || 0; } catch (e) { LC.dolar = 0; } }
+  } catch (e) {
+    const m = e.message || "";
+    LC.error = /PGRST205|42P01/.test(m) ? "falta correr 19_lotes_costos.sql en Supabase" : m === "sesion" ? "la sesión caducó; vuelve a entrar" : (m || "error");
+  }
+  LC.cargando = 0;
+  lcPintar();
+}
+const lcLote = n => LC.lotes.find(l => l.numero === n);
+const lcDelLote = n => LC.folios.filter(f => f.origen === "lote" && f.lote_numero === n);
+const lcEbay = () => LC.folios.filter(f => f.origen === "ebay");
+const lcCosto = (d, concepto) => LC.costos.find(c => c.concepto === concepto && (d.lote ? c.lote_numero === d.lote : c.suc === d.suc && c.com_id === d.com_id));
+function lcPiezas(fs) { let pz = 0, can = 0; for (const f of fs) { const c = LC.compras[lcK(f.suc, f.com_id)]; if (c && Number(c.status) === 1) pz += Number(c.piezas || 0); else can++; } return {pz, can}; }
+function lcResumen() {
+  if (LC.error) return LC.error;
+  if (!LC.listo) return "lotes de subasta y compras de eBay: folios y costos";
+  const ab = LC.lotes.filter(l => l.estado === "abierto").length;
+  const nl = LC.libres.length, ne = lcEbay().length;
+  return ab + (ab === 1 ? " lote abierto" : " lotes abiertos") + " · " + nl + (nl === 1 ? " folio" : " folios") + " sin asignar · " + ne + (ne === 1 ? " folio eBay" : " folios eBay");
+}
+function lcCostoTx(c) { return !c ? "" : "= " + pesosC(c.monto_mxn) + (c.moneda === "USD" ? " (" + lcUsd(c.monto) + " × " + Number(c.tipo_cambio) + ")" : ""); }
+function lcEditorCosto(d, concepto, etiqueta, fechaDef) {
+  const c = lcCosto(d, concepto), mon = c ? c.moneda : "USD";
+  const llave = d.lote ? 'data-lote="' + d.lote + '"' : 'data-suc="' + d.suc + '" data-com="' + d.com_id + '"';
+  return '<div class="lcCosto" ' + llave + ' data-con="' + concepto + '"><span class="et">' + esc(etiqueta) + '</span>' +
+    '<select class="lcMon" aria-label="Moneda"><option' + (mon === "USD" ? " selected" : "") + '>USD</option><option' + (mon === "MXN" ? " selected" : "") + '>MXN</option></select>' +
+    '<input class="lcMonto" inputmode="decimal" aria-label="Monto" placeholder="monto" value="' + (c ? Number(c.monto) : "") + '">' +
+    '<input class="lcTc" inputmode="decimal" aria-label="Tipo de cambio" title="pesos por dólar del día de la compra" placeholder="' + (LC.dolar ? "TC (hoy " + LC.dolar.toFixed(2) + ")" : "TC") + '" value="' +
+      (c && mon === "USD" ? Number(c.tipo_cambio) : "") + '"' + (mon === "MXN" ? " disabled" : "") + '>' +
+    '<input class="lcFtc" type="date" aria-label="Fecha del tipo de cambio" value="' + esc(String(c ? c.fecha_tc : fechaDef || "").slice(0, 10)) + '">' +
+    '<button type="button" class="lcBtn lcGuardaCosto">Guardar</button><span class="mx">' + esc(lcCostoTx(c)) + '</span></div>';
+}
+function lcFolioHtml(f, botones) {
+  const c = LC.compras[lcK(f.suc, f.com_id)];
+  const can = !c || Number(c.status) !== 1;
+  return '<div class="lcFolio" data-suc="' + f.suc + '" data-com="' + f.com_id + '">' + (botones === "marcar" ?
+      '<input type="checkbox" class="lcMarca" aria-label="Seleccionar folio"' + (LC.marcados.has(lcK(f.suc, f.com_id)) ? " checked" : "") + '>' : "") +
+    '<div class="tx"><b>Folio ' + esc(lcFolioTx(c || f)) + '</b>' + (can ? '<span class="lcChip mal">' + (c ? "cancelado en SICAR" : "no está en la base") + '</span>' : "") +
+    '<small>' + (c ? thF(c.fecha) + " · " + Number(c.renglones || 0) + (Number(c.renglones) === 1 ? " artículo · " : " artículos · ") + Number(c.piezas || 0) + " pz" : "") + (f.notas ? " · " + esc(f.notas) : "") + '</small></div>' +
+    '<button type="button" class="lcBtn lcArt">artículos</button>' + (botones === "quitar" ? '<button type="button" class="lcBtn lcQuitar">quitar</button>' : "") + '</div>';
+}
+function lcLibresHtml() {
+  return LC.libres.length ? LC.libres.map(c => lcFolioHtml(c, "marcar")).join("")
+    : '<div class="przAviso">No hay folios sin asignar en los últimos ' + LC.dias + ' días.</div>';
+}
+function lcPintarLotes() {
+  $("#lcBarraL").classList.remove("hidden");
+  $("#lcLista").innerHTML = LC.lotes.length ? LC.lotes.map(l => {
+    const fs = lcDelLote(l.numero), p = lcPiezas(fs), cm = lcCosto({lote: l.numero}, "mercancia"), ct = lcCosto({lote: l.numero}, "transporte");
+    return '<button type="button" class="lcCard" data-lote="' + l.numero + '"><b>Lote ' + l.numero + '</b><span class="lcChip ' + l.estado + '">' + l.estado + '</span>' +
+      '<small>' + esc(l.proveedor) + " · comprado el " + thF(l.fecha_compra) + (l.tarimas != null ? " · " + l.tarimas + " tarimas" : "") + '</small>' +
+      '<small>' + fs.length + (fs.length === 1 ? " folio" : " folios") + " · " + p.pz + " pz" + (p.can ? " · " + p.can + " cancelados" : "") +
+      " · mercancía " + (cm ? pesosC(cm.monto_mxn) : "sin capturar") + " · transporte " + (ct ? pesosC(ct.monto_mxn) : "sin capturar") + '</small></button>';
+  }).join("") : '<div class="przAviso">Todavía no hay lotes. El primero es el 3.</div>';
+}
+function lcPintarLote() {
+  const l = lcLote(LC.sel); if (!l) { LC.sel = 0; lcPintarLotes(); return; }
+  $("#lcBarraL").classList.add("hidden");
+  const fs = lcDelLote(l.numero), p = lcPiezas(fs), d = {lote: l.numero};
+  $("#lcLista").innerHTML = '<div class="lcBarra"><button type="button" class="lcBtn" id="lcVolver">‹ Todos los lotes</button><button type="button" class="lcBtn" id="lcEditar">Editar lote</button></div>' +
+    '<div class="lcCard" style="cursor:default"><b>Lote ' + l.numero + '</b><span class="lcChip ' + l.estado + '">' + l.estado + '</span>' +
+    '<small>' + esc(l.proveedor) + " · comprado el " + thF(l.fecha_compra) + (l.tarimas != null ? " · " + l.tarimas + " tarimas" : "") + " · " + fs.length + " folios · " + p.pz + " pz" + '</small>' +
+    (l.notas ? '<small>' + esc(l.notas) + '</small>' : "") + '</div>' +
+    '<div class="lcSec">Costos del lote</div>' + lcEditorCosto(d, "mercancia", "Mercancía", l.fecha_compra) + lcEditorCosto(d, "transporte", "Transporte", l.fecha_compra) +
+    '<div class="lcSec">Folios del lote (' + fs.length + ')</div>' + (fs.map(f => lcFolioHtml(f, "quitar")).join("") || '<div class="przAviso">Sin folios todavía.</div>') +
+    (l.estado === "abierto" ? '<div class="lcSec">Folios sin asignar</div>' + lcLibresHtml() +
+      '<div class="lcBarra"><button type="button" class="lcBtn pri" id="lcAsignar">Asignar seleccionados al lote ' + l.numero + '</button></div>'
+      : '<div class="przAviso">Lote cerrado: para agregarle folios, ábrelo con «Editar lote».</div>');
+}
+function lcPintarEbay() {
+  $("#lcEbLibres").innerHTML = lcLibresHtml();
+  const fs = lcEbay().slice().sort((a, b) => String((LC.compras[lcK(b.suc, b.com_id)] || {}).fecha || "").localeCompare(String((LC.compras[lcK(a.suc, a.com_id)] || {}).fecha || "")));
+  $("#lcEbLista").innerHTML = fs.map(f => { const c = LC.compras[lcK(f.suc, f.com_id)] || {}, d = {suc: f.suc, com_id: f.com_id};
+    return '<div class="lcEb">' + lcFolioHtml(f, "quitar") + lcEditorCosto(d, "mercancia", "Mercancía", c.fecha) + lcEditorCosto(d, "transporte", "Transporte El Paso → CEDIS", c.fecha) + '</div>'; }).join("")
+    || '<div class="przAviso">Todavía no hay folios eBay.</div>';
+}
+function lcPintar() {
+  $("#lcAviso").textContent = LC.error ? "⚠ " + LC.error : "";
+  const ab = LC.lotes.filter(l => l.estado === "abierto").length, ne = lcEbay().length;
+  $("#lcNl").textContent = ab ? "· " + ab : ""; $("#lcNe").textContent = ne ? "· " + ne : "";
+  $("#lcTabL").classList.toggle("on", LC.tab === "lotes"); $("#lcTabE").classList.toggle("on", LC.tab === "ebay");
+  $("#lcLotes").classList.toggle("hidden", LC.tab !== "lotes"); $("#lcEbay").classList.toggle("hidden", LC.tab !== "ebay");
+  if (LC.tab === "lotes") { if (LC.sel) lcPintarLote(); else lcPintarLotes(); } else lcPintarEbay();
+  if (typeof opPintarMenu === "function") opPintarMenu();
+}
+async function lcAccion(llamada, donde) {     // llamada: () => rpc("lc_…", {…}) con el nombre LITERAL (el verificador de ecosistema lo lee)
+  try { const r = await llamada(); await lcCargar(true); return r || true; }
+  catch (e) { (donde || $("#lcAviso")).textContent = "⚠ " + (e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message || "error"); return null; }
+}
+function lcAbrirForm(l) {
+  LC.editando = l ? l.numero : 0;
+  const sig = Math.max(2, ...LC.lotes.map(x => x.numero)) + 1;
+  $("#lcfNum").value = l ? l.numero : ""; $("#lcfNum").placeholder = "siguiente: " + sig; $("#lcfNum").disabled = !!l;
+  $("#lcfProv").value = l ? l.proveedor : "Select Source"; $("#lcfFecha").value = l ? String(l.fecha_compra).slice(0, 10) : hoyStr();
+  $("#lcfTar").value = l && l.tarimas != null ? l.tarimas : ""; $("#lcfNotas").value = l ? l.notas || "" : ""; $("#lcfEstado").value = l ? l.estado : "abierto";
+  $("#lcfAviso").textContent = ""; $("#lcForm").classList.add("abierto"); $("#lcfFecha").focus();
+}
+async function lcGuardarLote() {
+  const num = lcNum($("#lcfNum").value), tar = lcNum($("#lcfTar").value), aviso = $("#lcfAviso");
+  if (!LC.editando && num !== null && !(Number.isInteger(num) && num >= 3)) { aviso.textContent = "El número de lote es entero y empieza en 3."; return; }
+  if (tar !== null && !(Number.isInteger(tar) && tar >= 0 && tar <= 999)) { aviso.textContent = "Tarimas: un número entero."; return; }
+  if (!$("#lcfFecha").value) { aviso.textContent = "Falta la fecha de compra."; return; }
+  const r = await lcAccion(() => rpc("lc_lote_guardar", {p_numero: LC.editando || num, p_proveedor: $("#lcfProv").value.trim(), p_fecha_compra: $("#lcfFecha").value,
+    p_tarimas: tar, p_notas: $("#lcfNotas").value.trim(), p_estado: $("#lcfEstado").value, p_crear: !LC.editando}), aviso);
+  if (r) { $("#lcForm").classList.remove("abierto"); $("#lcfNum").disabled = false; if (r.numero) LC.sel = r.numero; LC.editando = 0; lcPintar(); toast("Lote " + (r.numero || "") + " guardado"); }
+}
+async function lcGuardarCosto(caja) {
+  const mon = caja.querySelector(".lcMon").value, monto = lcNum(caja.querySelector(".lcMonto").value), tc = lcNum(caja.querySelector(".lcTc").value);
+  const fecha = caja.querySelector(".lcFtc").value, mx = caja.querySelector(".mx");
+  const d = caja.dataset.lote ? {lote: Number(caja.dataset.lote)} : {suc: Number(caja.dataset.suc), com_id: Number(caja.dataset.com)};
+  if (monto === null) {
+    if (!lcCosto(d, caja.dataset.con)) { mx.textContent = "escribe el monto"; return; }
+    if (!confirm("¿Borrar este costo?")) return;
+  } else {
+    if (!(monto >= 0) || !isFinite(monto)) { mx.textContent = "⚠ monto inválido"; return; }
+    if (mon === "USD" && !(tc > 0)) { mx.textContent = "⚠ falta el tipo de cambio"; return; }
+    if (!fecha) { mx.textContent = "⚠ falta la fecha del tipo de cambio"; return; }
+  }
+  await lcAccion(() => rpc("lc_costo_guardar", {p_lote: d.lote || null, p_suc: d.suc || null, p_com_id: d.com_id || null, p_concepto: caja.dataset.con,
+    p_moneda: mon, p_monto: monto, p_tipo_cambio: mon === "USD" ? tc : 1, p_fecha_tc: fecha || null, p_nota: ""}), mx);
+}
+async function lcAsignar(origen, lote) {
+  const sel = LC.libres.filter(c => LC.marcados.has(lcK(c.suc, c.com_id)));
+  if (!sel.length) { $("#lcAviso").textContent = "⚠ Selecciona al menos un folio."; return; }
+  let ok = true;
+  for (const suc of [...new Set(sel.map(c => c.suc))]) {
+    const r = await lcAccion(() => rpc("lc_folio_asignar", {p_suc: suc, p_com_ids: sel.filter(c => c.suc === suc).map(c => c.com_id), p_origen: origen,
+      p_lote: lote || null, p_notas: origen === "ebay" ? ($("#lcEbNotas").value.trim() || null) : null}));
+    ok = ok && !!r;
+  }
+  if (ok) { LC.marcados.clear(); if (origen === "ebay") $("#lcEbNotas").value = ""; $("#lcAviso").textContent = ""; lcPintar();
+    toast(sel.length + (sel.length === 1 ? " folio asignado" : " folios asignados") + (origen === "ebay" ? " a eBay" : " al lote " + lote)); }
+}
+async function lcArticulos(suc, cid) {
+  const c = LC.compras[lcK(suc, cid)] || {com_id: cid}, tit = "Entrada " + lcFolioTx(c);
+  abrirCajon(tit, "CEDIS · " + thF(c.fecha) + " · " + Number(c.piezas || 0) + " piezas", '<div class="vacio">Cargando artículos…</div>');
+  try {
+    const det = await q("sicar_compra_detalle", "select=clave,descripcion,cantidad,borrado&suc=eq." + suc + "&com_id=eq." + cid + "&order=com_id,orden,art_id");
+    if ($("#cajonTitulo").textContent !== tit) return;
+    $("#cajonCuerpo").innerHTML = '<h4>Artículos</h4>' + (det.length ? det.map(x => '<div class="art' + (x.borrado ? " borrado" : "") + '">' + fotoHtml(x.clave) +
+      '<div><div class="c">' + esc(x.clave) + '</div><div class="d">' + esc(x.descripcion) + '</div></div><div class="i num">' + Number(x.cantidad) + ' pz</div></div>').join("")
+      : '<div class="vacio">Sin artículos registrados.</div>');
+  } catch (e) { $("#cajonCuerpo").innerHTML = '<div class="aviso bad">No se pudieron leer los artículos: ' + esc(e.message) + '</div>'; }
+}
+(function lcArmar() {
+  $("#lcTabL").onclick = () => { LC.tab = "lotes"; lcPintar(); };
+  $("#lcTabE").onclick = () => { LC.tab = "ebay"; LC.sel = 0; $("#lcForm").classList.remove("abierto"); lcPintar(); };
+  $("#lcDias").onchange = () => { LC.dias = Number($("#lcDias").value) || 60; lcCargar(true); };
+  $("#lcNuevo").onclick = () => lcAbrirForm(null);
+  $("#lcfCerrar").onclick = () => { $("#lcForm").classList.remove("abierto"); $("#lcfNum").disabled = false; LC.editando = 0; };
+  $("#lcfGuardar").onclick = lcGuardarLote;
+  $("#lcEbMarcar").onclick = () => lcAsignar("ebay", null);
+  $("#p-costos").addEventListener("change", ev => {
+    const t = ev.target;
+    if (t.classList.contains("lcMarca")) { const f = t.closest(".lcFolio"), k = lcK(f.dataset.suc, f.dataset.com); if (t.checked) LC.marcados.add(k); else LC.marcados.delete(k); }
+    if (t.classList.contains("lcMon")) { const tc = t.closest(".lcCosto").querySelector(".lcTc"); tc.disabled = t.value === "MXN"; if (t.value === "MXN") tc.value = ""; }
+  });
+  $("#p-costos").addEventListener("click", ev => {
+    const t = ev.target, card = t.closest(".lcCard[data-lote]"), f = t.closest(".lcFolio");
+    if (t.id === "lcVolver") { LC.sel = 0; $("#lcForm").classList.remove("abierto"); lcPintar(); return; }
+    if (t.id === "lcEditar") { lcAbrirForm(lcLote(LC.sel)); return; }
+    if (t.id === "lcAsignar") { lcAsignar("lote", LC.sel); return; }
+    if (t.classList.contains("lcGuardaCosto")) { lcGuardarCosto(t.closest(".lcCosto")); return; }
+    if (f && t.classList.contains("lcArt")) { lcArticulos(Number(f.dataset.suc), Number(f.dataset.com)); return; }
+    if (f && t.classList.contains("lcQuitar")) {
+      const x = LC.folios.find(y => y.suc === Number(f.dataset.suc) && y.com_id === Number(f.dataset.com));
+      if (x && confirm("¿Quitar el folio " + x.folio + (x.origen === "ebay" ? " de eBay?" : " del lote " + x.lote_numero + "?")))
+        lcAccion(() => rpc("lc_folio_quitar", {p_suc: x.suc, p_com_id: x.com_id}));
+      return;
+    }
+    if (card && !t.closest("button.lcBtn")) { LC.sel = Number(card.dataset.lote); $("#lcForm").classList.remove("abierto"); lcPintar(); $("#opScroll").scrollTop = 0; }
+  });
+})();
 /* ---------------- panel de opciones (derecha) ---------------- */
 const OP = {abierto: false, actual: "", mods: [
   {id: "criticos", t: "Críticos para kits", nodos: ["#p-criticos"], ocultar: ["#p-criticos > h2"],
@@ -2534,6 +2805,7 @@ const OP = {abierto: false, actual: "", mods: [
   {id: "precio", t: "Precio ideal", nodos: ["#p-precio"], ocultar: ["#p-precio > h2"], sub: () => piResumen(), mal: () => piPendientes() > 0, ver: () => esDueno()},
   {id: "ofertas", t: "Ofertas", nodos: ["#p-ofertas"], ocultar: ["#p-ofertas > h2"], sub: () => ofResumen(), mal: () => ofPendientes().length > 0, ver: () => esDueno()},
   {id: "proyectos", t: "Proyectos e ideas", nodos: ["#p-proyectos"], ocultar: ["#p-proyectos > h2"], sub: () => przResumen(), mal: () => przRezagados() > 0, ver: () => esDueno()},
+  {id: "costos", t: "Costos: lotes y eBay", nodos: ["#p-costos"], ocultar: ["#p-costos > h2"], sub: () => lcResumen(), mal: () => !!LC.error, ver: () => esDueno()},
   {id: "personas", t: "Personas y PIN", nodos: ["#secPersonas"], sub: () => "solo el dueño", ver: () => !$("#secPersonas").classList.contains("hidden")}
 ]};
 (function opMover() {
