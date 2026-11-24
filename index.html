@@ -747,6 +747,88 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 .ofGra .fila .res{font-weight:700}
 .ofGra .fila .res.bajo{color:#b91c1c}
 
+/* costos: lotes y eBay */
+#p-costos{display:none}
+.lcBarra{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 10px}
+.lcBarra button,.lcBtn{border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-size:13px;color:var(--ink-2);background:var(--surface)}
+.lcBtn.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.lcBtn:disabled{opacity:.45}
+.lcCard{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:var(--surface);color:var(--ink)}
+.lcCard b{font-family:var(--display);font-size:18px;font-weight:600}
+.lcCard small,.lcMeta{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.lcChip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:11.5px;margin-left:6px;color:var(--ink-2)}
+.lcChip.cerrado{color:var(--ink-3)}
+.lcChip.mal{color:var(--bad);border-color:var(--bad)}
+#lcForm{display:none;border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+#lcForm.abierto{display:block}
+#lcForm label{display:block;font-size:12px;color:var(--ink-3);margin-top:6px}
+#lcForm input,#lcForm select,#lcForm textarea,.lcCosto input,.lcCosto select,#lcEbNotas,#lcDias{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+#lcForm input,#lcForm select,#lcForm textarea{width:100%}
+#lcForm .fila{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.lcSec{margin:14px 0 6px;font-weight:700;font-size:13px;color:var(--ink-2)}
+.lcCosto{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:5px 0}
+.lcCosto .et{min-width:92px;font-size:13px;font-weight:600}
+.lcCosto .lcMonto{width:110px}.lcCosto .lcTc{width:104px}.lcCosto .lcFtc{width:138px}
+.lcCosto .mx{font-size:12.5px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.lcFolio{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-bottom:6px;background:var(--surface)}
+.lcFolio .tx{flex:1;min-width:0}
+.lcFolio .tx small{display:block;font-size:12px;color:var(--ink-3)}
+.lcFolio input[type=checkbox]{width:19px;height:19px;min-width:19px}
+.lcEb{border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:8px;background:var(--surface)}
+.lcEb .lcFolio{border:0;padding:0;margin:0 0 4px;background:none}
+#lcEbNotas{width:100%;margin:6px 0}
+
+/* recepción de mercancía */
+#p-recepcion{display:none}
+#rcCapa{position:fixed;inset:0;background:var(--bg);z-index:25;overflow:auto;padding:10px var(--gutter) 60px;transition:box-shadow .15s}
+#rcCapa .rcIn{max-width:880px;margin:0 auto}
+#rcCapa.fBien{box-shadow:inset 0 0 0 6px var(--ok)}#rcCapa.fOjo{box-shadow:inset 0 0 0 6px var(--warn)}#rcCapa.fMal{box-shadow:inset 0 0 0 6px var(--bad)}
+.rcCab{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.rcCab h3{flex:1;min-width:0;font-family:var(--display);font-size:22px;margin:0;line-height:1.1}
+.rcCab small{display:block;font-family:var(--body);font-size:12.5px;color:var(--ink-3);font-weight:400}
+#rcForm{display:flex;gap:6px}
+#rcUpc{flex:1;min-width:0;font:inherit;font-size:22px;padding:14px 14px;border-radius:12px;border:2px solid var(--accent);background:var(--surface);color:var(--ink);box-sizing:border-box;letter-spacing:.04em}
+#rcTeclado{width:54px;border-radius:12px;border:1px solid var(--line-2);font-size:20px;background:var(--surface)}
+#rcTeclado.on{background:var(--accent-soft);border-color:var(--accent)}
+#rcUlt{min-height:44px;font-size:15px;font-weight:600;margin:8px 0;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+#rcUlt.bien{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}#rcUlt.ojo{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}#rcUlt.mal{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+#rcUlt small{display:block;font-weight:400;font-size:12.5px;color:var(--ink-2)}
+#rcCola{font-size:12.5px;color:var(--warn);margin:0 2px 6px;min-height:0}
+.rcBtns{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.rcRes{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;margin:6px 0 10px}
+.rcRes div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 10px;min-width:0}
+.rcRes b{display:block;font-family:var(--display);font-size:22px;line-height:1.1}
+.rcRes span{font-size:12px;color:var(--ink-3)}
+.rcRes .ok b{color:var(--ok)}.rcRes .ojo b{color:var(--warn)}.rcRes .mal b{color:var(--bad)}
+.rcFiltro{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.rcFiltro button{border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:12.5px;background:var(--surface);color:var(--ink-2)}
+.rcFiltro button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.rcG{border:1px solid var(--line);border-radius:12px;margin-bottom:6px;background:var(--surface);overflow:hidden}
+.rcG.ok{border-left:5px solid var(--ok)}.rcG.ojo{border-left:5px solid var(--warn)}.rcG.mal{border-left:5px solid var(--bad)}.rcG.gris{border-left:5px solid var(--line-2)}
+.rcGcab{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;text-align:left;padding:8px 10px;background:none;border:0;color:var(--ink)}
+.rcGcab .tx{min-width:0}.rcGcab .tx b{display:block;font-size:14px;overflow-wrap:anywhere}
+.rcGcab .tx small{display:block;font-size:12px;color:var(--ink-3);overflow-wrap:anywhere}
+.rcGcab .n{text-align:right;font-family:var(--display);font-size:18px;font-weight:600;white-space:nowrap}
+.rcGcab .n small{display:block;font-family:var(--body);font-size:11px;font-weight:400;color:var(--ink-3)}
+.rcG.nuevo{outline:2px solid var(--accent);outline-offset:-2px}
+.rcDet{border-top:1px solid var(--line);padding:8px 10px;background:var(--bg)}
+.rcCaja{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-top:1px dashed var(--line);font-size:13px}
+.rcCaja:first-of-type{border-top:0}
+.rcCaja .tx{flex:1;min-width:150px}
+.rcCaja .v{font-weight:700}.rcCaja .v.ok{color:var(--ok)}.rcCaja .v.ojo{color:var(--warn)}
+.rcFicha,.rcEditor,#rcRapido{border:1px dashed var(--line-2);border-radius:10px;padding:8px 10px;margin:6px 0;background:var(--surface)}
+.rcFicha label,.rcEditor label,#rcRapido label{display:block;font-size:12px;color:var(--ink-3);margin-top:5px}
+.rcFicha input,.rcEditor input,.rcEditor select,#rcRapido input{border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:var(--bg);color:var(--ink);font:inherit;font-size:14px;width:100%;box-sizing:border-box}
+.rcFicha .sk{display:grid;grid-template-columns:minmax(0,1fr) 84px 34px;gap:6px;margin-top:4px}
+.rcFicha .sk button{border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.rcEditor .ck,#rcRapido .ck{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2);margin-top:6px}
+.rcEditor .ck input,#rcRapido .ck input{width:20px;height:20px}
+.rcFila2{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px}
+.rcCand{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.rcCand button{border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:12px;background:var(--bg);color:var(--ink-2)}
+#rcRapido{display:none}#rcRapido.abierto{display:block}
+.rcTit{font-family:var(--display);font-size:15px;font-weight:600;margin:12px 2px 6px;color:var(--ink-2)}
+
 /* cotizaciones guardadas */
 .cgBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
 .cgBarra .estado{font-size:12px;color:var(--ink-3);flex:1 1 160px;min-width:0}
@@ -995,6 +1077,45 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div class="przAviso" id="przAviso"></div>
     <div id="przLista"></div>
   </section>
+  <section class="panel" id="p-costos">
+    <h2>Costos: lotes y eBay</h2>
+    <div class="przTabs">
+      <button type="button" id="lcTabL" class="on">Lotes <span id="lcNl"></span></button>
+      <button type="button" id="lcTabE">eBay <span id="lcNe"></span></button>
+      <span class="espacio"></span>
+      <label class="przAviso" style="margin:0">Folios sin asignar de los últimos
+        <select id="lcDias" aria-label="Días de folios sin asignar"><option value="30">30</option><option value="60" selected>60</option><option value="120">120</option><option value="365">365</option></select> días</label>
+    </div>
+    <div class="przAviso" id="lcAviso"></div>
+    <div id="lcLotes">
+      <div class="lcBarra" id="lcBarraL"><button type="button" id="lcNuevo">+ Nuevo lote</button></div>
+      <div id="lcForm">
+        <div class="fila">
+          <div><label for="lcfNum">Número de lote</label><input id="lcfNum" inputmode="numeric" maxlength="6"></div>
+          <div><label for="lcfProv">Proveedor</label><input id="lcfProv" maxlength="120" value="Select Source"></div>
+          <div><label for="lcfFecha">Fecha de compra</label><input id="lcfFecha" type="date"></div>
+          <div><label for="lcfTar">Tarimas</label><input id="lcfTar" inputmode="numeric" maxlength="3"></div>
+          <div><label for="lcfEstado">Estado</label><select id="lcfEstado"><option value="abierto">Abierto</option><option value="cerrado">Cerrado</option></select></div>
+        </div>
+        <label for="lcfNotas">Notas</label><textarea id="lcfNotas" rows="2"></textarea>
+        <div class="lcBarra"><button type="button" class="lcBtn pri" id="lcfGuardar">Guardar</button><button type="button" class="lcBtn" id="lcfCerrar">Cancelar</button><span class="przAviso" id="lcfAviso" style="margin:0"></span></div>
+      </div>
+      <div id="lcLista"></div>
+    </div>
+    <div id="lcEbay" class="hidden">
+      <div class="lcSec">Marcar como eBay</div>
+      <div id="lcEbLibres"></div>
+      <input id="lcEbNotas" maxlength="300" placeholder="Pedidos eBay que junta el folio (opcional), p. ej. 12-34567-89012, 12-34567-89013">
+      <div class="lcBarra"><button type="button" class="lcBtn pri" id="lcEbMarcar">Marcar seleccionados como eBay</button></div>
+      <div class="lcSec">Folios eBay y sus costos</div>
+      <div id="lcEbLista"></div>
+    </div>
+  </section>
+  <section class="panel" id="p-recepcion">
+    <h2>Recepción de mercancía</h2>
+    <div class="przAviso" id="rcAviso"></div>
+    <div id="rcLotes"></div>
+  </section>
   <section class="panel" id="p-inventario">
     <h2>Hacer inventario <small id="invResumen"></small></h2>
     <div id="icBloque"></div>
@@ -1048,6 +1169,26 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 <div id="spCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificar pedido"><div class="vtIn" id="spIn"></div></div>
 <div id="envCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Modificar envío"><div class="envIn" id="envIn"></div></div>
 <div id="vtCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Verificación de traspasos"><div class="vtIn" id="vtIn"></div></div>
+<div id="rcCapa" class="hidden" role="dialog" aria-modal="true" aria-label="Recepción de mercancía"><div class="rcIn">
+  <div class="rcCab"><h3 id="rcTit">Recepción</h3><button type="button" class="lcBtn" id="rcCerrar">Cerrar</button></div>
+  <form id="rcForm" autocomplete="off"><input id="rcUpc" inputmode="none" placeholder="Escanea el UPC…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" aria-label="UPC escaneado"><button type="button" id="rcTeclado" title="Teclear a mano" aria-label="Mostrar teclado">⌨</button></form>
+  <div id="rcUlt" role="status"></div>
+  <div id="rcCola"></div>
+  <div class="rcBtns" id="rcBtns"><button type="button" class="invbtn" id="rcDeshacer">Deshacer último</button><button type="button" class="invbtn" id="rcRapidoBtn">+ Añadir producto rápido</button><button type="button" class="invbtn" id="rcActualizar">Actualizar SICAR</button></div>
+  <div id="rcRapido">
+    <b>Producto rápido (sin UPC)</b>
+    <label for="rcrDesc">Descripción</label><input id="rcrDesc" maxlength="200">
+    <div class="rcFila2"><div><label for="rcrSku">SKU (si se conoce, sin letra)</label><input id="rcrSku" maxlength="60" autocapitalize="characters"></div>
+      <div><label for="rcrCant">Cantidad</label><input id="rcrCant" inputmode="numeric" maxlength="3" value="1"></div></div>
+    <label for="rcrNota">Nota</label><input id="rcrNota" maxlength="500">
+    <label class="ck"><input type="checkbox" id="rcrExtra"> Pieza extra encontrada dentro de una caja</label>
+    <div class="rcBtns"><button type="button" class="lcBtn pri" id="rcrGuardar">Agregar</button><button type="button" class="lcBtn" id="rcrCancelar">Cancelar</button><span class="przAviso" id="rcrAviso" style="margin:0"></span></div>
+  </div>
+  <div class="rcRes" id="rcRes"></div>
+  <div class="rcFiltro" id="rcFiltro"></div>
+  <div id="rcLista"></div>
+  <div id="rcSobran"></div>
+</div></div>
 <aside id="cajon" aria-hidden="true">
   <div class="cab"><div><h3 id="cajonTitulo"></h3><div class="sub" id="cajonSub"></div></div><button class="pdfbtn hidden" id="btnPdfCajon" type="button" title="Imprimir o guardar en PDF el contenido del traspaso"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg>PDF</button><button class="cerrar" id="btnCerrar" aria-label="Cerrar">✕</button></div>
   <div class="cuerpo" id="cajonCuerpo"></div>
@@ -1231,7 +1372,7 @@ function mostrarPanel(p) {
 }
 
 /* ---------------- pintado ---------------- */
-function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); przCargar(); ofCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
+function pintarTodo() { visCargar(); if (CUENTA && !IC.lista && !IC.cargando) icCargar(true); hmpCargar(); actCargar(); piCargar(); przCargar(); ofCargar(); lcCargar(); rcCargar(); pintarEstado(); pintarVentas(); pintarReparto(); pintarCriticos().then(opPintarMenu).catch(() => {}); pintarTraspasos(); pintarEntradas(); pintarDinero(); opPintarMenu(); }
 
 function pintarEstado() {
   const ahora = Date.now(); const avisos = []; const html = [];
@@ -2520,6 +2661,563 @@ $("#ofArchivo").addEventListener("change", async ev => {
     OF.filtro = "pendiente"; await ofCargar();
   } catch (e) { toast("No se pudo cargar: " + (e.message === "sesion" ? "la sesión caducó" : e.message), true); ofPintar(); }
 });
+/* ---------------- costos: lotes y eBay (solo Emilio) ---------------- */
+const LC = {lotes: [], folios: [], costos: [], compras: {}, libres: [], marcados: new Set(), dias: 60, dolar: 0,
+            tab: "lotes", sel: 0, editando: 0, error: "", cargando: 0, listo: 0};
+const LC_COLS = "select=suc,com_id,fecha,folio,status,renglones,piezas";
+const lcK = (suc, cid) => suc + ":" + cid;
+const lcUsd = n => "US$" + Number(n || 0).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const lcFolioTx = f => f && f.folio && f.folio !== "-" ? String(f.folio) : String(f ? f.com_id : "");
+const lcNum = s => { const t = String(s == null ? "" : s).replace(/[$,\s]/g, ""); return t === "" ? null : Number(t); };
+const lcEscribiendo = () => { const a = document.activeElement; return !!a && $("#p-costos").contains(a) && a.matches("input:not([type=checkbox]),select,textarea"); };
+
+async function lcCargar(forzar) {
+  if (!esDueno() || LC.cargando) return;
+  if (!forzar && LC.listo && lcEscribiendo()) return;      // la recarga del tablero no borra lo que Emilio está tecleando
+  LC.cargando = 1;
+  try {
+    const [lotes, folios, costos, recientes] = await Promise.all([
+      q("lote", "select=*&order=numero.desc"),
+      q("folio_origen", "select=*&order=suc,com_id"),
+      q("costo", "select=*&order=id"),
+      q("sicar_compra", LC_COLS + "&suc=eq.1&gasto=eq.0&status=eq.1&fecha=gte." + thDias(LC.dias) + "T00:00:00&order=fecha.desc,com_id.desc")]);
+    const compras = {};
+    for (const c of recientes) compras[lcK(c.suc, c.com_id)] = c;
+    // folios asignados más viejos que el rango (o cancelados después): sus datos de SICAR, por partes
+    const faltan = folios.filter(f => !compras[lcK(f.suc, f.com_id)]);
+    for (const suc of [...new Set(faltan.map(f => f.suc))]) {
+      const ids = faltan.filter(f => f.suc === suc).map(f => f.com_id);
+      for (let i = 0; i < ids.length; i += 300)
+        for (const c of await q("sicar_compra", LC_COLS + "&suc=eq." + suc + "&com_id=in." + enLista(ids.slice(i, i + 300)) + "&order=com_id"))
+          compras[lcK(c.suc, c.com_id)] = c;
+    }
+    const asignados = new Set(folios.map(f => lcK(f.suc, f.com_id)));
+    Object.assign(LC, {lotes, folios, costos, compras, libres: recientes.filter(c => !asignados.has(lcK(c.suc, c.com_id))), error: "", listo: 1});
+    for (const k of [...LC.marcados]) if (!LC.libres.some(c => lcK(c.suc, c.com_id) === k)) LC.marcados.delete(k);
+    if (!LC.dolar) { try { LC.dolar = Number(((await q("precio_parametro", "select=valor&clave=eq.dolar", {unaPagina: true}))[0] || {}).valor) || 0; } catch (e) { LC.dolar = 0; } }
+  } catch (e) {
+    const m = e.message || "";
+    LC.error = /PGRST205|42P01/.test(m) ? "falta correr 19_lotes_costos.sql en Supabase" : m === "sesion" ? "la sesión caducó; vuelve a entrar" : (m || "error");
+  }
+  LC.cargando = 0;
+  lcPintar();
+}
+const lcLote = n => LC.lotes.find(l => l.numero === n);
+const lcDelLote = n => LC.folios.filter(f => f.origen === "lote" && f.lote_numero === n);
+const lcEbay = () => LC.folios.filter(f => f.origen === "ebay");
+const lcCosto = (d, concepto) => LC.costos.find(c => c.concepto === concepto && (d.lote ? c.lote_numero === d.lote : c.suc === d.suc && c.com_id === d.com_id));
+function lcPiezas(fs) { let pz = 0, can = 0; for (const f of fs) { const c = LC.compras[lcK(f.suc, f.com_id)]; if (c && Number(c.status) === 1) pz += Number(c.piezas || 0); else can++; } return {pz, can}; }
+function lcResumen() {
+  if (LC.error) return LC.error;
+  if (!LC.listo) return "lotes de subasta y compras de eBay: folios y costos";
+  const ab = LC.lotes.filter(l => l.estado === "abierto").length;
+  const nl = LC.libres.length, ne = lcEbay().length;
+  return ab + (ab === 1 ? " lote abierto" : " lotes abiertos") + " · " + nl + (nl === 1 ? " folio" : " folios") + " sin asignar · " + ne + (ne === 1 ? " folio eBay" : " folios eBay");
+}
+function lcCostoTx(c) { return !c ? "" : "= " + pesosC(c.monto_mxn) + (c.moneda === "USD" ? " (" + lcUsd(c.monto) + " × " + Number(c.tipo_cambio) + ")" : ""); }
+function lcEditorCosto(d, concepto, etiqueta, fechaDef) {
+  const c = lcCosto(d, concepto), mon = c ? c.moneda : "USD";
+  const llave = d.lote ? 'data-lote="' + d.lote + '"' : 'data-suc="' + d.suc + '" data-com="' + d.com_id + '"';
+  return '<div class="lcCosto" ' + llave + ' data-con="' + concepto + '"><span class="et">' + esc(etiqueta) + '</span>' +
+    '<select class="lcMon" aria-label="Moneda"><option' + (mon === "USD" ? " selected" : "") + '>USD</option><option' + (mon === "MXN" ? " selected" : "") + '>MXN</option></select>' +
+    '<input class="lcMonto" inputmode="decimal" aria-label="Monto" placeholder="monto" value="' + (c ? Number(c.monto) : "") + '">' +
+    '<input class="lcTc" inputmode="decimal" aria-label="Tipo de cambio" title="pesos por dólar del día de la compra" placeholder="' + (LC.dolar ? "TC (hoy " + LC.dolar.toFixed(2) + ")" : "TC") + '" value="' +
+      (c && mon === "USD" ? Number(c.tipo_cambio) : "") + '"' + (mon === "MXN" ? " disabled" : "") + '>' +
+    '<input class="lcFtc" type="date" aria-label="Fecha del tipo de cambio" value="' + esc(String(c ? c.fecha_tc : fechaDef || "").slice(0, 10)) + '">' +
+    '<button type="button" class="lcBtn lcGuardaCosto">Guardar</button><span class="mx">' + esc(lcCostoTx(c)) + '</span></div>';
+}
+function lcFolioHtml(f, botones) {
+  const c = LC.compras[lcK(f.suc, f.com_id)];
+  const can = !c || Number(c.status) !== 1;
+  return '<div class="lcFolio" data-suc="' + f.suc + '" data-com="' + f.com_id + '">' + (botones === "marcar" ?
+      '<input type="checkbox" class="lcMarca" aria-label="Seleccionar folio"' + (LC.marcados.has(lcK(f.suc, f.com_id)) ? " checked" : "") + '>' : "") +
+    '<div class="tx"><b>Folio ' + esc(lcFolioTx(c || f)) + '</b>' + (can ? '<span class="lcChip mal">' + (c ? "cancelado en SICAR" : "no está en la base") + '</span>' : "") +
+    '<small>' + (c ? thF(c.fecha) + " · " + Number(c.renglones || 0) + (Number(c.renglones) === 1 ? " artículo · " : " artículos · ") + Number(c.piezas || 0) + " pz" : "") + (f.notas ? " · " + esc(f.notas) : "") + '</small></div>' +
+    '<button type="button" class="lcBtn lcArt">artículos</button>' + (botones === "quitar" ? '<button type="button" class="lcBtn lcQuitar">quitar</button>' : "") + '</div>';
+}
+function lcLibresHtml() {
+  return LC.libres.length ? LC.libres.map(c => lcFolioHtml(c, "marcar")).join("")
+    : '<div class="przAviso">No hay folios sin asignar en los últimos ' + LC.dias + ' días.</div>';
+}
+function lcPintarLotes() {
+  $("#lcBarraL").classList.remove("hidden");
+  $("#lcLista").innerHTML = LC.lotes.length ? LC.lotes.map(l => {
+    const fs = lcDelLote(l.numero), p = lcPiezas(fs), cm = lcCosto({lote: l.numero}, "mercancia"), ct = lcCosto({lote: l.numero}, "transporte");
+    return '<button type="button" class="lcCard" data-lote="' + l.numero + '"><b>Lote ' + l.numero + '</b><span class="lcChip ' + l.estado + '">' + l.estado + '</span>' +
+      '<small>' + esc(l.proveedor) + " · comprado el " + thF(l.fecha_compra) + (l.tarimas != null ? " · " + l.tarimas + " tarimas" : "") + '</small>' +
+      '<small>' + fs.length + (fs.length === 1 ? " folio" : " folios") + " · " + p.pz + " pz" + (p.can ? " · " + p.can + " cancelados" : "") +
+      " · mercancía " + (cm ? pesosC(cm.monto_mxn) : "sin capturar") + " · transporte " + (ct ? pesosC(ct.monto_mxn) : "sin capturar") + '</small></button>';
+  }).join("") : '<div class="przAviso">Todavía no hay lotes. El primero es el 3.</div>';
+}
+function lcPintarLote() {
+  const l = lcLote(LC.sel); if (!l) { LC.sel = 0; lcPintarLotes(); return; }
+  $("#lcBarraL").classList.add("hidden");
+  const fs = lcDelLote(l.numero), p = lcPiezas(fs), d = {lote: l.numero};
+  $("#lcLista").innerHTML = '<div class="lcBarra"><button type="button" class="lcBtn" id="lcVolver">‹ Todos los lotes</button><button type="button" class="lcBtn" id="lcEditar">Editar lote</button></div>' +
+    '<div class="lcCard" style="cursor:default"><b>Lote ' + l.numero + '</b><span class="lcChip ' + l.estado + '">' + l.estado + '</span>' +
+    '<small>' + esc(l.proveedor) + " · comprado el " + thF(l.fecha_compra) + (l.tarimas != null ? " · " + l.tarimas + " tarimas" : "") + " · " + fs.length + " folios · " + p.pz + " pz" + '</small>' +
+    (l.notas ? '<small>' + esc(l.notas) + '</small>' : "") + '</div>' +
+    '<div class="lcSec">Costos del lote</div>' + lcEditorCosto(d, "mercancia", "Mercancía", l.fecha_compra) + lcEditorCosto(d, "transporte", "Transporte", l.fecha_compra) +
+    '<div class="lcSec">Folios del lote (' + fs.length + ')</div>' + (fs.map(f => lcFolioHtml(f, "quitar")).join("") || '<div class="przAviso">Sin folios todavía.</div>') +
+    (l.estado === "abierto" ? '<div class="lcSec">Folios sin asignar</div>' + lcLibresHtml() +
+      '<div class="lcBarra"><button type="button" class="lcBtn pri" id="lcAsignar">Asignar seleccionados al lote ' + l.numero + '</button></div>'
+      : '<div class="przAviso">Lote cerrado: para agregarle folios, ábrelo con «Editar lote».</div>');
+}
+function lcPintarEbay() {
+  $("#lcEbLibres").innerHTML = lcLibresHtml();
+  const fs = lcEbay().slice().sort((a, b) => String((LC.compras[lcK(b.suc, b.com_id)] || {}).fecha || "").localeCompare(String((LC.compras[lcK(a.suc, a.com_id)] || {}).fecha || "")));
+  $("#lcEbLista").innerHTML = fs.map(f => { const c = LC.compras[lcK(f.suc, f.com_id)] || {}, d = {suc: f.suc, com_id: f.com_id};
+    return '<div class="lcEb">' + lcFolioHtml(f, "quitar") + lcEditorCosto(d, "mercancia", "Mercancía", c.fecha) + lcEditorCosto(d, "transporte", "Transporte El Paso → CEDIS", c.fecha) + '</div>'; }).join("")
+    || '<div class="przAviso">Todavía no hay folios eBay.</div>';
+}
+function lcPintar() {
+  $("#lcAviso").textContent = LC.error ? "⚠ " + LC.error : "";
+  const ab = LC.lotes.filter(l => l.estado === "abierto").length, ne = lcEbay().length;
+  $("#lcNl").textContent = ab ? "· " + ab : ""; $("#lcNe").textContent = ne ? "· " + ne : "";
+  $("#lcTabL").classList.toggle("on", LC.tab === "lotes"); $("#lcTabE").classList.toggle("on", LC.tab === "ebay");
+  $("#lcLotes").classList.toggle("hidden", LC.tab !== "lotes"); $("#lcEbay").classList.toggle("hidden", LC.tab !== "ebay");
+  if (LC.tab === "lotes") { if (LC.sel) lcPintarLote(); else lcPintarLotes(); } else lcPintarEbay();
+  if (typeof opPintarMenu === "function") opPintarMenu();
+}
+async function lcAccion(llamada, donde) {     // llamada: () => rpc("lc_…", {…}) con el nombre LITERAL (el verificador de ecosistema lo lee)
+  try { const r = await llamada(); await lcCargar(true); return r || true; }
+  catch (e) { (donde || $("#lcAviso")).textContent = "⚠ " + (e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message || "error"); return null; }
+}
+function lcAbrirForm(l) {
+  LC.editando = l ? l.numero : 0;
+  const sig = Math.max(2, ...LC.lotes.map(x => x.numero)) + 1;
+  $("#lcfNum").value = l ? l.numero : ""; $("#lcfNum").placeholder = "siguiente: " + sig; $("#lcfNum").disabled = !!l;
+  $("#lcfProv").value = l ? l.proveedor : "Select Source"; $("#lcfFecha").value = l ? String(l.fecha_compra).slice(0, 10) : hoyStr();
+  $("#lcfTar").value = l && l.tarimas != null ? l.tarimas : ""; $("#lcfNotas").value = l ? l.notas || "" : ""; $("#lcfEstado").value = l ? l.estado : "abierto";
+  $("#lcfAviso").textContent = ""; $("#lcForm").classList.add("abierto"); $("#lcfFecha").focus();
+}
+async function lcGuardarLote() {
+  const num = lcNum($("#lcfNum").value), tar = lcNum($("#lcfTar").value), aviso = $("#lcfAviso");
+  if (!LC.editando && num !== null && !(Number.isInteger(num) && num >= 3)) { aviso.textContent = "El número de lote es entero y empieza en 3."; return; }
+  if (tar !== null && !(Number.isInteger(tar) && tar >= 0 && tar <= 999)) { aviso.textContent = "Tarimas: un número entero."; return; }
+  if (!$("#lcfFecha").value) { aviso.textContent = "Falta la fecha de compra."; return; }
+  const r = await lcAccion(() => rpc("lc_lote_guardar", {p_numero: LC.editando || num, p_proveedor: $("#lcfProv").value.trim(), p_fecha_compra: $("#lcfFecha").value,
+    p_tarimas: tar, p_notas: $("#lcfNotas").value.trim(), p_estado: $("#lcfEstado").value, p_crear: !LC.editando}), aviso);
+  if (r) { $("#lcForm").classList.remove("abierto"); $("#lcfNum").disabled = false; if (r.numero) LC.sel = r.numero; LC.editando = 0; lcPintar(); toast("Lote " + (r.numero || "") + " guardado"); }
+}
+async function lcGuardarCosto(caja) {
+  const mon = caja.querySelector(".lcMon").value, monto = lcNum(caja.querySelector(".lcMonto").value), tc = lcNum(caja.querySelector(".lcTc").value);
+  const fecha = caja.querySelector(".lcFtc").value, mx = caja.querySelector(".mx");
+  const d = caja.dataset.lote ? {lote: Number(caja.dataset.lote)} : {suc: Number(caja.dataset.suc), com_id: Number(caja.dataset.com)};
+  if (monto === null) {
+    if (!lcCosto(d, caja.dataset.con)) { mx.textContent = "escribe el monto"; return; }
+    if (!confirm("¿Borrar este costo?")) return;
+  } else {
+    if (!(monto >= 0) || !isFinite(monto)) { mx.textContent = "⚠ monto inválido"; return; }
+    if (mon === "USD" && !(tc > 0)) { mx.textContent = "⚠ falta el tipo de cambio"; return; }
+    if (!fecha) { mx.textContent = "⚠ falta la fecha del tipo de cambio"; return; }
+  }
+  await lcAccion(() => rpc("lc_costo_guardar", {p_lote: d.lote || null, p_suc: d.suc || null, p_com_id: d.com_id || null, p_concepto: caja.dataset.con,
+    p_moneda: mon, p_monto: monto, p_tipo_cambio: mon === "USD" ? tc : 1, p_fecha_tc: fecha || null, p_nota: ""}), mx);
+}
+async function lcAsignar(origen, lote) {
+  const sel = LC.libres.filter(c => LC.marcados.has(lcK(c.suc, c.com_id)));
+  if (!sel.length) { $("#lcAviso").textContent = "⚠ Selecciona al menos un folio."; return; }
+  let ok = true;
+  for (const suc of [...new Set(sel.map(c => c.suc))]) {
+    const r = await lcAccion(() => rpc("lc_folio_asignar", {p_suc: suc, p_com_ids: sel.filter(c => c.suc === suc).map(c => c.com_id), p_origen: origen,
+      p_lote: lote || null, p_notas: origen === "ebay" ? ($("#lcEbNotas").value.trim() || null) : null}));
+    ok = ok && !!r;
+  }
+  if (ok) { LC.marcados.clear(); if (origen === "ebay") $("#lcEbNotas").value = ""; $("#lcAviso").textContent = ""; lcPintar();
+    toast(sel.length + (sel.length === 1 ? " folio asignado" : " folios asignados") + (origen === "ebay" ? " a eBay" : " al lote " + lote)); }
+}
+async function lcArticulos(suc, cid) {
+  const c = LC.compras[lcK(suc, cid)] || {com_id: cid}, tit = "Entrada " + lcFolioTx(c);
+  abrirCajon(tit, "CEDIS · " + thF(c.fecha) + " · " + Number(c.piezas || 0) + " piezas", '<div class="vacio">Cargando artículos…</div>');
+  try {
+    const det = await q("sicar_compra_detalle", "select=clave,descripcion,cantidad,borrado&suc=eq." + suc + "&com_id=eq." + cid + "&order=com_id,orden,art_id");
+    if ($("#cajonTitulo").textContent !== tit) return;
+    $("#cajonCuerpo").innerHTML = '<h4>Artículos</h4>' + (det.length ? det.map(x => '<div class="art' + (x.borrado ? " borrado" : "") + '">' + fotoHtml(x.clave) +
+      '<div><div class="c">' + esc(x.clave) + '</div><div class="d">' + esc(x.descripcion) + '</div></div><div class="i num">' + Number(x.cantidad) + ' pz</div></div>').join("")
+      : '<div class="vacio">Sin artículos registrados.</div>');
+  } catch (e) { $("#cajonCuerpo").innerHTML = '<div class="aviso bad">No se pudieron leer los artículos: ' + esc(e.message) + '</div>'; }
+}
+(function lcArmar() {
+  $("#lcTabL").onclick = () => { LC.tab = "lotes"; lcPintar(); };
+  $("#lcTabE").onclick = () => { LC.tab = "ebay"; LC.sel = 0; $("#lcForm").classList.remove("abierto"); lcPintar(); };
+  $("#lcDias").onchange = () => { LC.dias = Number($("#lcDias").value) || 60; lcCargar(true); };
+  $("#lcNuevo").onclick = () => lcAbrirForm(null);
+  $("#lcfCerrar").onclick = () => { $("#lcForm").classList.remove("abierto"); $("#lcfNum").disabled = false; LC.editando = 0; };
+  $("#lcfGuardar").onclick = lcGuardarLote;
+  $("#lcEbMarcar").onclick = () => lcAsignar("ebay", null);
+  $("#p-costos").addEventListener("change", ev => {
+    const t = ev.target;
+    if (t.classList.contains("lcMarca")) { const f = t.closest(".lcFolio"), k = lcK(f.dataset.suc, f.dataset.com); if (t.checked) LC.marcados.add(k); else LC.marcados.delete(k); }
+    if (t.classList.contains("lcMon")) { const tc = t.closest(".lcCosto").querySelector(".lcTc"); tc.disabled = t.value === "MXN"; if (t.value === "MXN") tc.value = ""; }
+  });
+  $("#p-costos").addEventListener("click", ev => {
+    const t = ev.target, card = t.closest(".lcCard[data-lote]"), f = t.closest(".lcFolio");
+    if (t.id === "lcVolver") { LC.sel = 0; $("#lcForm").classList.remove("abierto"); lcPintar(); return; }
+    if (t.id === "lcEditar") { lcAbrirForm(lcLote(LC.sel)); return; }
+    if (t.id === "lcAsignar") { lcAsignar("lote", LC.sel); return; }
+    if (t.classList.contains("lcGuardaCosto")) { lcGuardarCosto(t.closest(".lcCosto")); return; }
+    if (f && t.classList.contains("lcArt")) { lcArticulos(Number(f.dataset.suc), Number(f.dataset.com)); return; }
+    if (f && t.classList.contains("lcQuitar")) {
+      const x = LC.folios.find(y => y.suc === Number(f.dataset.suc) && y.com_id === Number(f.dataset.com));
+      if (x && confirm("¿Quitar el folio " + x.folio + (x.origen === "ebay" ? " de eBay?" : " del lote " + x.lote_numero + "?")))
+        lcAccion(() => rpc("lc_folio_quitar", {p_suc: x.suc, p_com_id: x.com_id}));
+      return;
+    }
+    if (card && !t.closest("button.lcBtn")) { LC.sel = Number(card.dataset.lote); $("#lcForm").classList.remove("abierto"); lcPintar(); $("#opScroll").scrollTop = 0; }
+  });
+})();
+/* ---------------- recepción de mercancía (solo Emilio) ---------------- */
+const RC = {lotes: [], cuenta: {}, sinSku: 0, error: "", cargando: 0, listo: 0,
+            lote: 0, recibos: [], upcs: {}, piezas: {}, conc: null, cajas: {}, abierto: "", edita: 0, filtro: "todo", todos: false,
+            ult: null, cola: [], subiendo: 0, reintento: 0, concT: 0, mios: new Set()};
+const RC_ESTADOS = {normal: "Normal", danado: "Dañado (en reparación)", reparado: "Reparado", sin_reparacion: "Dañado sin reparación", caja_vacia: "Caja vacía"};
+const RC_ESPERA = new Set(["normal", "reparado"]);          // lo que se espera ver en SICAR (igual que rc_conciliacion)
+// igual que rc_upc_norm (SQL): solo dígitos; EAN-13 con 0 → UPC-A; GTIN-14 con 00 → UPC-A
+const rcUpcNorm = s => { const d = String(s == null ? "" : s).replace(/\D/g, ""); return /^0\d{12}$/.test(d) ? d.slice(1) : /^00\d{12}$/.test(d) ? d.slice(2) : d; };
+const rcSku = s => String(s == null ? "" : s).trim().toUpperCase();
+const rcNuevoId = () => "rc-" + (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 10));
+const rcMsg = e => e && e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : (e && e.message) || "error";
+const rcDeRed = e => !!e && (e.name === "TypeError" || /HTTP 5\d\d|Failed to fetch|NetworkError|Load failed/i.test(e.message || ""));
+function rcColaLeer() { try { const c = JSON.parse(localStorage.getItem("rcCola") || "[]"); return Array.isArray(c) ? c : []; } catch (e) { return []; } }
+function rcColaGuardar() { try { localStorage.setItem("rcCola", JSON.stringify(RC.cola)); } catch (e) {} }
+RC.cola = rcColaLeer();
+
+async function rcCargar(forzar) {
+  if (!esDueno() || RC.cargando) return;
+  if (!forzar && RC.listo && !$("#rcCapa").classList.contains("hidden")) return;   // con la capa abierta, ella manda
+  RC.cargando = 1;
+  try {
+    const lotes = await q("lote", "select=numero,estado,proveedor,fecha_compra&order=numero.desc");
+    const abiertos = lotes.filter(l => l.estado === "abierto").map(l => l.numero);
+    const [recs, sin] = await Promise.all([
+      abiertos.length ? q("recibo", "select=lote_numero,cantidad,estado&lote_numero=in." + enLista(abiertos) + "&order=id") : [],
+      q("upc", "select=upc&estado=eq.sin_sku&order=upc")]);
+    const cuenta = {};
+    for (const r of recs) { const c = cuenta[r.lote_numero] || (cuenta[r.lote_numero] = {cajas: 0, exc: 0}); c.cajas++; if (r.estado !== "normal") c.exc++; }
+    Object.assign(RC, {lotes, cuenta, sinSku: sin.length, error: "", listo: 1});
+  } catch (e) {
+    const m = e.message || "";
+    RC.error = /PGRST205|42P01/.test(m) ? "falta correr 20_recepcion.sql en Supabase" : rcMsg(e);
+  }
+  RC.cargando = 0;
+  rcPintarPanel();
+  if (RC.cola.length && !RC.subiendo) rcSubir();
+}
+function rcResumen() {
+  if (RC.error) return RC.error;
+  if (!RC.listo) return "escanear los lotes al llegar a CEDIS y cuadrarlos contra SICAR";
+  const ab = RC.lotes.filter(l => l.estado === "abierto");
+  const cajas = ab.reduce((a, l) => a + ((RC.cuenta[l.numero] || {}).cajas || 0), 0);
+  return cajas + (cajas === 1 ? " caja" : " cajas") + " en lotes abiertos · " + RC.sinSku + (RC.sinSku === 1 ? " UPC sin SKU" : " UPC sin SKU");
+}
+function rcPintarPanel() {
+  $("#rcAviso").textContent = RC.error ? "⚠ " + RC.error : RC.sinSku ? RC.sinSku + " UPC sin SKU: el robot (robot/upc_sku.py) los busca; también se capturan a mano en la recepción." : "";
+  $("#rcLotes").innerHTML = RC.lotes.length ? RC.lotes.map(l => { const c = RC.cuenta[l.numero];
+    return '<button type="button" class="lcCard" data-rclote="' + l.numero + '"><b>Lote ' + l.numero + '</b><span class="lcChip ' + l.estado + '">' + l.estado + '</span>' +
+      '<small>' + esc(l.proveedor) + " · comprado el " + thF(l.fecha_compra) + '</small>' +
+      '<small>' + (l.estado === "abierto" ? (c ? c.cajas + (c.cajas === 1 ? " caja escaneada" : " cajas escaneadas") + (c.exc ? " · " + c.exc + " con excepción" : "") : "sin escanear todavía") + " · tocar para recibir" : "cerrado: consulta y excepciones") + '</small></button>'; }).join("")
+    : RC.error ? "" : '<div class="przAviso">No hay lotes. Se dan de alta en «Costos: lotes y eBay».</div>';
+  if (typeof opPintarMenu === "function") opPintarMenu();
+}
+
+/* ---- la capa del lote ---- */
+const rcLoteFila = () => RC.lotes.find(l => l.numero === RC.lote) || {numero: RC.lote, estado: "abierto"};
+const rcAbiertoLote = () => rcLoteFila().estado === "abierto";
+function rcFoco() { setTimeout(() => { const i = $("#rcUpc"); if (i && !$("#rcCapa").classList.contains("hidden") && rcAbiertoLote() && !RC.edita && !$("#rcRapido").classList.contains("abierto")) i.focus(); }, 60); }
+async function rcAbrir(n) {
+  RC.lote = n; RC.recibos = []; RC.conc = null; RC.cajas = {}; RC.abierto = ""; RC.edita = 0; RC.filtro = "todo"; RC.todos = false; RC.ult = null; RC.mios = new Set();
+  $("#rcCapa").classList.remove("hidden"); document.body.style.overflow = "hidden";
+  $("#rcRapido").classList.remove("abierto");
+  rcPintar(); await rcCargarLote(); rcFoco();
+}
+function rcCerrar() { $("#rcCapa").classList.add("hidden"); if (!OP.abierto) document.body.style.overflow = ""; RC.lote = 0; rcCargar(true); }
+async function rcCargarLote() {
+  const n = RC.lote; if (!n) return;
+  try {
+    const recs = await q("recibo", "select=*&lote_numero=eq." + n + "&order=id");
+    if (RC.lote !== n) return;
+    const pend = RC.cola.filter(c => c.lote === n && !recs.some(r => r.cliente_id === c.cid)).map(rcFilaTemporal);
+    RC.recibos = recs.concat(pend);
+    await rcCargarUpcs(RC.recibos.map(r => r.upc).filter(Boolean));
+    RC.error = "";
+  } catch (e) { RC.ult = {tipo: "mal", txt: "No se pudo leer el lote: " + rcMsg(e)}; }
+  rcPintar(); rcConciliar();
+}
+async function rcCargarUpcs(lista) {
+  const faltan = [...new Set(lista)].filter(u => !RC.upcs[u]);
+  for (let i = 0; i < faltan.length; i += 150) {
+    const parte = faltan.slice(i, i + 150);
+    const [us, ps] = await Promise.all([q("upc", "select=*&upc=in." + enLista(parte) + "&order=upc"), q("upc_pieza", "select=*&upc=in." + enLista(parte) + "&order=upc,sku")]);
+    for (const u of parte) RC.piezas[u] = [];
+    for (const u of us) RC.upcs[u.upc] = u;
+    for (const p of ps) RC.piezas[p.upc].push({sku: p.sku, piezas: p.piezas});
+  }
+}
+async function rcConciliar() {
+  const n = RC.lote; if (!n) return;
+  try {
+    const c = await rpc("rc_conciliacion", {p_lote: n});
+    if (RC.lote !== n) return;
+    RC.conc = c; RC.cajas = {}; for (const x of c.cajas || []) RC.cajas[x.id] = x;
+  } catch (e) { if (!rcDeRed(e)) RC.ult = {tipo: "mal", txt: "Conciliación: " + rcMsg(e)}; }
+  rcPintar();
+}
+function rcProgramarConc() { clearTimeout(RC.concT); RC.concT = setTimeout(rcConciliar, 1200); }
+function rcFilaTemporal(c) { return {id: "t:" + c.cid, cliente_id: c.cid, lote_numero: c.lote, upc: c.upc, sku_real: null, descripcion: "", cantidad: 1, estado: "normal", faltan: false, extra: false, nota: "", temporal: true}; }
+function rcGuardarUpcDe(r) {      // lo que regresa rc_* trae el estado del UPC: se guarda en el caché
+  if (!r || !r.upc) return;
+  RC.upcs[r.upc] = Object.assign({}, RC.upcs[r.upc] || {upc: r.upc, candidatos: []}, {estado: r.upc_estado, marca: r.upc_marca || "", descripcion: r.upc_descripcion || ""});
+  RC.piezas[r.upc] = r.piezas || [];
+}
+function rcSkuDe(r) {             // [{sku, piezas}] que se esperan de una caja (vacío = sin SKU)
+  if (r.sku_real) return [{sku: r.sku_real, piezas: r.cantidad}];
+  if (!r.upc) return [];
+  return (RC.piezas[r.upc] || []).map(p => ({sku: p.sku, piezas: p.piezas * r.cantidad}));
+}
+function rcFlash(tipo) {
+  const c = $("#rcCapa"); c.classList.remove("fBien", "fOjo", "fMal"); void c.offsetWidth;
+  c.classList.add(tipo === "bien" ? "fBien" : tipo === "ojo" ? "fOjo" : "fMal"); clearTimeout(rcFlash.t); rcFlash.t = setTimeout(() => c.classList.remove("fBien", "fOjo", "fMal"), 350);
+  try { if (navigator.vibrate) navigator.vibrate(tipo === "bien" ? 40 : tipo === "ojo" ? [40, 60, 40] : 250); } catch (e) {}
+  if (tipo === "ojo") { invBip(true); setTimeout(() => invBip(true), 150); } else invBip(tipo === "bien");
+}
+function rcAviso(tipo, txt, sub) { RC.ult = {tipo, txt, sub: sub || ""}; rcFlash(tipo); rcPintarUlt(); }
+
+/* ---- escanear ---- */
+function rcEscanear(valor) {
+  const crudo = String(valor || "").trim(); if (!crudo) return;
+  if (!rcAbiertoLote()) { rcAviso("mal", "El lote " + RC.lote + " está cerrado: ábrelo en «Costos» para recibir mercancía."); return; }
+  const u = rcUpcNorm(crudo);
+  if (!/^\d{6,14}$/.test(u)) { rcAviso("mal", "No parece un UPC: " + crudo.slice(0, 40), "Usa «Añadir producto rápido»."); return; }
+  const c = {lote: RC.lote, upc: u, cid: rcNuevoId(), t: Date.now()};
+  RC.cola.push(c); rcColaGuardar(); RC.mios.add(c.cid);
+  RC.recibos.push(rcFilaTemporal(c));
+  const n = RC.recibos.filter(r => r.upc === u).length, up = RC.upcs[u], sk = RC.piezas[u] || [];
+  RC.abierto = ""; RC.nuevo = u;
+  if (!up) rcAviso("ojo", "UPC nuevo: " + u + " · 1 caja", "Se guarda sin SKU; el robot lo busca y aquí se corrige.");
+  else if (!sk.length) rcAviso("ojo", "+1 · UPC " + u + " sin SKU · " + n + " cajas", up.descripcion || "");
+  else rcAviso("bien", "+1 · " + sk.map(p => p.sku + (p.piezas > 1 ? " ×" + p.piezas : "")).join(" + ") + " · " + n + (n === 1 ? " caja" : " cajas"), (up.marca ? up.marca + " · " : "") + (up.descripcion || "") + (up.estado === "sugerido" ? " (SKU sugerido, sin confirmar)" : ""));
+  rcPintar(); rcSubir();
+}
+async function rcSubir() {
+  if (RC.subiendo) return; RC.subiendo = 1; clearTimeout(RC.reintento);
+  while (RC.cola.length) {
+    const c = RC.cola[0];
+    try {
+      const r = await rpc("rc_escanear", {p_lote: c.lote, p_upc: c.upc, p_cliente_id: c.cid});
+      const fila = r.recibo; rcGuardarUpcDe(fila);
+      const i = RC.recibos.findIndex(x => x.cliente_id === c.cid);
+      if (RC.lote === c.lote) { if (i >= 0) RC.recibos[i] = fila; else RC.recibos.push(fila); }
+      RC.cola.shift(); rcColaGuardar();
+    } catch (e) {
+      if (rcDeRed(e) || e.message === "sesion") {          // se queda en la cola: se reintenta solo
+        RC.reintento = setTimeout(rcSubir, 5000); RC.colaError = rcMsg(e); break;
+      }
+      RC.cola.shift(); rcColaGuardar();                     // la base lo rechazó: no se reintenta
+      RC.recibos = RC.recibos.filter(x => x.cliente_id !== c.cid);
+      if (RC.lote === c.lote) rcAviso("mal", "No se registró " + c.upc + ": " + rcMsg(e));
+    }
+  }
+  if (!RC.cola.length) RC.colaError = "";
+  RC.subiendo = 0;
+  if (RC.lote) { rcPintar(); rcProgramarConc(); }
+}
+async function rcDeshacer() {
+  const r = RC.recibos[RC.recibos.length - 1]; if (!r) return;
+  // lo escaneado en esta sesión se deshace directo; una caja de antes (otro día, otro celular) pide confirmación
+  if (!r.temporal && !RC.mios.has(r.cliente_id) && !confirm("La última caja no se escaneó ahora (" + (r.upc ? "UPC " + r.upc : r.descripcion || r.sku_real) + "). ¿Borrarla?")) { rcFoco(); return; }
+  if (r.temporal) {
+    if (RC.subiendo && RC.cola[0] && RC.cola[0].cid === r.cliente_id) { rcAviso("ojo", "Se está subiendo; deshazlo en un momento."); return; }
+    RC.cola = RC.cola.filter(c => c.cid !== r.cliente_id); rcColaGuardar(); RC.recibos.pop();
+  } else {
+    try { await rpc("rc_recibo_borrar", {p_id: r.id}); RC.recibos = RC.recibos.filter(x => x.id !== r.id); }
+    catch (e) { rcAviso("mal", "No se pudo deshacer: " + rcMsg(e)); return; }
+  }
+  rcAviso("ojo", "Deshecho: " + (r.upc ? "UPC " + r.upc : r.descripcion || r.sku_real)); rcPintar(); rcProgramarConc(); rcFoco();
+}
+async function rcRapidoGuardar() {
+  const desc = $("#rcrDesc").value.trim(), sku = rcSku($("#rcrSku").value), cant = Number($("#rcrCant").value), av = $("#rcrAviso");
+  if (!desc && !sku) { av.textContent = "Escribe la descripción o el SKU."; return; }
+  if (!(Number.isInteger(cant) && cant >= 1 && cant <= 999)) { av.textContent = "Cantidad de 1 a 999."; return; }
+  try {
+    const r = await rpc("rc_rapido", {p_lote: RC.lote, p_descripcion: desc, p_sku: sku, p_cantidad: cant, p_nota: $("#rcrNota").value.trim(), p_extra: $("#rcrExtra").checked, p_cliente_id: rcNuevoId()});
+    RC.recibos.push(r.recibo); RC.mios.add(r.recibo.cliente_id);
+    ["#rcrDesc", "#rcrSku", "#rcrNota"].forEach(s => { $(s).value = ""; }); $("#rcrCant").value = "1"; $("#rcrExtra").checked = false; av.textContent = "";
+    $("#rcRapido").classList.remove("abierto");
+    rcAviso("bien", "Agregado: " + (desc || sku) + " · " + cant + " pz", sku ? "" : "Sin SKU: no se puede cuadrar con SICAR hasta ponérselo.");
+    rcPintar(); rcProgramarConc(); rcFoco();
+  } catch (e) { av.textContent = "⚠ " + rcMsg(e); }
+}
+
+/* ---- pintar ---- */
+function rcGrupos() {
+  const G = new Map();
+  for (const r of RC.recibos) {
+    const k = r.upc ? "u:" + r.upc : "r:" + r.id;
+    if (!G.has(k)) G.set(k, {k, upc: r.upc, cajas: [], ult: 0});
+    const g = G.get(k); g.cajas.push(r); g.ult = Math.max(g.ult, r.temporal ? Infinity : Number(r.id));
+  }
+  for (const g of G.values()) {
+    let esp = 0, ver = 0, sin = 0, exc = 0;
+    for (const r of g.cajas) {
+      const cj = RC.cajas[r.id];
+      if (RC_ESPERA.has(r.estado)) { const s = rcSkuDe(r); if (!s.length) sin++; esp += cj ? cj.esperadas : s.reduce((a, p) => a + p.piezas, 0); ver += cj ? cj.verdes : 0; }
+      if (r.estado !== "normal" || r.faltan || r.extra || (r.upc && r.sku_real)) exc++;
+    }
+    Object.assign(g, {esp, ver, sin, exc});
+    g.tono = sin ? "mal" : esp && ver >= esp ? "ok" : esp ? "ojo" : "gris";
+  }
+  return [...G.values()].sort((a, b) => b.ult - a.ult);
+}
+function rcTotales() {
+  const t = {cajas: 0, temp: 0, sinSku: 0, danado: 0, reparado: 0, sin_reparacion: 0, caja_vacia: 0, otro: 0, extra: 0, faltan: 0};
+  for (const r of RC.recibos) {
+    t.cajas++; if (r.temporal) t.temp++;
+    if (t[r.estado] != null) t[r.estado]++;
+    if (r.upc && r.sku_real) t.otro++;
+    if (r.extra) t.extra++; if (r.faltan) t.faltan++;
+    if (RC_ESPERA.has(r.estado) && !rcSkuDe(r).length) t.sinSku++;
+  }
+  const sk = (RC.conc && RC.conc.skus) || [];
+  t.esp = sk.reduce((a, s) => a + Number(s.esperadas || 0), 0); t.ver = sk.reduce((a, s) => a + Number(s.verdes || 0), 0);
+  t.pend = sk.reduce((a, s) => a + Number(s.pendientes || 0), 0); t.sobran = sk.reduce((a, s) => a + Number(s.sobran || 0), 0);
+  return t;
+}
+function rcPintarUlt() {
+  const u = RC.ult, el = $("#rcUlt");
+  el.className = u ? u.tipo : "";
+  el.innerHTML = u ? esc(u.txt) + (u.sub ? "<small>" + esc(u.sub) + "</small>" : "") : (rcAbiertoLote() ? "Escanea cada caja. Escanear otra vez el mismo UPC = otra caja." : "Lote cerrado: solo consulta y excepciones.");
+  $("#rcCola").textContent = RC.cola.length ? RC.cola.length + (RC.cola.length === 1 ? " escaneo sin subir" : " escaneos sin subir") + (RC.colaError ? " · " + RC.colaError + " · se reintenta solo" : " · subiendo…") : "";
+}
+function rcPintar() {
+  if ($("#rcCapa").classList.contains("hidden")) return;
+  const l = rcLoteFila(), ab = l.estado === "abierto", t = rcTotales();
+  $("#rcTit").innerHTML = "Recepción · lote " + RC.lote + "<small>" + esc(l.proveedor || "") + (l.estado === "cerrado" ? " · cerrado" : "") + "</small>";
+  $("#rcForm").classList.toggle("hidden", !ab); $("#rcDeshacer").classList.toggle("hidden", !ab); $("#rcRapidoBtn").classList.toggle("hidden", !ab);
+  rcPintarUlt();
+  const tile = (n, tx, tono) => '<div class="' + (tono || "") + '"><b class="num">' + n + '</b><span>' + tx + '</span></div>';
+  $("#rcRes").innerHTML = tile(t.cajas, (t.cajas === 1 ? "caja escaneada" : "cajas escaneadas") + (RC.conc ? " · " + t.esp + " pz esperadas" : "")) +
+    tile(RC.conc ? t.ver : "…", "ingresadas a SICAR (verde)", "ok") + tile(RC.conc ? t.pend : "…", "pendientes de SICAR", t.pend ? "ojo" : "") +
+    tile(t.sinSku, "cajas sin SKU", t.sinSku ? "mal" : "") +
+    tile(t.danado + t.reparado + t.sin_reparacion, "dañadas: " + t.danado + " en reparación · " + t.reparado + " reparadas · " + t.sin_reparacion + " sin reparación", t.danado ? "ojo" : "") +
+    tile(t.otro, "otro modelo") + tile(t.caja_vacia, "caja vacía", t.caja_vacia ? "mal" : "") + tile(t.extra, "piezas extra") + tile(t.faltan, "con faltantes") +
+    tile(RC.conc ? t.sobran : "…", "en SICAR sin escanear", t.sobran ? "ojo" : "");
+  const F = [["todo", "Todo"], ["pend", "Pendientes"], ["sin", "Sin SKU"], ["exc", "Excepciones"], ["ok", "En verde"]];
+  $("#rcFiltro").innerHTML = F.map(f => '<button type="button" data-rcf="' + f[0] + '"' + (RC.filtro === f[0] ? ' class="on"' : '') + '>' + f[1] + '</button>').join("");
+  let G = rcGrupos();
+  G = G.filter(g => RC.filtro === "todo" || (RC.filtro === "pend" && g.tono === "ojo") || (RC.filtro === "sin" && g.sin) || (RC.filtro === "exc" && g.exc) || (RC.filtro === "ok" && g.tono === "ok"));
+  const tope = RC.todos ? G.length : 80;
+  $("#rcLista").innerHTML = (G.length ? G.slice(0, tope).map(rcGrupoHtml).join("") : '<div class="przAviso">' + (RC.recibos.length ? "Nada con este filtro." : "Todavía no se escanea nada en este lote.") + '</div>') +
+    (G.length > tope ? '<button type="button" class="lcBtn" id="rcTodos">Ver los ' + G.length + '</button>' : "");
+  const sob = ((RC.conc && RC.conc.skus) || []).filter(s => Number(s.sobran) > 0);
+  $("#rcSobran").innerHTML = sob.length ? '<div class="rcTit">En SICAR sin escanear (' + sob.length + ')</div>' + sob.map(s => '<div class="rcG gris"><div class="rcGcab"><span class="tx"><b>' + esc(s.sku) + '</b><small>' + esc((s.claves || "") + (s.descripcion ? " · " + s.descripcion : "")) + '</small></span><span class="n">' + Number(s.sobran) + '<small>pz de más</small></span></div></div>').join("") : "";
+  RC.nuevo = "";
+}
+function rcGrupoHtml(g) {
+  const up = g.upc ? RC.upcs[g.upc] : null, sk = g.upc ? (RC.piezas[g.upc] || []) : [], r0 = g.cajas[0];
+  const titulo = g.upc ? ((up && (up.descripcion || up.marca)) ? [up.marca, up.descripcion].filter(Boolean).join(" · ") : "UPC " + g.upc) : (r0.descripcion || r0.sku_real);
+  const skuTx = g.upc ? (sk.length ? sk.map(p => p.sku + (p.piezas > 1 ? " ×" + p.piezas : "")).join(" + ") : "sin SKU") : (r0.sku_real || "sin SKU");
+  const est = g.upc && up ? (up.estado === "sugerido" ? " · sugerido" + (up.confianza ? " (" + up.confianza + ")" : "") + " por " + up.fuente : up.estado === "confirmado" ? "" : "") : "";
+  const abierto = RC.abierto === g.k;
+  return '<div class="rcG ' + g.tono + (RC.nuevo && g.upc === RC.nuevo ? " nuevo" : "") + '" data-rcg="' + esc(g.k) + '"><button type="button" class="rcGcab">' +
+    '<span class="tx"><b>' + esc(titulo) + '</b><small>' + esc(skuTx + est + (g.upc ? " · UPC " + g.upc : " · producto rápido") + (g.exc ? " · " + g.exc + " con excepción" : "")) + '</small></span>' +
+    '<span class="n">' + (g.esp ? g.ver + '/' + g.esp : "–") + '<small>' + g.cajas.length + (g.cajas.length === 1 ? " caja" : " cajas") + ' · pz verdes</small></span></button>' +
+    (abierto ? '<div class="rcDet">' + (g.upc ? rcFichaHtml(g.upc) : "") + g.cajas.map(rcCajaHtml).join("") + '</div>' : "") + '</div>';
+}
+function rcFichaHtml(u) {
+  const up = RC.upcs[u] || {}, sk = (RC.piezas[u] || []).length ? RC.piezas[u] : [{sku: "", piezas: 1}];
+  const cand = Array.isArray(up.candidatos) ? up.candidatos.filter(c => c && c.sku) : [];
+  return '<div class="rcFicha" data-rcupc="' + esc(u) + '"><b>UPC ' + esc(u) + '</b> <span class="lcChip">' + esc(up.estado === "confirmado" ? "confirmado" : up.estado === "sugerido" ? "sugerido" : "sin SKU") + '</span>' +
+    '<div class="rcFila2"><div><label>Marca</label><input class="rcfMarca" maxlength="80" value="' + esc(up.marca || "") + '"></div><div><label>Descripción</label><input class="rcfDesc" maxlength="200" value="' + esc(up.descripcion || "") + '"></div></div>' +
+    '<label>SKU del fabricante (sin letra) · piezas por empaque</label>' + sk.map(p => '<div class="sk"><input class="rcfSku" maxlength="60" autocapitalize="characters" placeholder="p. ej. 2767-20" value="' + esc(p.sku) + '"><input class="rcfPz" inputmode="numeric" maxlength="3" aria-label="Piezas por empaque" value="' + Number(p.piezas || 1) + '"><button type="button" class="rcfQuitar" aria-label="Quitar SKU">✕</button></div>').join("") +
+    (cand.length ? '<label>Candidatos del robot</label><div class="rcCand">' + cand.slice(0, 6).map(c => '<button type="button" data-rccand="' + esc(c.sku) + '">' + esc(c.sku) + (c.votos ? " · " + c.votos : "") + '</button>').join("") + '</div>' : "") +
+    '<div class="rcBtns"><button type="button" class="lcBtn pri rcfGuardar">' + (up.estado === "sugerido" ? "Confirmar" : "Guardar") + '</button><button type="button" class="lcBtn rcfMas">+ otro SKU (combo)</button><span class="przAviso rcfAviso" style="margin:0"></span></div></div>';
+}
+function rcCajaHtml(r) {
+  const cj = RC.cajas[r.id], espera = RC_ESPERA.has(r.estado), s = rcSkuDe(r);
+  const v = r.temporal ? '<span class="v ojo">subiendo…</span>' : !espera ? '<span class="v">no se espera en SICAR</span>' : !s.length ? '<span class="v ojo">sin SKU</span>' :
+    cj ? '<span class="v ' + (cj.verdes >= cj.esperadas ? "ok" : "ojo") + '">' + (cj.verdes >= cj.esperadas ? "✓ en SICAR" : cj.verdes + "/" + cj.esperadas + " en SICAR") + '</span>' : '<span class="v">…</span>';
+  const chips = [r.estado !== "normal" ? RC_ESTADOS[r.estado] : "", r.upc && r.sku_real ? "otro modelo: " + r.sku_real : "", r.faltan ? "faltan" : "", r.extra ? "extra" : "", !r.upc && r.cantidad > 1 ? r.cantidad + " pz" : ""].filter(Boolean);
+  return '<div class="rcCaja" data-rcid="' + esc(r.id) + '"><span class="tx">' + (r.escaneado_en ? new Date(r.escaneado_en).toLocaleString("es-MX", {day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}) : "ahora") +
+    chips.map(c => '<span class="lcChip' + (/Dañado|vacía|faltan/.test(c) ? " mal" : "") + '">' + esc(c) + '</span>').join("") + (r.nota ? '<br><small>' + esc(r.nota) + '</small>' : "") + '</span>' + v +
+    (r.temporal ? "" : '<button type="button" class="lcBtn rcEdit">Excepción</button>') + '</div>' + (RC.edita === r.id ? rcEditorHtml(r) : "");
+}
+function rcEditorHtml(r) {
+  return '<div class="rcEditor" data-rcid="' + esc(r.id) + '"><label>Estado</label><select class="rceEstado">' + Object.keys(RC_ESTADOS).map(k => '<option value="' + k + '"' + (r.estado === k ? " selected" : "") +
+      ((k === "reparado" && !["danado", "reparado"].includes(r.estado)) ? " disabled" : "") + '>' + RC_ESTADOS[k] + '</option>').join("") + '</select>' +
+    '<label>' + (r.upc ? "Otro modelo recibido: SKU real (vacío = el del UPC)" : "SKU (sin letra)") + '</label><input class="rceSku" maxlength="60" autocapitalize="characters" value="' + esc(r.sku_real || "") + '">' +
+    (r.upc ? "" : '<div class="rcFila2"><div><label>Descripción</label><input class="rceDesc" maxlength="200" value="' + esc(r.descripcion || "") + '"></div><div><label>Cantidad</label><input class="rceCant" inputmode="numeric" maxlength="3" value="' + Number(r.cantidad || 1) + '"></div></div>') +
+    '<label class="ck"><input type="checkbox" class="rceFaltan"' + (r.faltan ? " checked" : "") + '> Faltan piezas o accesorios</label>' +
+    '<label class="ck"><input type="checkbox" class="rceExtra"' + (r.extra ? " checked" : "") + '> Pieza extra encontrada dentro de una caja</label>' +
+    '<label>Nota</label><input class="rceNota" maxlength="500" value="' + esc(r.nota || "") + '">' +
+    '<div class="rcBtns"><button type="button" class="lcBtn pri rceGuardar">Guardar</button><button type="button" class="lcBtn rceCancelar">Cancelar</button><button type="button" class="lcBtn rceBorrar">Borrar caja</button><span class="przAviso rceAviso" style="margin:0"></span></div></div>';
+}
+async function rcEditorGuardar(ed) {
+  const r = RC.recibos.find(x => String(x.id) === ed.dataset.rcid); if (!r) return;
+  const av = ed.querySelector(".rceAviso"), faltan = ed.querySelector(".rceFaltan").checked, nota = ed.querySelector(".rceNota").value.trim();
+  const cant = r.upc ? r.cantidad : Number(ed.querySelector(".rceCant").value), desc = r.upc ? r.descripcion : ed.querySelector(".rceDesc").value.trim();
+  if (faltan && !nota) { av.textContent = "Anota qué le falta."; return; }
+  if (!(Number.isInteger(cant) && cant >= 1 && cant <= 999)) { av.textContent = "Cantidad de 1 a 999."; return; }
+  try {
+    const f = await rpc("rc_recibo_guardar", {p_id: r.id, p_estado: ed.querySelector(".rceEstado").value, p_sku_real: rcSku(ed.querySelector(".rceSku").value) || null,
+      p_descripcion: desc, p_cantidad: cant, p_faltan: faltan, p_extra: ed.querySelector(".rceExtra").checked, p_nota: nota});
+    Object.assign(r, f); rcGuardarUpcDe(f); RC.edita = 0; toast("Caja guardada"); rcPintar(); rcProgramarConc();
+  } catch (e) { av.textContent = "⚠ " + rcMsg(e); }
+}
+async function rcFichaGuardar(fi) {
+  const u = fi.dataset.rcupc, av = fi.querySelector(".rcfAviso"), piezas = [];
+  for (const row of fi.querySelectorAll(".sk")) {
+    const s = rcSku(row.querySelector(".rcfSku").value), n = Number(row.querySelector(".rcfPz").value);
+    if (!s) continue;
+    if (!(Number.isInteger(n) && n >= 1 && n <= 999)) { av.textContent = "Piezas por empaque: de 1 a 999."; return; }
+    piezas.push({sku: s, piezas: n});
+  }
+  if (!piezas.length && !confirm("Sin SKU, este UPC no se puede cuadrar con SICAR. ¿Guardarlo así?")) return;
+  try {
+    const r = await rpc("rc_upc_guardar", {p_upc: u, p_marca: fi.querySelector(".rcfMarca").value.trim(), p_descripcion: fi.querySelector(".rcfDesc").value.trim(), p_piezas: piezas});
+    RC.upcs[u] = Object.assign({}, RC.upcs[u], {estado: r.estado, fuente: r.fuente, marca: fi.querySelector(".rcfMarca").value.trim(), descripcion: fi.querySelector(".rcfDesc").value.trim()});
+    RC.piezas[u] = piezas; toast("UPC " + u + " " + (r.estado === "confirmado" ? "confirmado" : "guardado")); rcPintar(); rcProgramarConc();
+  } catch (e) { av.textContent = "⚠ " + rcMsg(e); }
+}
+(function rcArmar() {
+  $("#rcLotes").addEventListener("click", ev => { const c = ev.target.closest("[data-rclote]"); if (c) rcAbrir(Number(c.dataset.rclote)); });
+  $("#rcForm").addEventListener("submit", ev => { ev.preventDefault(); const v = $("#rcUpc").value; $("#rcUpc").value = ""; rcEscanear(v); });
+  $("#rcTeclado").onclick = () => { const i = $("#rcUpc"), on = i.getAttribute("inputmode") === "none"; i.setAttribute("inputmode", on ? "numeric" : "none"); $("#rcTeclado").classList.toggle("on", on); i.blur(); i.focus(); };
+  $("#rcCerrar").onclick = rcCerrar;
+  $("#rcDeshacer").onclick = rcDeshacer;
+  $("#rcActualizar").onclick = async () => { RC.upcs = {}; RC.piezas = {}; await rcCargarLote(); toast("Actualizado contra SICAR"); rcFoco(); };
+  $("#rcRapidoBtn").onclick = () => { $("#rcRapido").classList.add("abierto"); $("#rcrAviso").textContent = ""; $("#rcrDesc").focus(); };
+  $("#rcrCancelar").onclick = () => { $("#rcRapido").classList.remove("abierto"); rcFoco(); };
+  $("#rcrGuardar").onclick = rcRapidoGuardar;
+  $("#rcCapa").addEventListener("click", ev => {
+    const t = ev.target, g = t.closest("[data-rcg]"), caja = t.closest(".rcCaja"), ed = t.closest(".rcEditor"), fi = t.closest(".rcFicha");
+    const f = t.closest("[data-rcf]"); if (f) { RC.filtro = f.dataset.rcf; RC.todos = false; rcPintar(); rcFoco(); return; }
+    if (t.id === "rcTodos") { RC.todos = true; rcPintar(); return; }
+    if (ed) {
+      if (t.classList.contains("rceGuardar")) rcEditorGuardar(ed);
+      else if (t.classList.contains("rceCancelar")) { RC.edita = 0; rcPintar(); rcFoco(); }
+      else if (t.classList.contains("rceBorrar") && confirm("¿Borrar esta caja de la recepción?")) {
+        const id = ed.dataset.rcid;
+        rpc("rc_recibo_borrar", {p_id: Number(id)}).then(() => { RC.recibos = RC.recibos.filter(x => String(x.id) !== id); RC.edita = 0; rcPintar(); rcProgramarConc(); rcFoco(); })
+          .catch(e => { ed.querySelector(".rceAviso").textContent = "⚠ " + rcMsg(e); });
+      }
+      return;
+    }
+    if (fi) {
+      if (t.classList.contains("rcfGuardar")) rcFichaGuardar(fi);
+      else if (t.classList.contains("rcfMas")) { const d = document.createElement("div"); d.className = "sk"; d.innerHTML = '<input class="rcfSku" maxlength="60" autocapitalize="characters" placeholder="SKU"><input class="rcfPz" inputmode="numeric" maxlength="3" aria-label="Piezas por empaque" value="1"><button type="button" class="rcfQuitar" aria-label="Quitar SKU">✕</button>'; fi.querySelector(".rcBtns").before(d); d.querySelector("input").focus(); }
+      else if (t.classList.contains("rcfQuitar")) { const filas = fi.querySelectorAll(".sk"); if (filas.length > 1) t.closest(".sk").remove(); else t.closest(".sk").querySelector(".rcfSku").value = ""; }
+      else if (t.dataset.rccand) { const i = fi.querySelector(".rcfSku"); i.value = t.dataset.rccand; }
+      return;
+    }
+    if (caja && t.classList.contains("rcEdit")) { RC.edita = isNaN(Number(caja.dataset.rcid)) ? caja.dataset.rcid : Number(caja.dataset.rcid); rcPintar(); return; }
+    if (g && t.closest(".rcGcab")) { RC.abierto = RC.abierto === g.dataset.rcg ? "" : g.dataset.rcg; RC.edita = 0; rcPintar(); if (!RC.abierto) rcFoco(); return; }
+    if (!t.closest("input,select,textarea,label,#rcRapido")) rcFoco();
+  });
+  // el campo de escaneo recupera el foco si se pierde sin que otra caja de texto lo tome
+  $("#rcUpc").addEventListener("blur", () => setTimeout(() => { const a = document.activeElement; if (!a || a === document.body || a === $("#rcCapa")) rcFoco(); }, 250));
+  window.addEventListener("online", () => { if (RC.cola.length) rcSubir(); });
+})();
 /* ---------------- panel de opciones (derecha) ---------------- */
 const OP = {abierto: false, actual: "", mods: [
   {id: "criticos", t: "Críticos para kits", nodos: ["#p-criticos"], ocultar: ["#p-criticos > h2"],
@@ -2534,6 +3232,8 @@ const OP = {abierto: false, actual: "", mods: [
   {id: "precio", t: "Precio ideal", nodos: ["#p-precio"], ocultar: ["#p-precio > h2"], sub: () => piResumen(), mal: () => piPendientes() > 0, ver: () => esDueno()},
   {id: "ofertas", t: "Ofertas", nodos: ["#p-ofertas"], ocultar: ["#p-ofertas > h2"], sub: () => ofResumen(), mal: () => ofPendientes().length > 0, ver: () => esDueno()},
   {id: "proyectos", t: "Proyectos e ideas", nodos: ["#p-proyectos"], ocultar: ["#p-proyectos > h2"], sub: () => przResumen(), mal: () => przRezagados() > 0, ver: () => esDueno()},
+  {id: "costos", t: "Costos: lotes y eBay", nodos: ["#p-costos"], ocultar: ["#p-costos > h2"], sub: () => lcResumen(), mal: () => !!LC.error, ver: () => esDueno()},
+  {id: "recepcion", t: "Recepción de mercancía", nodos: ["#p-recepcion"], ocultar: ["#p-recepcion > h2"], sub: () => rcResumen(), mal: () => !!RC.error, ver: () => esDueno()},
   {id: "personas", t: "Personas y PIN", nodos: ["#secPersonas"], sub: () => "solo el dueño", ver: () => !$("#secPersonas").classList.contains("hidden")}
 ]};
 (function opMover() {
