@@ -1576,18 +1576,18 @@ function pdfReparto() {
   let cuerpo = "", nro = 0;
   const dem = UI.destino <= 0 ? [] : D.demanda.filter(x => x.suc === UI.destino && x.fuente === 1 && !(x.en_camino > 0));
   if (dem.length) {
-    cuerpo += '<tr class="grupo"><td colspan="5">Lo que ' + SUCS[UI.destino] + ' vende y no tiene (de CEDIS, que conserva 1) · ' + dem.length + (dem.length === 1 ? ' renglón' : ' renglones') + '</td></tr>';
+    cuerpo += '<tr class="grupo"><td colspan="6">Lo que ' + SUCS[UI.destino] + ' vende y no tiene (de CEDIS, que conserva 1) · ' + dem.length + (dem.length === 1 ? ' renglón' : ' renglones') + '</td></tr>';
     for (const e of dem) { nro++;
-      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(e.modelo) + '</td><td><div class="k num">' + esc(e.modelo) + '</div><div class="d">' + esc(e.descripcion || '') + ' · vendió ' + Number(e.pzas_180) + ' en 180 días</div></td><td class="pz num">1</td><td><span class="chk"></span></td></tr>';
+      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(e.modelo) + '</td><td><div class="k num">' + esc(e.modelo) + '</div><div class="d">' + esc(e.descripcion || '') + ' · vendió ' + Number(e.pzas_180) + ' en 180 días</div></td><td class="bcol">' + barra128(e.modelo) + '</td><td class="pz num">1</td><td><span class="chk"></span></td></tr>';
     }
   }
   for (const t of (UI.filtroTipo === "todo" ? Object.keys(tipos) : [UI.filtroTipo])) {
     const del = lista.filter(e => tipoDe(e) === t);
     if (!del.length) continue;
-    if (UI.filtroTipo === "todo") cuerpo += '<tr class="grupo"><td colspan="5">' + tipos[t] + " · " + del.length + (del.length === 1 ? " renglón" : " renglones") + "</td></tr>";
+    if (UI.filtroTipo === "todo") cuerpo += '<tr class="grupo"><td colspan="6">' + tipos[t] + " · " + del.length + (del.length === 1 ? " renglón" : " renglones") + "</td></tr>";
     for (const e of del) { nro++;
       cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(e.clave) + '</td><td><div class="k num">' + esc(UI.destino === -2 ? e.mod : e.clave) + '</div><div class="d">' + esc(e.desc || "") + (UI.destino === -2 ? ' · <b>' + esc(repDesglose(e)) + '</b>' + (e.cedis ? ' · CEDIS tiene ' + e.cedis : ' · CEDIS no tiene') : '') + "</div></td>" +
-        '<td class="pz num">' + (e.piezas || 1) + "</td><td><span class=\"chk\"></span></td></tr>";
+        '<td class="bcol">' + barra128(UI.destino === -2 ? e.mod : e.clave) + '</td><td class="pz num">' + (e.piezas || 1) + "</td><td><span class=\"chk\"></span></td></tr>";
     }
   }
   const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
@@ -2173,7 +2173,7 @@ function vtPdf(v) {
   const fol = f => tr.length > 1 && Object.keys(f.folios).length ? '<div class="fo">' + Object.entries(f.folios).map(([a, b]) => "folio " + a + ": " + b).join(" · ") + '</div>' : '';
   const tabla = (L, tipo) => '<table><thead><tr><td></td><td></td><td>Clave</td><td class="c">SICAR</td><td class="c">Recibido</td><td class="c">' + (tipo === "ok" ? "" : "Diferencia") + '</td></tr></thead>' +
     L.map((f, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(f.c) + '</td><td><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d) + '</div>' + fol(f) +
-      (f.primo ? '<div class="pr">¿Calificación distinta? ' + (f.dif < 0 ? "llegó " : "SICAR manda ") + esc(f.primo) + '</div>' : '') + (tipo === "sobra" && !f.e ? '<div class="pr">No viene en el traspaso</div>' : '') +
+      (f.primo ? '<div class="pr">¿Calificación distinta? ' + (f.dif < 0 ? "llegó " : "SICAR manda ") + esc(f.primo) + '</div>' : '') + (tipo === "sobra" && !f.e ? '<div class="pr">No viene en el traspaso</div>' : '') + barra128(f.c) +
       '</td><td class="c num">' + f.e + '</td><td class="c num b">' + f.r + '</td><td class="c num ' + (f.dif < 0 ? "mal" : f.dif > 0 ? "mas" : "") + '">' + (f.dif > 0 ? "+" : "") + (f.dif || "✓") + '</td></tr>').join("") + "</table>";
   const ff = vtFechaHora(v.fin || Date.now());
   abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Verificación folio' + (tr.length > 1 ? "s " : " ") + folios.replace(/ \+ /g, "-") + " " + ff.replace(/[\/:,]/g, ".") + ' · MAKMEX</title><style>' +
@@ -2215,6 +2215,37 @@ function abreHoja(html) {
   if (!w) { URL.revokeObjectURL(url); alert("El navegador bloqueó la ventana de la hoja. Permite las ventanas emergentes de tablero.makmex.com y vuelve a intentar."); return; }
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
+/* ---------------- código de barras Code 128 (juego B) para las hojas PDF ---------------- */
+// Code 128 B: letras, números, guion y el resto del ASCII imprimible (32–126). Se codifica la clave tal cual.
+// Módulo 0.3387 mm (4 puntos a 300 ppp, 8 a 600), 10 mm de alto, 10 módulos en blanco a cada lado.
+const C128 = ("212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 " +
+  "123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 " +
+  "131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 " +
+  "213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 " +
+  "112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 " +
+  "421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112").split(" ");
+function c128Valores(txt) {   // [104 (inicio B), datos…, suma de control, 106 (fin)] o null si no se puede codificar
+  const s = String(txt == null ? "" : txt);
+  if (!s || s.length > 40) return null;
+  const v = [104];
+  for (let i = 0; i < s.length; i++) { const k = s.charCodeAt(i); if (k < 32 || k > 126) return null; v.push(k - 32); }
+  let suma = 104; for (let i = 1; i < v.length; i++) suma += v[i] * i;
+  v.push(suma % 103, 106);
+  return v;
+}
+function barra128(txt) {      // SVG negro sobre blanco + la clave legible; si no se puede, lo dice en la hoja (nunca un código ilegible)
+  const v = c128Valores(txt), t = esc(String(txt == null ? "" : txt));
+  if (!v) { const s = String(txt == null ? "" : txt), por = !s ? "no hay clave" : s.length > 40 ? "la clave es demasiado larga" : "la clave trae caracteres que Code 128 no admite";
+    return '<div class="bc-mal" style="font-size:11px;color:#c9302c;font-weight:700;margin-top:3px">' + (t ? t + ' · ' : '') + 'sin código de barras: ' + por + '</div>'; }
+  const pat = v.map(x => C128[x]).join("");
+  let x = 10, d = "";
+  for (let i = 0; i < pat.length; i++) { const w = +pat[i]; if (i % 2 === 0) d += "M" + x + " 0h" + w + "v1h-" + w + "z"; x += w; }
+  const W = x + 10;
+  return '<div class="bc" data-bc="' + t + '" style="display:inline-block;break-inside:avoid;page-break-inside:avoid;background:#fff;margin-top:3px;line-height:1">' +
+    '<svg xmlns="http://www.w3.org/2000/svg" width="' + (W * 0.3387).toFixed(2) + 'mm" height="10mm" viewBox="0 0 ' + W + ' 1" preserveAspectRatio="none" shape-rendering="crispEdges" style="display:block">' +
+    '<rect width="' + W + '" height="1" fill="#fff"/><path fill="#000" d="' + d + '"/></svg>' +
+    '<div style="font:11px/1.2 Menlo,Consolas,monospace;color:#000;text-align:center;letter-spacing:.5px;margin-top:1px">' + t + '</div></div>';
+}
 function pdfTraspaso(t, det) {
   const filas = det.filter(d => !d.borrado);
   if (!filas.length) { alert("Este traspaso no tiene artículos vigentes."); return; }
@@ -2225,7 +2256,7 @@ function pdfTraspaso(t, det) {
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
   const cuerpo = filas.map((d, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(d.clave) +
     '</td><td><div class="k num">' + esc(d.clave) + '</div><div class="d">' + esc(d.descripcion || "") + '</div></td>' +
-    '<td class="pz num">' + Number(d.cantidad) + '</td><td><span class="chk"></span></td></tr>').join("");
+    '<td class="bcol">' + barra128(d.clave) + '</td><td class="pz num">' + Number(d.cantidad) + '</td><td><span class="chk"></span></td></tr>').join("");
   const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
   abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Traspaso ' + t.folio + " " + esc(ruta).replace(/ → /g, "-") + ' · MAKMEX</title><style>' +
     "body{font:14px/1.4 -apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#1c1917;margin:24px}" +
@@ -3447,7 +3478,7 @@ function agruparDinero() {
   return M;
 }
 function filtroDinero(M) {
-  const N = UI.dDias, s = UI.dSuc, bus = UI.dBusca.trim().toLowerCase();
+  const N = UI.dDias, s = UI.dSuc, bus = UI.dBusca.trim().toLowerCase().replace(/'/g, "-");   // el lector con teclado en español teclea ' por -
   const out = [];
   for (const m of Object.values(M)) {
     let piezas = m.piezas, valor = m.valor, dias = m.diasG;
@@ -3456,7 +3487,7 @@ function filtroDinero(M) {
     const sinVenta = dias == null || dias > N;
     if (!sinVenta) continue;
     if (UI.dTipo !== "todo" && tipoDe(m) !== UI.dTipo) continue;
-    if (bus && !(m.modelo.toLowerCase().includes(bus) || (m.desc || "").toLowerCase().includes(bus))) continue;
+    if (bus && !(m.modelo.toLowerCase().includes(bus) || (m.desc || "").toLowerCase().includes(bus) || m.claves.some(c => c.clave.toLowerCase() === bus))) continue;   // la clave escaneada (con calificación) encuentra su modelo
     out.push({...m, piezas, valor, dias, score: piezas * valor});
   }
   return out.sort((a, b) => b.score - a.score);
@@ -3499,7 +3530,7 @@ function pdfNegativos(s, L, otrasTxt) {
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
   const pz = L.reduce((a, x) => a + Number(x.existencia || 0), 0), tot = L.reduce((a, x) => a + valor(x), 0);
   const cuerpo = L.map((x, i) => { const o = otrasTxt(x.clave); return '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(x.clave) +
-    '</td><td><div class="k num">' + esc(x.clave) + '</div><div class="d">' + esc(x.descripcion || "") + (o ? ' · <i>otras tiendas: ' + esc(o) + '</i>' : '') + '</div></td>' +
+    '</td><td><div class="k num">' + esc(x.clave) + '</div><div class="d">' + esc(x.descripcion || "") + (o ? ' · <i>otras tiendas: ' + esc(o) + '</i>' : '') + '</div>' + barra128(x.clave) + '</td>' +
     '<td class="pz num neg">' + Number(x.existencia) + '</td><td class="v num">' + pesos(valor(x)) + '</td><td><span class="chk"></span></td></tr>'; }).join("");
   const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
   abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Existencias negativas ' + esc(SUCS[s]) + ' ' + ff.replace(/[\/:]/g, ".") + ' · MAKMEX</title><style>' +
@@ -3641,7 +3672,7 @@ function pdfLiquidacion() {
     for (const c of claves) { nro++;
       const p = PRECIOS[c.clave]; const p1 = p ? p.p1 : m.precio1; const pd = p && p.p2 > 0 && p.p2 < p.p1 ? p.p2 : (m.pd || null);
       tot += p1 * c.pz; totD += (pd || p1) * c.pz;
-      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(c.clave) + '</td><td><div class="k num">' + esc(c.clave) + '</div><div class="d">' + esc(m.desc || "") + '</div></td><td class="num c">' + SUCS[c.suc] + '</td><td class="num c">' + c.pz + '</td><td class="num r">' + pesos(p1) + '</td><td class="num r b">' + (pd ? pesos(pd) : "definir") + '</td><td class="num c">' + (pd ? Math.round((1 - pd / p1) * 100) + " %" : "") + '</td></tr>';
+      cuerpo += '<tr><td class="n num">' + nro + '</td><td class="f">' + foto(c.clave) + '</td><td><div class="k num">' + esc(c.clave) + '</div><div class="d">' + esc(m.desc || "") + '</div>' + barra128(c.clave) + '</td><td class="num c">' + SUCS[c.suc] + '</td><td class="num c">' + c.pz + '</td><td class="num r">' + pesos(p1) + '</td><td class="num r b">' + (pd ? pesos(pd) : "definir") + '</td><td class="num c">' + (pd ? Math.round((1 - pd / p1) * 100) + " %" : "") + '</td></tr>';
     }
   }
   const f = new Date(), ff = f.toLocaleDateString("es-MX", {day: "numeric", month: "short"}) + " " + f.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"});
@@ -4949,7 +4980,7 @@ function pdfInventario() {
     const id = FOTOS.clave[clave] || (m && FOTOS.modelo[m[1]]) || FOTOS.modelo[clave];
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
   const tabla = (filas, conSis, conDif) => '<table><tr class="cab"><td></td><td></td><td>Clave</td>' + (conSis ? '<td class="pz">Sistema</td>' : '') + '<td class="pz">Contado</td>' + (conDif ? '<td class="pz">Dif.</td>' : '') + '</tr>' +
-    filas.map((f, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(f.c) + '</td><td><div class="k num">' + esc(f.c) + '</div><div class="d">' + esc(f.d || "") + '</div></td>' +
+    filas.map((f, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(f.c) + '</td><td><div class="k num">' + esc(f.c) + '</div><div class="d">' + esc(f.d || "") + '</div>' + barra128(f.c) + '</td>' +
       (conSis ? '<td class="pz num">' + f.e + '</td>' : '') + '<td class="pz num">' + f.n + '</td>' + (conDif ? '<td class="pz num' + (f.dif < 0 ? ' mal' : '') + '">' + (f.dif > 0 ? '+' : '') + f.dif + '</td>' : '') + '</tr>').join("") + '</table>';
   const contadas = Object.keys(V.items).sort((a, b) => a.localeCompare(b)).map(c => ({c, d: V.items[c].desc || (INV_SIS && INV_SIS[c] && INV_SIS[c].d) || "", n: V.items[c].n}));
   const fmt = x => { const d = new Date(x); return d.toLocaleDateString("es-MX", {day: "numeric", month: "short", year: "numeric"}) + " " + d.toLocaleTimeString("es-MX", {hour: "2-digit", minute: "2-digit"}); };
@@ -5295,7 +5326,7 @@ function icPdf(r) {
     '<div class="enc"><h1>Ajuste de inventario · ' + esc(SUCS[r.suc] || "") + ' · #' + r.id + '<small>Inventario compartido guardado · ' + esc(f.toLocaleString("es-MX")) + ' · ' + icNum(r.piezas) + ' piezas contadas · faltan ' + icNum(r.faltan_pz) + ' pz · sobran ' + icNum(r.sobran_pz) + ' pz</small></h1></div>' +
     '<p>Capturar en SICAR (Ajuste de inventario) la diferencia de cada clave y marcar la casilla. «Sistema» es lo que marcaba SICAR; si la clave se movió durante el conteo, se toma el valor más cercano a lo contado.</p>' +
     '<table><tr><th></th><th>Clave</th><th class="n">Sistema</th><th class="n">Contado</th><th class="n">Diferencia</th><th>Capturado</th></tr>' +
-    F.map(x => '<tr><td>' + fotoHtml(x.c).replace('class="mini"', 'style="width:36px;height:36px;object-fit:contain"') + '</td><td><div class="k">' + esc(x.c) + '</div><div class="d">' + esc(x.d || "") + (x.mov ? ' · se movió durante el conteo' : '') + '</div></td>' +
+    F.map(x => '<tr><td>' + fotoHtml(x.c).replace('class="mini"', 'style="width:36px;height:36px;object-fit:contain"') + '</td><td><div class="k">' + esc(x.c) + '</div><div class="d">' + esc(x.d || "") + (x.mov ? ' · se movió durante el conteo' : '') + '</div>' + barra128(x.c) + '</td>' +
       '<td class="n">' + x.e + '</td><td class="n">' + x.n + '</td><td class="n ' + (x.dif < 0 ? 'mal' : 'bien') + '">' + (x.dif > 0 ? '+' : '') + x.dif + '</td><td><span class="chk"></span></td></tr>').join("") + '</table>' +
     '<div class="pie"><div>Contaron (nombres y firmas)</div><div>Capturó el ajuste en SICAR</div><div>Autorizó</div></div></body></html>');
 }
@@ -5450,8 +5481,8 @@ function envPdf(E) {
   const C = envCedis(), tipos = {herramienta: "Herramientas", bateria: "Baterías y cargadores", accesorio: "Accesorios"};
   const pz = envPz(E); let cuerpo = "", nro = 0;
   const fila = (x, nota) => { nro++; return '<tr><td class="n num">' + nro + '</td><td class="f">' + fotoHtml(x.c).replace('class="mini"', 'style="width:44px;height:44px;object-fit:contain;display:block"') +
-    '</td><td><div class="k num">' + esc(x.c) + '</div><div class="d">' + esc(x.d || C.desc[x.c] || "") + (nota ? ' · ' + nota : '') + '</div></td><td class="pz num">' + x.n + '</td><td><span class="chk"></span></td></tr>'; };
-  const grupo = (t, L) => L.length ? '<tr class="grupo"><td colspan="5">' + t + ' · ' + L.length + (L.length === 1 ? ' renglón' : ' renglones') + '</td></tr>' : '';
+    '</td><td><div class="k num">' + esc(x.c) + '</div><div class="d">' + esc(x.d || C.desc[x.c] || "") + (nota ? ' · ' + nota : '') + '</div></td><td class="bcol">' + barra128(x.c) + '</td><td class="pz num">' + x.n + '</td><td><span class="chk"></span></td></tr>'; };
+  const grupo = (t, L) => L.length ? '<tr class="grupo"><td colspan="6">' + t + ' · ' + L.length + (L.length === 1 ? ' renglón' : ' renglones') + '</td></tr>' : '';
   const dem = E.items.filter(x => x.o === "dem");
   cuerpo += grupo("Lo que " + SUCS[E.des] + " vende y no tiene (elige la mejor calificación disponible)", dem) + dem.map(x => fila(x)).join("");
   const sug = E.items.filter(x => x.o === "sug");
@@ -5670,13 +5701,13 @@ function spPdf(S) {
     return id ? '<img src="https://makmex.com/img/' + encodeURIComponent(id) + '.webp" onerror="this.style.visibility=\'hidden\'">' : ''; };
   const filaP = (f, i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(f.c) + '</td><td><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d || spDesc(f.c)) +
     (f.o === "dem" ? ' · demanda (cualquier calificación)' + (Object.keys(f.gr).length ? ' · agarrado: <b>' + esc(Object.entries(f.gr).map(([c, k]) => c + (k > 1 ? " ×" + k : "")).join(", ")) + '</b>' : '') : '') +
-    '</div></td><td class="c num">' + f.n + '</td><td class="c num b">' + f.got + '</td><td class="c num ' + (f.got < f.n ? "mal" : "") + '">' + (f.got < f.n ? f.got - f.n : "✓") + '</td></tr>';
+    '</div>' + barra128(f.c) + '</td><td class="c num">' + f.n + '</td><td class="c num b">' + f.got + '</td><td class="c num ' + (f.got < f.n ? "mal" : "") + '">' + (f.got < f.n ? f.got - f.n : "✓") + '</td></tr>';
   const cabT = '<table><thead><tr><td></td><td></td><td>Clave</td><td class="c">Pedido</td><td class="c">Surtido</td><td class="c">Dif.</td></tr></thead>';
   const falt = K.filas.filter(f => f.got < f.n), comp = K.filas.filter(f => f.got >= f.n), extras = Object.entries(K.extras);
   let cmp = "";
   if (S.cmp) { const R = spCmpFilas(S, S.cmp);
     cmp = '<h2>Comparación con el traspaso de SICAR · folio ' + esc(S.cmp.folio) + ' (' + esc(S.cmp.fecha || "") + ')</h2>' + (R.malas.length ? '<div class="res mal"><b>NO coincide: ' + R.malas.length + ' claves distintas.</b></div><table><thead><tr><td></td><td>Clave</td><td class="c">SICAR</td><td class="c">Surtido</td><td>Qué pasa</td></tr></thead>' +
-      R.malas.map(f => '<tr><td class="f">' + foto(f.c) + '</td><td><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d) + '</div></td><td class="c num b">' + f.sicar + '</td><td class="c num">' + f.surt + '</td><td class="pr">' +
+      R.malas.map(f => '<tr><td class="f">' + foto(f.c) + '</td><td><div class="k">' + esc(f.c) + '</div><div class="d">' + esc(f.d) + '</div>' + barra128(f.c) + '</td><td class="c num b">' + f.sicar + '</td><td class="c num">' + f.surt + '</td><td class="pr">' +
         (f.surt && f.sicar ? "cantidad distinta" : f.sicar ? "en SICAR y no se surtió" : "se surtió y no está en SICAR") + '</td></tr>').join("") + '</table>' : '<div class="res ok"><b>✓ Coincide con lo surtido (' + R.ok.length + ' claves).</b></div>'); }
   const ff = vtFechaHora(S.fin || Date.now());
   abreHoja('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Surtido envio a ' + esc(dest) + ' ' + ff.replace(/[\/:,]/g, ".") + ' · MAKMEX</title><style>' +
@@ -5696,7 +5727,7 @@ function spPdf(S) {
     '<div class="kv"><div><b class="num">' + K.esp + '</b><span>piezas en el pedido</span></div><div><b class="num">' + K.got + '</b><span>surtidas (escaneadas)</span></div>' +
       '<div><b class="num" style="color:' + (K.faltan ? "#c9302c" : "#1c1917") + '">' + K.faltan + '</b><span>faltan</span></div><div><b class="num" style="color:' + (K.sobran ? "#a85a00" : "#1c1917") + '">' + K.sobran + '</b><span>no van / de más</span></div></div>' +
     (falt.length ? '<h2>Faltantes (' + falt.length + ')</h2>' + cabT + falt.map(filaP).join("") + '</table>' : '') +
-    (extras.length ? '<h2>Escaneadas que no van en el pedido (' + extras.length + ')</h2><table>' + extras.map(([c, k], i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(c) + '</td><td><div class="k">' + esc(c) + '</div><div class="d">' + esc(S.desc[c] || spDesc(c)) + '</div></td><td class="c num mal">+' + k + '</td></tr>').join("") + '</table>' : '') +
+    (extras.length ? '<h2>Escaneadas que no van en el pedido (' + extras.length + ')</h2><table>' + extras.map(([c, k], i) => '<tr><td class="n num">' + (i + 1) + '</td><td class="f">' + foto(c) + '</td><td><div class="k">' + esc(c) + '</div><div class="d">' + esc(S.desc[c] || spDesc(c)) + '</div>' + barra128(c) + '</td><td class="c num mal">+' + k + '</td></tr>').join("") + '</table>' : '') +
     (comp.length ? '<h2>Completos (' + comp.length + ')</h2>' + cabT + comp.map(filaP).join("") + '</table>' : '') + cmp +
     '<div class="pie"><div>Surtió (nombre y firma)</div><div>Empacó / creó el traspaso en SICAR (folio ______)</div><div>Fecha y hora de salida</div></div>' +
     '<p style="margin-top:12px;font-size:11px;color:#888">Surtido = etiquetas escaneadas en el tablero contra la hoja de surtido. El traspaso se crea en SICAR con un segundo escaneo en la mesa de empaque.</p></body></html>');
@@ -5884,8 +5915,8 @@ function piFiltrar() {
   let L = PI.tab === "nuevos" ? piNuevos() : piRegistrados();
   if (PI.tab === "nuevos" && PI.filtro !== "todos") L = L.filter(p => p.decision === PI.filtro);
   if (PI.tab === "catalogo" && PI.cat) L = L.filter(p => (p.categoria || "") === PI.cat);
-  const b = PI.busca.trim().toUpperCase();
-  if (b) L = L.filter(p => (p.modelo + " " + (p.descripcion || "") + " " + (p.marca || "") + " " + (p.categoria || "")).toUpperCase().includes(b));
+  const b = PI.busca.trim().toUpperCase().replace(/'/g, "-"), bm = b.replace(/-(AA|A|B|C|D|E|F)$/, "");   // clave escaneada: ' por - y sin calificación
+  if (b) L = L.filter(p => (p.modelo + " " + (p.descripcion || "") + " " + (p.marca || "") + " " + (p.categoria || "")).toUpperCase().includes(b) || String(p.modelo).toUpperCase() === bm);
   return PI.tab === "catalogo" ? piOrdenar(L) : L;
 }
 function piFicha(p) {
@@ -5934,7 +5965,9 @@ function piPintar() {
 function piAmarrar() {
   document.querySelectorAll("#piTabs [data-pit]").forEach(b => b.onclick = () => { PI.tab = b.dataset.pit; PI.pag = 1; piPintar(); });
   document.querySelectorAll("#piBarra [data-pif]").forEach(b => b.onclick = () => { PI.filtro = b.dataset.pif; PI.pag = 1; piPintar(); });
-  const bu = $("#piBusca"); if (bu) { let t = null; bu.oninput = () => { clearTimeout(t); t = setTimeout(() => { PI.busca = bu.value; PI.pag = 1; piPintar(); const b2 = $("#piBusca"); if (b2) { b2.focus(); b2.setSelectionRange(b2.value.length, b2.value.length); } }, 250); }; }
+  const bu = $("#piBusca"); if (bu) { let t = null; bu.onkeydown = ev => { if (ev.key !== "Enter") return; ev.preventDefault(); clearTimeout(t);   // lector: clave + Enter abre la ficha si queda una sola
+      PI.busca = bu.value; PI.pag = 1; const L = piFiltrar(); if (L.length === 1) piAbrir(L[0].modelo); else piPintar(); };
+    bu.oninput = () => { clearTimeout(t); t = setTimeout(() => { PI.busca = bu.value; PI.pag = 1; piPintar(); const b2 = $("#piBusca"); if (b2) { b2.focus(); b2.setSelectionRange(b2.value.length, b2.value.length); } }, 250); }; }
   const so = $("#piOrd"); if (so) so.onchange = () => { PI.ord = so.value; PI.pag = 1; piPintar(); };
   const sc = $("#piCat"); if (sc) sc.onchange = () => { PI.cat = sc.value; PI.pag = 1; piPintar(); };
   const ma = $("#piMas"); if (ma) ma.onclick = () => { PI.pag++; piPintar(); };
