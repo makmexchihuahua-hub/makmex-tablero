@@ -829,6 +829,24 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
 #rcRapido{display:none}#rcRapido.abierto{display:block}
 .rcTit{font-family:var(--display);font-size:15px;font-weight:600;margin:12px 2px 6px;color:var(--ink-2)}
 
+/* costos: margen y pedidos eBay */
+#lcMargen .mgFila{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--ink-2);margin-top:3px;font-variant-numeric:tabular-nums}
+#lcMargen .mgFila b{color:var(--ink);font-weight:600}
+#lcMargen .neg{color:var(--bad)}
+.mgTabla{overflow-x:auto;margin-top:8px;border:1px solid var(--line);border-radius:10px}
+.mgTabla table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+.mgTabla th,.mgTabla td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.mgTabla th{color:var(--ink-3);font-weight:600;background:var(--surface)}
+.mgTabla td.tx,.mgTabla th.tx{text-align:left}
+.mgTabla td.ds{text-align:left;white-space:normal;min-width:160px;color:var(--ink-2)}
+.mgTabla small{display:block;color:var(--ink-3);font-size:11px}
+.mgPed{border-top:1px dashed var(--line);margin:6px 0 4px;padding-top:6px}
+.mgPed .et2{font-size:13px;font-weight:600;margin-bottom:3px}
+.mgPedFila{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--ink-2);margin:3px 0;font-variant-numeric:tabular-nums}
+.mgPedFila span{flex:1;min-width:0}
+.mgPedForm .mgPedNum{width:130px}.mgPedForm .mgPedPz{width:54px}.mgPedForm .mgPedClave{max-width:190px}
+.mgPedForm input,.mgPedForm select{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--ink);font:inherit;font-size:13.5px}
+
 /* cotizaciones guardadas */
 .cgBarra{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}
 .cgBarra .estado{font-size:12px;color:var(--ink-3);flex:1 1 160px;min-width:0}
@@ -1082,6 +1100,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
     <div class="przTabs">
       <button type="button" id="lcTabL" class="on">Lotes <span id="lcNl"></span></button>
       <button type="button" id="lcTabE">eBay <span id="lcNe"></span></button>
+      <button type="button" id="lcTabM">Margen</button>
       <span class="espacio"></span>
       <label class="przAviso" style="margin:0">Folios sin asignar de los últimos
         <select id="lcDias" aria-label="Días de folios sin asignar"><option value="30">30</option><option value="60" selected>60</option><option value="120">120</option><option value="365">365</option></select> días</label>
@@ -1110,6 +1129,7 @@ button.neg:hover,button.neg:focus-visible{text-decoration:underline solid}
       <div class="lcSec">Folios eBay y sus costos</div>
       <div id="lcEbLista"></div>
     </div>
+    <div id="lcMargen" class="hidden"></div>
   </section>
   <section class="panel" id="p-recepcion">
     <h2>Recepción de mercancía</h2>
@@ -2731,6 +2751,7 @@ async function lcCargar(forzar) {
     LC.error = /PGRST205|42P01/.test(m) ? "falta correr 19_lotes_costos.sql en Supabase" : m === "sesion" ? "la sesión caducó; vuelve a entrar" : (m || "error");
   }
   LC.cargando = 0;
+  await mgCargarEbay();
   lcPintar();
 }
 const lcLote = n => LC.lotes.find(l => l.numero === n);
@@ -2798,16 +2819,16 @@ function lcPintarEbay() {
   $("#lcEbLibres").innerHTML = lcLibresHtml();
   const fs = lcEbay().slice().sort((a, b) => String((LC.compras[lcK(b.suc, b.com_id)] || {}).fecha || "").localeCompare(String((LC.compras[lcK(a.suc, a.com_id)] || {}).fecha || "")));
   $("#lcEbLista").innerHTML = fs.map(f => { const c = LC.compras[lcK(f.suc, f.com_id)] || {}, d = {suc: f.suc, com_id: f.com_id};
-    return '<div class="lcEb">' + lcFolioHtml(f, "quitar") + lcEditorCosto(d, "mercancia", "Mercancía", c.fecha) + lcEditorCosto(d, "transporte", "Transporte El Paso → CEDIS", c.fecha) + '</div>'; }).join("")
+    return '<div class="lcEb">' + lcFolioHtml(f, "quitar") + mgMercanciaEbay(f, d, c) + lcEditorCosto(d, "transporte", "Transporte El Paso → CEDIS", c.fecha) + '</div>'; }).join("")
     || '<div class="przAviso">Todavía no hay folios eBay.</div>';
 }
 function lcPintar() {
   $("#lcAviso").textContent = LC.error ? "⚠ " + LC.error : "";
   const ab = LC.lotes.filter(l => l.estado === "abierto").length, ne = lcEbay().length;
   $("#lcNl").textContent = ab ? "· " + ab : ""; $("#lcNe").textContent = ne ? "· " + ne : "";
-  $("#lcTabL").classList.toggle("on", LC.tab === "lotes"); $("#lcTabE").classList.toggle("on", LC.tab === "ebay");
-  $("#lcLotes").classList.toggle("hidden", LC.tab !== "lotes"); $("#lcEbay").classList.toggle("hidden", LC.tab !== "ebay");
-  if (LC.tab === "lotes") { if (LC.sel) lcPintarLote(); else lcPintarLotes(); } else lcPintarEbay();
+  $("#lcTabL").classList.toggle("on", LC.tab === "lotes"); $("#lcTabE").classList.toggle("on", LC.tab === "ebay"); $("#lcTabM").classList.toggle("on", LC.tab === "margen");
+  $("#lcLotes").classList.toggle("hidden", LC.tab !== "lotes"); $("#lcEbay").classList.toggle("hidden", LC.tab !== "ebay"); $("#lcMargen").classList.toggle("hidden", LC.tab !== "margen");
+  if (LC.tab === "lotes") { if (LC.sel) lcPintarLote(); else lcPintarLotes(); } else if (LC.tab === "ebay") lcPintarEbay(); else mgPintar();
   if (typeof opPintarMenu === "function") opPintarMenu();
 }
 async function lcAccion(llamada, donde) {     // llamada: () => rpc("lc_…", {…}) con el nombre LITERAL (el verificador de ecosistema lo lee)
@@ -3248,6 +3269,180 @@ async function rcFichaGuardar(fi) {
   // el campo de escaneo recupera el foco si se pierde sin que otra caja de texto lo tome
   $("#rcUpc").addEventListener("blur", () => setTimeout(() => { const a = document.activeElement; if (!a || a === document.body || a === $("#rcCapa")) rcFoco(); }, 250));
   window.addEventListener("online", () => { if (RC.cola.length) rcSubir(); });
+})();
+/* ---------------- costos: margen y pedidos eBay (solo Emilio) ---------------- */
+const MG = {lista: [], det: null, sel: null, pedidos: [], arts: {}, falta: false, faltaPed: false, error: "", cargando: 0};
+const MG_ESTADO = {sin_costo: "sin costo", preliminar: "preliminar", fijo: "precios fijos", incompleto: "faltan pedidos"};
+const mgPct = (a, b) => Number(b) > 0 ? (Number(a) / Number(b) * 100).toLocaleString("es-MX", {minimumFractionDigits: 1, maximumFractionDigits: 1}) + " %" : "—";
+const mgN = n => Number(n || 0).toLocaleString("es-MX", {maximumFractionDigits: 2});
+const mgLlave = r => r.tipo === "lote" ? "L" + r.lote : "E" + r.suc + ":" + r.com_id;
+const mgArgs = r => r.tipo === "lote" ? {p_lote: r.lote, p_suc: null, p_com_id: null} : {p_lote: null, p_suc: r.suc, p_com_id: r.com_id};
+const mgErr = e => e.message === "sesion" ? "la sesión caducó; vuelve a entrar" : e.message || "error";
+
+async function mgCargar() {
+  if (!esDueno() || MG.cargando) return;
+  MG.cargando = 1; MG.error = "";
+  try {
+    MG.lista = await rpc("cs_resumen", {}) || []; MG.falta = false;
+    if (MG.sel) MG.det = await rpc("cs_costeo", MG.sel.args);
+  } catch (e) {
+    MG.falta = /PGRST202|Could not find the function/.test(e.message || "");
+    if (!MG.falta) MG.error = mgErr(e);
+    if (/No existe|no está marcado/.test(e.message || "")) { MG.sel = null; MG.det = null; }
+  }
+  MG.cargando = 0;
+  mgPintar();
+}
+async function mgCargarEbay() {            // pedidos capturados y artículos de los folios eBay (para elegir la clave)
+  if (!esDueno() || LC.error) return;
+  try { MG.pedidos = await q("costo_pedido", "select=*&order=id"); MG.faltaPed = false; }
+  catch (e) { MG.pedidos = []; MG.faltaPed = /PGRST205|42P01/.test(e.message || ""); return; }
+  const nuevos = LC.folios.filter(f => f.origen === "ebay" && !MG.arts[lcK(f.suc, f.com_id)]);
+  try {
+    for (const suc of [...new Set(nuevos.map(f => f.suc))]) {
+      const ids = nuevos.filter(f => f.suc === suc).map(f => f.com_id);
+      for (let i = 0; i < ids.length; i += 300) {
+        const det = await q("sicar_compra_detalle", "select=suc,com_id,clave,descripcion,cantidad,borrado&suc=eq." + suc + "&com_id=in." + enLista(ids.slice(i, i + 300)) + "&order=com_id,orden,art_id");
+        for (const id of ids.slice(i, i + 300)) MG.arts[lcK(suc, id)] = [];
+        for (const d of det) {
+          if (Number(d.borrado) || !(Number(d.cantidad) > 0)) continue;
+          const L = MG.arts[lcK(d.suc, d.com_id)], a = L.find(x => x.clave === d.clave);
+          if (a) a.cantidad += Number(d.cantidad); else L.push({clave: d.clave, descripcion: d.descripcion || "", cantidad: Number(d.cantidad)});
+        }
+      }
+    }
+  } catch (e) { /* sin artículos: el formulario lo dice */ }
+}
+
+/* ----- pestaña eBay: mercancía por pedido ----- */
+function mgMercanciaEbay(f, d, c) {
+  if (MG.faltaPed) return lcEditorCosto(d, "mercancia", "Mercancía", c.fecha);              // falta el 21: como en la fase a
+  if (lcCosto(d, "mercancia")) return lcEditorCosto(d, "mercancia", "Mercancía (total)", c.fecha) +
+    '<div class="przAviso">Este folio tiene la mercancía en total (se reparte por precio). Para capturarla por pedido, borra el total (monto vacío → Guardar).</div>';
+  const ps = MG.pedidos.filter(p => p.suc === f.suc && p.com_id === f.com_id), arts = MG.arts[lcK(f.suc, f.com_id)] || [];
+  const cap = {}; for (const p of ps) cap[p.clave] = (cap[p.clave] || 0) + Number(p.piezas);
+  const faltan = arts.filter(a => (cap[a.clave] || 0) < a.cantidad);
+  const llave = 'data-suc="' + f.suc + '" data-com="' + f.com_id + '"';
+  return '<div class="mgPed" ' + llave + '><div class="et2">Mercancía por pedido</div>' +
+    ps.map(p => '<div class="mgPedFila"><span>Pedido <b>' + esc(p.pedido) + '</b> · ' + esc(p.clave) + ' · ' + Number(p.piezas) + ' pz · ' +
+      (p.moneda === "USD" ? lcUsd(p.monto) + " × " + Number(p.tipo_cambio) + " = " : "") + pesosC(p.monto_mxn) + (p.nota ? " · " + esc(p.nota) : "") + '</span>' +
+      '<button type="button" class="lcBtn mgPedBorrar" data-id="' + p.id + '">borrar</button></div>').join("") +
+    (!arts.length ? '<div class="przAviso">Cargando los artículos del folio…</div>'
+      : faltan.length ? '<div class="przAviso mgFaltan">Faltan pedidos de: ' + faltan.map(a => esc(a.clave) + " (" + mgN(a.cantidad - (cap[a.clave] || 0)) + " pz)").join(", ") + '</div>' +
+        '<div class="lcCosto mgPedForm" ' + llave + '>' +
+        '<input class="mgPedNum" maxlength="60" aria-label="Pedido eBay" placeholder="pedido eBay">' +
+        '<select class="mgPedClave" aria-label="Clave del folio">' + faltan.map(a => '<option value="' + esc(a.clave) + '">' + esc(a.clave) + " · faltan " + mgN(a.cantidad - (cap[a.clave] || 0)) + '</option>').join("") + '</select>' +
+        '<input class="mgPedPz" inputmode="numeric" aria-label="Piezas" value="1">' +
+        '<select class="lcMon" aria-label="Moneda"><option>USD</option><option>MXN</option></select>' +
+        '<input class="lcMonto" inputmode="decimal" aria-label="Monto con impuestos" placeholder="monto con impuestos">' +
+        '<input class="lcTc" inputmode="decimal" aria-label="Tipo de cambio" title="pesos por dólar del día de la compra" placeholder="' + (LC.dolar ? "TC (hoy " + LC.dolar.toFixed(2) + ")" : "TC") + '">' +
+        '<input class="lcFtc" type="date" aria-label="Fecha del tipo de cambio" value="' + esc(String(c.fecha || "").slice(0, 10)) + '">' +
+        '<button type="button" class="lcBtn mgPedGuardar">Agregar</button><span class="mx"></span></div>'
+      : '<div class="przAviso">Todas las piezas del folio tienen su pedido: costo exacto.</div>') + '</div>';
+}
+async function mgPedGuardar(caja) {
+  const mx = caja.querySelector(".mx"), mon = caja.querySelector(".lcMon").value, monto = lcNum(caja.querySelector(".lcMonto").value);
+  const tc = lcNum(caja.querySelector(".lcTc").value), pz = lcNum(caja.querySelector(".mgPedPz").value), ped = caja.querySelector(".mgPedNum").value.trim();
+  const fecha = caja.querySelector(".lcFtc").value;
+  if (!ped) { mx.textContent = "⚠ falta el número de pedido"; return; }
+  if (!(Number.isInteger(pz) && pz >= 1 && pz <= 999)) { mx.textContent = "⚠ piezas: entero de 1 a 999"; return; }
+  if (monto === null || !(monto >= 0) || !isFinite(monto)) { mx.textContent = "⚠ monto inválido"; return; }
+  if (mon === "USD" && !(tc > 0)) { mx.textContent = "⚠ falta el tipo de cambio"; return; }
+  if (!fecha) { mx.textContent = "⚠ falta la fecha del tipo de cambio"; return; }
+  const r = await lcAccion(() => rpc("cs_pedido_guardar", {p_id: null, p_suc: Number(caja.dataset.suc), p_com_id: Number(caja.dataset.com), p_pedido: ped,
+    p_clave: caja.querySelector(".mgPedClave").value, p_piezas: pz, p_moneda: mon, p_monto: monto, p_tipo_cambio: mon === "USD" ? tc : 1, p_fecha_tc: fecha, p_nota: ""}), mx);
+  if (r) toast("Pedido " + ped + ": " + pesosC(r.monto_mxn));
+}
+
+/* ----- pestaña Margen ----- */
+function mgChips(r) {
+  let h = '<span class="lcChip' + (r.estado === "sin_costo" || r.estado === "incompleto" ? " mal" : "") + '">' + esc(MG_ESTADO[r.estado] || r.estado) + '</span>';
+  if (r.tiene_mercancia && !r.tiene_transporte) h += '<span class="lcChip">sin transporte</span>';
+  if (r.desactualizado) h += '<span class="lcChip mal">reparto desactualizado</span>';
+  if ((r.claves_sin_precio || []).length) h += '<span class="lcChip mal">' + r.claves_sin_precio.length + ' sin precio</span>';
+  if (r.tipo === "lote" && r.estado_lote === "cerrado") h += '<span class="lcChip cerrado">cerrado</span>';
+  return h;
+}
+function mgTitulo(r) { return r.tipo === "lote" ? "Lote " + r.lote : "eBay · folio " + (r.folio || r.com_id); }
+function mgCuerpo(r) {
+  const pz = Number(r.piezas || 0), hayCosto = r.costo_total != null;
+  const proy = Number(r.proy_valor) - Number(r.proy_costo), real = Number(r.real_importe) - Number(r.real_costo);
+  const rec = r.recepcion;
+  return '<div class="mgFila">' + (hayCosto
+      ? '<span>Costo <b>' + pesosC(r.costo_total) + '</b></span>' + (r.estado !== "incompleto" && pz ? '<span><b>' + pesosC(Number(r.costo_total) / pz) + '</b> por pieza (promedio)</span>' : "")
+      : '<span>Sin costo capturado</span>') + '<span>' + mgN(pz) + ' pz en SICAR</span></div>' +
+    (hayCosto ? '<div class="mgFila"><span>Margen proyectado <b class="mgProy' + (proy < 0 ? " neg" : "") + '">' + mgPct(proy, r.proy_valor) + '</b></span>' +
+      '<span>real a la fecha <b class="mgReal' + (real < 0 ? " neg" : "") + '">' + (Number(r.real_importe) > 0 ? mgPct(real, r.real_importe) : "—") + '</b></span>' +
+      '<span>recuperado <b class="mgRecup">' + mgPct(r.importe_vendido, r.costo_total) + '</b></span></div>' : "") +
+    '<div class="mgFila mgAvance">' + (rec ? '<span>' + mgN(rec.esperadas) + ' pz escaneadas en Recepción' + (Number(rec.sin_reparacion) ? " · " + rec.sin_reparacion + " sin reparación (fuera del costo)" : "") + '</span>' : "") +
+      '<span>vendidas <b>' + mgN(r.vendidas) + '</b> (' + mgPct(r.vendidas, pz) + ') · ' + pesosC(r.importe_vendido) + '</span></div>';
+}
+function mgPintar() {
+  const caja = $("#lcMargen"); if (!caja) return;
+  if (MG.falta) { caja.innerHTML = '<div class="przAviso">⚠ Falta correr <b>21_costos.sql</b> en Supabase para ver el margen.</div>'; return; }
+  const aviso = MG.error ? '<div class="przAviso">⚠ ' + esc(MG.error) + '</div>' : "";
+  if (MG.sel && MG.det) { caja.innerHTML = aviso + mgDetalleHtml(MG.det); return; }
+  caja.innerHTML = aviso + '<div class="lcBarra"><span class="przAviso" style="margin:0">Precios de SICAR sin IVA · ventas por FIFO (lo más viejo sale primero) · lo dañado sin reparación no entra al costo</span>' +
+    '<button type="button" class="lcBtn" id="mgActualizar">Actualizar</button></div>' +
+    (MG.cargando && !MG.lista.length ? '<div class="przAviso">Calculando…</div>'
+      : MG.lista.map(r => '<button type="button" class="lcCard mgCard" data-mg="' + esc(mgLlave(r)) + '"><b>' + esc(mgTitulo(r)) + '</b>' + mgChips(r) +
+          (r.tipo === "ebay" && r.notas ? '<small>' + esc(r.notas) + '</small>' : "") + mgCuerpo(r) + '</button>').join("")
+        || '<div class="przAviso">Todavía no hay lotes ni folios eBay.</div>');
+}
+function mgDetalleHtml(r) {
+  const avisos = [];
+  if ((r.claves_sin_precio || []).length) avisos.push("Sin precio en SICAR ni en la ficha (fuera del reparto): " + r.claves_sin_precio.map(esc).join(", ") + ". Ponles precio para poder fijar.");
+  if ((r.claves_incompletas || []).length) avisos.push("Faltan pedidos de: " + r.claves_incompletas.map(esc).join(", ") + " (captúralos en la pestaña eBay). Sin pedido no tienen costo.");
+  if (r.desactualizado) avisos.push("Llegaron claves después de fijar los precios: vuelve a fijar para incluirlas.");
+  if (r.estado === "preliminar") avisos.push("Reparto preliminar con los precios de hoy: si cambias un precio, cambia el costo. Fíjalos cuando los precios estén bien.");
+  const filas = (r.claves || []).map(k => {
+    const m = k.costo_pieza != null && Number(k.precio_actual) > 0 ? (Number(k.precio_actual) - Number(k.costo_pieza)) / Number(k.precio_actual) : null;
+    return '<tr data-clave="' + esc(k.clave) + '"><td class="tx"><b>' + esc(k.clave) + '</b></td><td class="ds">' + esc(k.descripcion || "") + '</td><td>' + mgN(k.piezas) + '</td>' +
+      '<td>' + (k.precio_actual != null ? pesosC(k.precio_actual) + (k.fuente_actual === "ficha" ? "<small>(ficha)</small>" : "") : "sin precio") +
+        (k.precio_base != null && Number(k.precio_base) !== Number(k.precio_actual) ? "<small>fijo " + pesosC(k.precio_base) + "</small>" : "") + '</td>' +
+      '<td class="cp">' + (k.costo_pieza != null ? pesosC(k.costo_pieza) : "—") + (r.por_pedido && k.costo_pedido != null ? "<small>pedido " + pesosC(k.costo_pedido) + "</small>" : "") + '</td>' +
+      '<td class="mg' + (m != null && m < 0 ? " neg" : "") + '">' + (m == null ? "—" : mgPct(m, 1)) + '</td>' +
+      '<td>' + mgN(k.vendidas) + '</td><td>' + pesosC(k.importe) + '</td></tr>';
+  }).join("");
+  return '<div class="lcBarra"><button type="button" class="lcBtn" id="mgVolver">‹ Todos</button>' +
+      (r.claves && r.claves.length ? '<button type="button" class="lcBtn pri" id="mgFijar">' + (r.estado === "fijo" ? "Volver a fijar con precios de hoy" : "Fijar precios del reparto") + '</button>' : "") +
+      (r.fijado_en ? '<button type="button" class="lcBtn" id="mgSoltar">Soltar precios fijos</button>' : "") + '<span class="przAviso" id="mgAviso" style="margin:0"></span></div>' +
+    '<div class="lcCard" style="cursor:default"><b>' + esc(mgTitulo(MG.sel.r)) + '</b>' + mgChips(Object.assign({}, MG.sel.r, r)) + mgCuerpo(r) +
+      '<div class="mgFila"><span>mercancía ' + pesosC(r.mercancia) + (r.por_pedido ? " (por pedido)" : "") + '</span><span>transporte ' + (r.tiene_transporte ? pesosC(r.transporte) : "sin capturar") + '</span>' +
+      (Number(r.otros) ? '<span>otros ' + pesosC(r.otros) + '</span>' : "") + (r.fijado_en ? '<span>precios fijados el ' + esc(String(r.fijado_en).slice(0, 10)) + '</span>' : "") + '</div></div>' +
+    avisos.map(a => '<div class="przAviso">' + a + '</div>').join("") +
+    '<div class="mgTabla"><table><thead><tr><th class="tx">Clave</th><th class="tx">Descripción</th><th>Pz</th><th>Precio hoy</th><th>Costo / pz</th><th>Margen</th><th>Vendidas</th><th>Vendido</th></tr></thead>' +
+    '<tbody>' + (filas || '<tr><td class="tx" colspan="8">Sin piezas en SICAR todavía.</td></tr>') + '</tbody></table></div>';
+}
+async function mgAbrir(llave) {
+  const r = MG.lista.find(x => mgLlave(x) === llave); if (!r) return;
+  MG.sel = {r, args: mgArgs(r)}; MG.det = null; $("#lcMargen").innerHTML = '<div class="przAviso">Calculando ' + esc(mgTitulo(r)) + '…</div>';
+  try { MG.det = await rpc("cs_costeo", MG.sel.args); } catch (e) { MG.sel = null; MG.error = mgErr(e); }
+  mgPintar(); $("#opScroll").scrollTop = 0;
+}
+async function mgFijar(soltar) {
+  if (!MG.sel) return;
+  if (soltar && !confirm("¿Soltar los precios fijos? El reparto vuelve a usar los precios de hoy.")) return;
+  const a = Object.assign({}, MG.sel.args, {p_soltar: !!soltar});
+  try { const r = await rpc("cs_fijar", a); toast(soltar ? "Precios soltados: reparto preliminar" : (r.fijadas + " precios fijados")); await mgCargar(); }
+  catch (e) { const av = $("#mgAviso"); if (av) av.textContent = "⚠ " + mgErr(e); }
+}
+(function mgArmar() {
+  $("#lcTabM").onclick = () => { LC.tab = "margen"; LC.sel = 0; $("#lcForm").classList.remove("abierto"); lcPintar(); mgCargar(); };
+  $("#p-costos").addEventListener("click", ev => {
+    const t = ev.target, card = t.closest(".mgCard");
+    if (t.classList.contains("mgPedGuardar")) { mgPedGuardar(t.closest(".mgPedForm")); return; }
+    if (t.classList.contains("mgPedBorrar")) {
+      const p = MG.pedidos.find(x => String(x.id) === t.dataset.id);
+      if (p && confirm("¿Borrar el pedido " + p.pedido + " (" + p.clave + ")?")) lcAccion(() => rpc("cs_pedido_borrar", {p_id: p.id}));
+      return;
+    }
+    if (t.id === "mgActualizar") { mgCargar(); return; }
+    if (t.id === "mgVolver") { MG.sel = null; MG.det = null; mgPintar(); return; }
+    if (t.id === "mgFijar") { mgFijar(false); return; }
+    if (t.id === "mgSoltar") { mgFijar(true); return; }
+    if (card) mgAbrir(card.dataset.mg);
+  });
 })();
 /* ---------------- panel de opciones (derecha) ---------------- */
 const OP = {abierto: false, actual: "", mods: [
